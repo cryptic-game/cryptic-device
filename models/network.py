@@ -3,12 +3,11 @@ from database import db
 
 class Network(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, unique=True)
-    owner = db.Column(db.Integer, nullable=False) 
-    devices = db.relationship("device", backred="network") 
+    owner = db.Column(db.Integer, nullable=False)
+    devices = db.relationship("device") 
 
     def __init__(self, owner):
-	self.owner = owner
-	pass
+        self.owner = owner
 
     def delete(self) -> None:
         """
@@ -38,7 +37,7 @@ class Network(db.Model):
         :return: New device
         """
 
-	network = Network(user)
+        network = Network(user)
 
         db.session.add(network)
         db.session.commit()

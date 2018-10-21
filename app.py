@@ -6,7 +6,7 @@ from database import db
 import config
 
 from models.network import Network
-from models.network import Device
+from models.device import Device
 
 from blueprints.info import info
 

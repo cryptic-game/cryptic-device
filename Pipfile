@@ -17,5 +17,5 @@ gunicorn = "*"
 python_version = "3.7"
 
 [scripts]
-dev = "sh -c 'FLASK_APP=app FLASK_DEBUG=1 FLASK_ENV=development flask run --port 1241'"
+dev = "sh -c 'DEBUG=1 CROSS_ORIGIN=1 MYSQL_HOSTNAME=127.0.0.1 MYSQL_PORT=3306 MYSQL_DATABASE=cryptic MYSQL_USERNAME=cryptic MYSQL_PASSWORD=YOUR_PASSWORD FLASK_APP=app FLASK_DEBUG=1 FLASK_ENV=development flask run --port 1241'"
 prod = "gunicorn --workers 4 app:create_app() --bind 0.0.0.0:80 --log-syslog --log-level DEBUG"

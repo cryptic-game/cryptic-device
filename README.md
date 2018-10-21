@@ -7,7 +7,7 @@ The offical device microservice of Cryptic (https://cryptic-game.net/)
 
 If you want to test this microservice you can simply build and run a container with docker-compose:
 
-`docker-compose up`
+`docker-compose up -d`
 
 The microservice is available on port `1241`.
 
@@ -20,6 +20,10 @@ You can also test it without docker using pipenv:
 To install the dependencies manually use:
 
 `pipenv install`
+
+If you need a mysql-server you can bring it up with:
+
+`docker-compose up -d db`
 
 ## Docker-Hub
 

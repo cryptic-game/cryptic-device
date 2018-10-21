@@ -3,13 +3,13 @@ from database import db
 
 class Device(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, unique=True)
-    owner = db.Column(db.Ineger, nullable=False)
+    owner = db.Column(db.Integer, nullable=False)
     power = db.Column(db.Float, nullable=False)
     networks = db.Column(db.Integer, db.ForeignKey("network.id"), nullable=False)
 
     def __init__(self, owner, power):
-	self.owner = owner
-	self.power = power
+        self.owner = owner
+        self.power = power
 
     def delete(self) -> None:
         """
@@ -36,11 +36,11 @@ class Device(db.Model):
         Creates a new device for a specified user.
 
         :param user: The owner's id
-	:param power: The power of the device
+		:param power: The power of the device
         :return: New device
         """
 
-	device = Device(user, power)
+        device = Device(user, power)
 
         db.session.add(device)
         db.session.commit()
