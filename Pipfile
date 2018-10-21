@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+Flask = "*"
+Flask-SQLAlchemy = "*"
+SQLAlchemy = "*"
+Flask-Cors = "*"
+PyMySQL = "*"
+gunicorn = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7"
+
+[scripts]
+dev = "sh -c 'FLASK_APP=app FLASK_DEBUG=1 FLASK_ENV=development flask run --port 1241'"
+prod = "gunicorn --workers 4 app:create_app() --bind 0.0.0.0:80 --log-syslog --log-level DEBUG"
