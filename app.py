@@ -5,8 +5,8 @@ from time import sleep
 from database import db
 import config
 
-from models import network
-from models import device
+from models.network import Network
+from models.network import Device
 
 from blueprints.info import info
 
