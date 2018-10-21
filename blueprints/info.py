@@ -7,10 +7,10 @@ info = Blueprint('info', __name__)
 @info.route("/", methods=["GET"])
 def information() -> Response:
     """
-    Returns the current session informations by the auth-token
-
-    :return: The current session with informations of owner
+    Returns data about the target device
     """
+
+    # TODO check here the target device
 
     return make_response({
     	"status": "ok"

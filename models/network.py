@@ -1,15 +1,14 @@
 from database import db
 
 
-class Device(db.Model):
+class Network(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, unique=True)
-    owner = db.Column(db.Ineger, nullable=False)
-    power = db.Column(db.Float, nullable=False)
-    networks = db.Column(db.Integer, db.ForeignKey("network.id"), nullable=False)
+    owner = db.Column(db.Integer, nullable=False) 
+    devices = db.relationship("device", backred="network") 
 
-    def __init__(self, owner, power):
+    def __init__(self, owner):
 	self.owner = owner
-	self.power = power
+	pass
 
     def delete(self) -> None:
         """
@@ -19,7 +18,7 @@ class Device(db.Model):
         """
 
         db.session.delete(self)
-        db.session.commit()
+        self.commit()
 
     def commit(self) -> None:
         """
@@ -31,18 +30,17 @@ class Device(db.Model):
         db.session.commit()
 
     @staticmethod
-    def create(user, power) -> 'Device':
+    def create(user, power) -> 'Network':
         """
-        Creates a new device for a specified user.
+        Creates a new network for a specified user.
 
         :param user: The owner's id
-	:param power: The power of the device
         :return: New device
         """
 
-	device = Device(user, power)
+	network = Network(user)
 
-        db.session.add(device)
+        db.session.add(network)
         db.session.commit()
 
-        return device
+        return network

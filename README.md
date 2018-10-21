@@ -9,7 +9,7 @@ If you want to test this microservice you can simply build and run a container w
 
 `docker-compose up`
 
-The microservice is available on port `1240`.
+The microservice is available on port `1241`.
 
 ## Testing with pipenv
 
@@ -23,4 +23,4 @@ To install the dependencies manually use:
 
 ## Docker-Hub
 
-This microservice will be soon online on docker-hub (https://hub.docker.com).
+This microservice is online on docker-hub (https://hub.docker.com/r/useto/cryptic-device/).
