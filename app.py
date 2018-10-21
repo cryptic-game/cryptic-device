@@ -8,6 +8,9 @@ import config
 from models.network import Network
 from models.device import Device
 
+from models.auth import User
+from models.auth import Session
+
 from blueprints.info import info
 
 
