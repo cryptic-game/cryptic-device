@@ -1,5 +1,6 @@
 from flask import Blueprint, request, Response
 from util import make_response
+from models.device import Device
 
 info = Blueprint('info', __name__)
 
