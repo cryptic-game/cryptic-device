@@ -12,6 +12,7 @@ from models.auth import User
 from models.auth import Session
 
 from blueprints.info import info
+from blueprints.devices import devices
 
 
 def create_app() -> Flask:
@@ -62,3 +63,4 @@ def register_blueprints(app: Flask) -> None:
     :return: None
     """
     app.register_blueprint(info, url_prefix="/info")
+    app.register_blueprint(devices, url_prefix="/devices")

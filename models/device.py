@@ -1,14 +1,16 @@
+from sqlalchemy import Column, Integer, String, Float, Boolean
 from database import db
 import uuid
 
 
 class Device(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True, unique=True)
-    owner = db.Column(db.Integer, nullable=False)
-    power = db.Column(db.Float, nullable=False)
-    address = db.Column(db.String(32), nullable=False, unique=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
+    owner = Column(Integer, nullable=False)
+    power = Column(Float, nullable=False)
+    address = Column(String(32), nullable=False, unique=True)
+    powered_on = Column(Boolean, nullable=False, default=False)
 
-    def __init__(self, owner, address, power, networks=None):
+    def __init__(self, owner, address, power, networks=None, powered_on=False):
         self.owner = owner
         self.power = power
         print("Test")
@@ -16,6 +18,7 @@ class Device(db.Model):
             address = str(uuid.uuid4()).replace("-", "")
         self.address = address
         self.networks = 0
+        self.powered_on = powered_on
 
     def delete(self) -> None:
         """
@@ -37,7 +40,7 @@ class Device(db.Model):
         db.session.commit()
 
     @staticmethod
-    def create(user, address=None, power=1, networks=None) -> 'Device':
+    def create(user, address=None, power=1, networks=None, powered_on=False) -> 'Device':
         """
         Creates a new device for a specified user.
 
@@ -47,12 +50,22 @@ class Device(db.Model):
         :return: New device
         """
 
-        device = Device(user, address, power, networks)
+        device = Device(user, address, power, networks, powered_on)
 
         db.session.add(device)
         db.session.commit()
 
         return device
+
+    @staticmethod
+    def get_by_address(address: str) -> "Device":
+        """
+        This function finds a device based on its address which should be unique.
+
+        :address: Unique device address to search for.
+        :return: A device based on an address.
+        """
+        return Device.query.filter_by(address=address).first()
 
     @staticmethod
     def get_by_id(id: int) -> "Device":
@@ -96,5 +109,6 @@ class Device(db.Model):
         return {
             "device_id": self.id,
             "device_owner": self.owner,
-            "power": self.power
+            "power": self.power,
+            "powered_on": self.powered_on
         }
