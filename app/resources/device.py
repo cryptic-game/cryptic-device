@@ -151,17 +151,18 @@ class PrivateDeviceModificationAPI(Resource):
         }
 
     @device_api.doc("Create a device")
-    @device_api.marshal_with(SuccessSchema)
+    @device_api.marshal_with(PrivateDeviceResponseSchema)
     @device_api.response(400, "Invalid Input", ErrorSchema)
     @require_session
     def put(self, session):
         owner: str = session["owner"]
 
-        device_count: int = db.session.query(func.count(DeviceModel.uuid)).filter_by(owner=DeviceModel.owner).first()[0]
+        device_count: int = \
+            (db.session.query(func.count(DeviceModel.uuid)).filter(DeviceModel.owner == owner)).first()[0]
 
         if device_count != 0:
             abort(400, "you already own a device")
 
-        DeviceModel.create(owner, 1, True)
+        device: DeviceModel = DeviceModel.create(owner, 1, True)
 
-        return {"ok": True}
+        return device.serialize
