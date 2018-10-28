@@ -48,7 +48,6 @@ class PublicDeviceAPI(Resource):
 
     @device_api.doc("Get public information about a device")
     @device_api.marshal_with(PublicDeviceResponseSchema)
-    @device_api.response(400, "Invalid Input", ErrorSchema)
     @device_api.response(404, "Not Found", ErrorSchema)
     def get(self, uuid):
         device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
@@ -60,7 +59,6 @@ class PublicDeviceAPI(Resource):
 
     @device_api.doc("Ping a device")
     @device_api.marshal_with(PublicDevicePingResponseSchema)
-    @device_api.response(400, "Invalid Input", ErrorSchema)
     @device_api.response(404, "Not Found", ErrorSchema)
     def post(self, uuid):
         device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
@@ -107,7 +105,7 @@ class PrivateDeviceAPI(Resource):
             abort(404, "invalid device uuid")
 
         if session["owner"] != device.owner:
-            abort(403, "no access on this device")
+            abort(403, "no access to this device")
 
         device.powered_on = not device.powered_on
         db.session.commit()
@@ -127,7 +125,7 @@ class PrivateDeviceAPI(Resource):
             abort(404, "invalid device uuid")
 
         if session["owner"] != device.owner:
-            abort(403, "no access on this device")
+            abort(403, "no access to this device")
 
         db.session.delete(device)
         db.session.commit()
