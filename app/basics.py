@@ -9,6 +9,10 @@ ErrorSchema: Model = api.model("Error", {
     "message": fields.String(readOnly=True)
 })
 
+SuccessSchema: Model = api.model("Success", {
+    "ok": fields.Boolean(readOnly=True)
+})
+
 
 def require_session(f):
     @wraps(f)
