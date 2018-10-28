@@ -1,11 +1,10 @@
 from flask_restplus import Namespace, Resource, fields, abort
 from basics import ErrorSchema, require_session, SuccessSchema
 from objects import api
-from typing import Optional
+from typing import Optional, List
 from models.device import DeviceModel
 from objects import db
 from sqlalchemy import func
-
 
 PublicDeviceResponseSchema = api.model("Public Device Response", {
     "uuid": fields.String(example="secretpassword1234",
@@ -16,6 +15,11 @@ PublicDeviceResponseSchema = api.model("Public Device Response", {
                             description="the device's power"),
     "powered_on": fields.Boolean(example=True,
                                  description="the device's power state")
+})
+
+PublicDevicePingResponseSchema = api.model("Public Device Ping Response", {
+    "online": fields.Boolean(example=True,
+                             description="the device's online status")
 })
 
 PrivateDeviceResponseSchema = api.model("Public Device Response", {
@@ -29,16 +33,11 @@ PrivateDeviceResponseSchema = api.model("Public Device Response", {
                                  description="the device's power state")
 })
 
-PrivateDeleteDeviceResponseSchema = api.model("Public Delete Device Response", {
-    "devices": fields.List(fields.Nested({
-                    "uuid": fields.String,
-                    "owner": fields.String,
-                    "power": fields.Integer,
-                    "powered_on": fields.Boolean,
-                }), example="[{}, {}]",
-                                 description="the uuid/address"),
+PrivateDevicesResponseSchema = api.model("Public Delete Device Response", {
+    "devices": fields.List(fields.Nested(PrivateDeviceResponseSchema),
+                           example="[{}, {}]",
+                           description="the uuid/address")
 })
-
 
 device_api = Namespace('device')
 
@@ -47,10 +46,10 @@ device_api = Namespace('device')
 @device_api.doc("Public Device Application Programming Interface")
 class PublicDeviceAPI(Resource):
 
-    @device_api.doc("Information")
+    @device_api.doc("Get public information about a device")
     @device_api.marshal_with(PublicDeviceResponseSchema)
     @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(404, "Invalid Input", ErrorSchema)
+    @device_api.response(404, "Not Found", ErrorSchema)
     def get(self, uuid):
         device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
 
@@ -58,10 +57,11 @@ class PublicDeviceAPI(Resource):
             abort(404, "invalid device uuid")
 
         return device.serialize
-    
-    @device_api.doc("Ping")
+
+    @device_api.doc("Ping a device")
+    @device_api.marshal_with(PublicDevicePingResponseSchema)
     @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(404, "Invalid Input", ErrorSchema)
+    @device_api.response(404, "Not Found", ErrorSchema)
     def post(self, uuid):
         device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
 
@@ -77,10 +77,11 @@ class PublicDeviceAPI(Resource):
 @device_api.doc("Private Device Application Programming Interface")
 class PrivateDeviceAPI(Resource):
 
-    @device_api.doc("Information")
+    @device_api.doc("Get private information about the device")
     @device_api.marshal_with(PrivateDeviceResponseSchema)
     @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(404, "Invalid Input", ErrorSchema)
+    @device_api.response(403, "No Access", ErrorSchema)
+    @device_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def get(self, session, uuid):
         device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
@@ -89,14 +90,15 @@ class PrivateDeviceAPI(Resource):
             abort(404, "invalid device uuid")
 
         if session["owner"] != device.owner:
-            abort(403, "no access on this device")
+            abort(403, "no access to this device")
 
         return device.serialize
 
-    @device_api.doc("Toggle")
+    @device_api.doc("Turn the device on/off")
     @device_api.marshal_with(PrivateDeviceResponseSchema)
     @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(404, "Invalid Input", ErrorSchema)
+    @device_api.response(403, "No Access", ErrorSchema)
+    @device_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def post(self, session, uuid):
         device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
@@ -112,10 +114,11 @@ class PrivateDeviceAPI(Resource):
 
         return device.serialize
 
-    @device_api.doc("Delete")
+    @device_api.doc("Delete a device")
     @device_api.marshal_with(SuccessSchema)
     @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(404, "Invalid Input", ErrorSchema)
+    @device_api.response(404, "No Access", ErrorSchema)
+    @device_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def delete(self, session, uuid):
         device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
@@ -136,36 +139,29 @@ class PrivateDeviceAPI(Resource):
 @device_api.doc("Private Device Application Programming Interface for Modifications")
 class PrivateDeviceModificationAPI(Resource):
 
-    @device_api.doc("Information")
-    @device_api.marshal_with(PrivateDeleteDeviceResponseSchema)
+    @device_api.doc("Get all devices")
+    @device_api.marshal_with(PrivateDevicesResponseSchema, as_list=True)
     @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(404, "Invalid Input", ErrorSchema)
     @require_session
     def get(self, session):
-        owner = session["owner"]
-        all_devices = DeviceModel.query.filter_by(owner=owner).all()
-       
-        result = []
+        devices: List[DeviceModel] = DeviceModel.query.filter_by(owner=session["owner"]).all()
 
-        for device in all_devices:
-            result.append(device.serialize)
- 
         return {
-            "devices": result
+            "devices": [e.serialize for e in devices]
         }
 
-    @device_api.doc("Create")
+    @device_api.doc("Create a device")
     @device_api.marshal_with(SuccessSchema)
     @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(404, "Invalid Input", ErrorSchema)
     @require_session
     def put(self, session):
-        owner = session["owner"]
-        all_devices = DeviceModel.query.filter_by(owner=owner).all()
-        if len(all_devices) <= 0:
-            device: Optional[DeviceModel] = DeviceModel.create(owner, 1, True)
-        else:
-            abort(400, "you already own one device")       
- 
-        return {"ok": True}
+        owner: str = session["owner"]
 
+        device_count: int = db.session.query(func.count(DeviceModel.uuid)).filter_by(owner=DeviceModel.owner).first()[0]
+
+        if device_count != 0:
+            abort(400, "you already own a device")
+
+        DeviceModel.create(owner, 1, True)
+
+        return {"ok": True}

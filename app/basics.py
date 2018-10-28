@@ -13,6 +13,7 @@ SuccessSchema: Model = api.model("Success", {
     "ok": fields.Boolean(readOnly=True)
 })
 
+
 def require_session(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
