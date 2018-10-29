@@ -20,7 +20,7 @@ def require_session(f):
         if 'Token' in request.headers:
             token: str = request.headers["Token"]
 
-            session: Response = get(api.app.config["auth_api"], headers={
+            session: Response = get(api.app.config["AUTH_API"], headers={
                 "Token": token
             })
 

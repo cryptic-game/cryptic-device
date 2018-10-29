@@ -3,7 +3,6 @@ from typing import Union, Tuple
 
 to_load: Union[str, Tuple[str, bool]] = [
     # flask settings
-    ("SERVER_NAME", "localhost:1241"),
     ("CROSS_ORIGIN", True),
     ("DEBUG", True),
     ("FLASK_DEBUG", True),
@@ -22,7 +21,7 @@ to_load: Union[str, Tuple[str, bool]] = [
     ("RESTPLUS_MASK_SWAGGER", False),
 
     # flask
-    ("auth_api", "http://localhost:1240/auth/")
+    ("AUTH_API", "http://localhost:1240/auth/")
 ]
 
 # the final configuration dict

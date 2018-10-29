@@ -72,4 +72,4 @@ def setup_development_environment() -> None:
 
 if __name__ == '__main__':
     app: Flask = create_app()
-    app.run()
+    app.run(host='0.0.0.0', port=1241)
