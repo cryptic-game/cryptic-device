@@ -7,7 +7,7 @@ class DeviceModel(db.Model):
     __tablename__: str = "device"
 
     uuid: db.Column = db.Column(db.String(32), primary_key=True, unique=True)
-    name: db.Column = db.Column(db.String, nullable=False)
+    name: db.Column = db.Column(db.String(255), nullable=False)
     owner: db.Column = db.Column(db.String(32), nullable=False)
     power: db.Column = db.Column(db.Integer, nullable=False)
     powered_on: db.Column = db.Column(db.Boolean, nullable=False, default=False)
