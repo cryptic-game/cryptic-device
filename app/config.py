@@ -21,7 +21,7 @@ to_load: Union[str, Tuple[str, bool]] = [
     ("RESTPLUS_MASK_SWAGGER", False),
 
     # flask
-    ("AUTH_API", "http://localhost:1240/auth/")
+    ("AUTH_API", "http://localhost:1240/")
 ]
 
 # the final configuration dict
