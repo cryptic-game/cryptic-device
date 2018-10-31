@@ -1,5 +1,6 @@
 from flask import Flask
 from resources.device import device_api
+from resources.file import file_api
 from config import config
 from objects import db, api
 from flask_cors import CORS
@@ -48,6 +49,7 @@ def register_namespaces() -> None:
     """
 
     api.add_namespace(device_api)
+    api.add_namespace(file_api)
 
 
 def setup_database() -> None:
