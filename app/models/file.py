@@ -8,7 +8,7 @@ class FileModel(db.Model):
     __tablename__: str = "file"
 
     uuid: db.Column = db.Column(db.String(32), primary_key=True, unique=True)
-    device: db.Column = db.Column(db.String(32), nullable=False)  # TODO add relationship between
+    device: db.Column = db.Column(db.String(32), nullable=False)
     filename: db.Column = db.Column(db.String(255), nullable=False)
     content: db.Column = db.Column(db.String(CONTENT_LENGTH), nullable=False)
 
