@@ -104,6 +104,7 @@ class FileModificationAPI(Resource):
     @file_api.doc("Get information about a file")
     @file_api.marshal_with(FileResponseSchema)
     @file_api.response(400, "Invalid Input", ErrorSchema)
+    @file_api.response(403, "No Access", ErrorSchema)
     @file_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def get(self, session, device, uuid):
@@ -123,6 +124,7 @@ class FileModificationAPI(Resource):
     @file_api.marshal_with(FileResponseSchema)
     @file_api.expect(FileUpdateRequestSchema)
     @file_api.response(400, "Invalid Input", ErrorSchema)
+    @file_api.response(403, "No Access", ErrorSchema)
     @file_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def put(self, session, device, uuid):
@@ -158,6 +160,7 @@ class FileModificationAPI(Resource):
     @file_api.doc("Delete a file")
     @file_api.marshal_with(SuccessSchema)
     @file_api.response(400, "Invalid Input", ErrorSchema)
+    @file_api.response(403, "No Access", ErrorSchema)
     @file_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def delete(self, session, device, uuid):
