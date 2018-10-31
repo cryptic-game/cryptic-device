@@ -57,6 +57,9 @@ class FileAPI(Resource):
     def get(self, session, device):
         device: DeviceModel = DeviceModel.query.filter_by(uuid=device).first()
 
+        if device is None:
+            abort(404, "unknown device")
+
         if session["owner"] != device.owner:
             abort(403, "no access")
 
@@ -76,6 +79,9 @@ class FileAPI(Resource):
         content: str = request.json["content"]
 
         device: DeviceModel = DeviceModel.query.filter_by(uuid=device).first()
+
+        if device is None:
+            abort(404, "unknown device")
 
         if session["owner"] != device.owner:
             abort(403, "no access")
@@ -107,6 +113,11 @@ class FileModificationAPI(Resource):
     @file_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def get(self, session, device, uuid):
+        device: DeviceModel = DeviceModel.query.filter_by(uuid=device).first()
+
+        if device is None:
+            abort(404, "unknown device")
+
         file: Optional[FileModel] = FileModel.query.filter_by(uuid=uuid).first()
 
         if file is None:
@@ -121,6 +132,11 @@ class FileModificationAPI(Resource):
     @file_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def put(self, session, device, uuid):
+        device: DeviceModel = DeviceModel.query.filter_by(uuid=device).first()
+
+        if device is None:
+            abort(404, "unknown device")
+
         filename: str = request.json["filename"]
         content: str = request.json["content"]
 
@@ -129,7 +145,7 @@ class FileModificationAPI(Resource):
         if file is None:
             abort(404, "invalid file uuid")
 
-        file_count: int = (db.session.query(func.count(FileModel.uuid)).filter(FileModel.device == device)
+        file_count: int = (db.session.query(func.count(FileModel.uuid)).filter(FileModel.device == device.uuid)
                            .filter(FileModel.filename == filename)).first()[0]
 
         if file.filename != filename and file_count > 0:
@@ -151,6 +167,11 @@ class FileModificationAPI(Resource):
     @file_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def delete(self, session, device, uuid):
+        device: DeviceModel = DeviceModel.query.filter_by(uuid=device).first()
+
+        if device is None:
+            abort(404, "unknown device")
+
         file: Optional[FileModel] = FileModel.query.filter_by(uuid=uuid).first()
 
         if file is None:
