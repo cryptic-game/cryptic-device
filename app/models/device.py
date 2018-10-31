@@ -31,27 +31,28 @@ class DeviceModel(db.Model):
         """
 
         uuid = str(uuid4()).replace("-", "")
+        name = random.choice([
+            "asterix",
+            "obelix",
+            "dogmatix",
+            "godzilla",
+            "kale",
+            "kore",
+            "deimos",
+            "europa",
+            "io",
+            "dia",
+            "mimas",  # easter egg :D
+            "herse",
+            "battleship",
+            "puck",
+            "proteus",
+            "titan",
+        ])
 
         device = DeviceModel(
             uuid=uuid,
-            name=random.choice([
-                "asterix",
-                "obelix",
-                "dogmatix",
-                "godzilla",
-                "kale",
-                "kore",
-                "deimos",
-                "europa",
-                "io",
-                "dia",
-                "mimas",  # easter egg :D
-                "herse",
-                "battleship",
-                "puck",
-                "proteus",
-                "titan",
-            ]),
+            name=name,
             owner=user,
             power=power,
             powered_on=powered_on

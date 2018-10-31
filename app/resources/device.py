@@ -27,7 +27,7 @@ PublicDevicePingResponseSchema = api.model("Public Device Ping Response", {
 
 PrivateChangeNameDeviceRequestSchema = api.model("Public Delete Device Response", {
     "name": fields.String(example="obelix",
-                          description="the name to change on the device")
+                          description="the new name of the devices")
 })
 
 PrivateDeviceResponseSchema = api.model("Public Device Response", {
@@ -122,7 +122,7 @@ class PrivateDeviceAPI(Resource):
 
         return device.serialize
 
-    @device_api.doc("Change name of device")
+    @device_api.doc("Change the name of the device")
     @device_api.marshal_with(PrivateDeviceResponseSchema)
     @device_api.expect(PrivateChangeNameDeviceRequestSchema, validate=True)
     @device_api.response(400, "Invalid Input", ErrorSchema)
@@ -130,8 +130,6 @@ class PrivateDeviceAPI(Resource):
     @device_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def put(self, session, uuid):
-        name = request.json["name"]
-
         device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
 
         if device is None:
@@ -140,7 +138,7 @@ class PrivateDeviceAPI(Resource):
         if session["owner"] != device.owner:
             abort(403, "no access to this device")
 
-        device.name = name
+        device.name = request.json["name"]
         db.session.commit()
 
         return device.serialize
