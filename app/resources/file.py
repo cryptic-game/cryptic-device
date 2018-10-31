@@ -60,9 +60,6 @@ class FileAPI(Resource):
         if device is None:
             abort(404, "unknown device")
 
-        if session["owner"] != device.owner:
-            abort(403, "no access")
-
         return {
             "files": FileModel.query.filter_by(device=device.uuid).all()
         }
@@ -82,9 +79,6 @@ class FileAPI(Resource):
 
         if device is None:
             abort(404, "unknown device")
-
-        if session["owner"] != device.owner:
-            abort(403, "no access")
 
         file_count: int = (db.session.query(func.count(FileModel.uuid)).filter(FileModel.device == device.uuid)
                            .filter(FileModel.filename == filename)).first()[0]
