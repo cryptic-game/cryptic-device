@@ -8,12 +8,12 @@ from objects import db
 from sqlalchemy import func
 
 PublicDeviceResponseSchema = api.model("Public Device Response", {
-    "uuid": fields.String(example="secretpassword1234",
+    "uuid": fields.String(example="12abc34d5efg67hi89j1klm2nop3pqrs",
                           description="the uuid/address"),
     "name": fields.String(example="asterix",
                           description="the name/alias"),
-    "owner": fields.String(example="secretpassword1234",
-                           description="the uuid/address"),
+    "owner": fields.String(example="12abc34d5efg67hi89j1klm2nop3pqrs",
+                           description="the owner's uuid/address"),
     "power": fields.Integer(example=3,
                             description="the device's power"),
     "powered_on": fields.Boolean(example=True,
@@ -25,28 +25,29 @@ PublicDevicePingResponseSchema = api.model("Public Device Ping Response", {
                              description="the device's online status")
 })
 
-PrivateChangeNameDeviceRequestSchema = api.model("Public Delete Device Response", {
-    "name": fields.String(example="obelix",
+PrivateDeviceChangeNameRequestSchema = api.model("Private Change Name Device Request", {
+    "name": fields.String(required=True,
+                          example="obelix",
                           description="the new name of the devices")
 })
 
-PrivateDeviceResponseSchema = api.model("Public Device Response", {
-    "uuid": fields.String(example="secretpassword1234",
+PrivateDeviceResponseSchema = api.model("Private Device Response", {
+    "uuid": fields.String(example="12abc34d5efg67hi89j1klm2nop3pqrs",
                           description="the uuid/address"),
     "name": fields.String(example="asterix",
                           description="the name/alias"),
-    "owner": fields.String(example="secretpassword1234",
-                           description="the uuid/address"),
+    "owner": fields.String(example="12abc34d5efg67hi89j1klm2nop3pqrs",
+                           description="the owner's uuid/address"),
     "power": fields.Integer(example=3,
                             description="the device's power"),
     "powered_on": fields.Boolean(example=True,
                                  description="the device's power state")
 })
 
-PrivateDevicesResponseSchema = api.model("Public Delete Device Response", {
+PrivateDevicesResponseSchema = api.model("Private Devices Response", {
     "devices": fields.List(fields.Nested(PrivateDeviceResponseSchema),
                            example="[{}, {}]",
-                           description="the uuid/address")
+                           description="a list of devices")
 })
 
 device_api = Namespace('device')
@@ -117,14 +118,14 @@ class PrivateDeviceAPI(Resource):
         if session["owner"] != device.owner:
             abort(403, "no access to this device")
 
-        device.powered_on = not device.powered_on
+        device.powered_on: bool = not device.powered_on
         db.session.commit()
 
         return device.serialize
 
     @device_api.doc("Change the name of the device")
     @device_api.marshal_with(PrivateDeviceResponseSchema)
-    @device_api.expect(PrivateChangeNameDeviceRequestSchema, validate=True)
+    @device_api.expect(PrivateDeviceChangeNameRequestSchema, validate=True)
     @device_api.response(400, "Invalid Input", ErrorSchema)
     @device_api.response(403, "No Access", ErrorSchema)
     @device_api.response(404, "Not Found", ErrorSchema)
@@ -146,7 +147,7 @@ class PrivateDeviceAPI(Resource):
     @device_api.doc("Delete a device")
     @device_api.marshal_with(SuccessSchema)
     @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(404, "No Access", ErrorSchema)
+    @device_api.response(403, "No Access", ErrorSchema)
     @device_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def delete(self, session, uuid):
