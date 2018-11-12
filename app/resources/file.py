@@ -2,50 +2,55 @@ from flask_restplus import Namespace, Resource, fields, abort
 from basics import ErrorSchema, require_session, SuccessSchema
 from objects import api
 from flask import request
-from typing import Optional
 from models.file import FileModel, CONTENT_LENGTH
 from models.device import DeviceModel
 from objects import db
 from sqlalchemy import func
+from typing import Optional
 
 FileResponseSchema = api.model("File Response", {
-    "uuid": fields.String(example="secretpassword1234",
-                          description="the uuid/address"),
-    "device": fields.String(example="",
-                            description="the name/alias"),
-    "filename": fields.String(example="secretpassword1234",
-                              description="the uuid/address"),
+    "uuid": fields.String(example="12abc34d5efg67hi89j1klm2nop3pqrs",
+                          description="the file's uuid/address"),
+    "device": fields.String(example="12abc34d5efg67hi89j1klm2nop3pqrs",
+                            description="the device's uuid owning this device"),
+    "filename": fields.String(example="foo.bar",
+                              description="the file's name"),
     "content": fields.String(example="lorem ipsum dolor sit amet",
-                             description="the device's power")
+                             description="the files's content")
 })
 
-FileUpdateRequestSchema = api.model("File Request", {
-    "filename": fields.String(example="mimas.wallet",
+FileUpdateRequestSchema = api.model("File Update Request", {
+    "filename": fields.String(required=True,
+                              example="foo.bar",
                               description="the name of the file"),
-    "content": fields.String(example="lorem ipsum dolor sit amet",
+    "content": fields.String(required=True,
+                             example="lorem ipsum dolor sit amet",
                              description="the content of the file")
 })
 
-FileCreateRequestSchema = api.model("File Request", {
-    "filename": fields.String(example="mimas.wallet",
+FileCreateRequestSchema = api.model("File Create Request Schema", {
+    "filename": fields.String(required=True,
+                              example="foo.bar",
                               description="the name of the file"),
-    "content": fields.String(example="lorem ipsum dolor sit amet",
+    "content": fields.String(required=True,
+                             example="lorem ipsum dolor sit amet",
                              description="the content of the file"),
-    "device": fields.String(example="uuid",
+    "device": fields.String(required=True,
+                            example="12abc34d5efg67hi89j1klm2nop3pqrs",
                             description="uuid of device")
 })
 
-FileGetAllResponseSchema = api.model("Public Delete Device Response", {
+FileGetAllResponseSchema = api.model("File Get All Response", {
     "files": fields.List(fields.Nested(FileResponseSchema),
                          example="[{}, {}]",
-                         description="the uuid/address")
+                         description="a list of files")
 })
 
 file_api = Namespace('file')
 
 
 @file_api.route('/<string:device>')
-@file_api.doc("Private Device Application Programming Interface")
+@file_api.doc("Private File Application Programming Interface")
 class FileAPI(Resource):
 
     @file_api.doc("Get all files of a device")
@@ -55,7 +60,7 @@ class FileAPI(Resource):
     @file_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def get(self, session, device):
-        device: DeviceModel = DeviceModel.query.filter_by(uuid=device).first()
+        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=device).first()
 
         if device is None:
             abort(404, "unknown device")
@@ -75,7 +80,7 @@ class FileAPI(Resource):
         filename: str = request.json["filename"]
         content: str = request.json["content"]
 
-        device: DeviceModel = DeviceModel.query.filter_by(uuid=device).first()
+        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=device).first()
 
         if device is None:
             abort(404, "unknown device")
@@ -108,7 +113,7 @@ class FileModificationAPI(Resource):
     @file_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def get(self, session, device, uuid):
-        device: DeviceModel = DeviceModel.query.filter_by(uuid=device).first()
+        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=device).first()
 
         if device is None:
             abort(404, "unknown device")
@@ -122,13 +127,13 @@ class FileModificationAPI(Resource):
 
     @file_api.doc("Update a file")
     @file_api.marshal_with(FileResponseSchema)
-    @file_api.expect(FileUpdateRequestSchema)
+    @file_api.expect(FileUpdateRequestSchema, validate=True)
     @file_api.response(400, "Invalid Input", ErrorSchema)
     @file_api.response(403, "No Access", ErrorSchema)
     @file_api.response(404, "Not Found", ErrorSchema)
     @require_session
-    def put(self, session, device, uuid):
-        device: DeviceModel = DeviceModel.query.filter_by(uuid=device).first()
+    def post(self, session, device, uuid):
+        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=device).first()
 
         if device is None:
             abort(404, "unknown device")
@@ -164,7 +169,7 @@ class FileModificationAPI(Resource):
     @file_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def delete(self, session, device, uuid):
-        device: DeviceModel = DeviceModel.query.filter_by(uuid=device).first()
+        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=device).first()
 
         if device is None:
             abort(404, "unknown device")

@@ -20,8 +20,11 @@ to_load: Union[str, Tuple[str, bool]] = [
     ("SWAGGER_UI_JSONEDITOR", True),
     ("RESTPLUS_MASK_SWAGGER", False),
 
-    # flask
+    # other apis
+    # default (online)
     ("AUTH_API", "https://user.api.cryptic-game.net/")
+    # default (local)
+    # ("AUTH_API", "http://localhost:1240/")
 ]
 
 # the final configuration dict

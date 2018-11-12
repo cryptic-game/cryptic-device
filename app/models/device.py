@@ -12,8 +12,6 @@ class DeviceModel(db.Model):
     power: db.Column = db.Column(db.Integer, nullable=False)
     powered_on: db.Column = db.Column(db.Boolean, nullable=False, default=False)
 
-    # address = uuid
-
     @property
     def serialize(self):
         _ = self.uuid
