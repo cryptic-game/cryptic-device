@@ -34,10 +34,7 @@ FileCreateRequestSchema = api.model("File Create Request Schema", {
                               description="the name of the file"),
     "content": fields.String(required=True,
                              example="lorem ipsum dolor sit amet",
-                             description="the content of the file"),
-    "device": fields.String(required=True,
-                            example="12abc34d5efg67hi89j1klm2nop3pqrs",
-                            description="uuid of device")
+                             description="the content of the file")
 })
 
 FileGetAllResponseSchema = api.model("File Get All Response", {
