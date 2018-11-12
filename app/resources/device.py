@@ -147,7 +147,7 @@ class PrivateDeviceAPI(Resource):
     @device_api.doc("Delete a device")
     @device_api.marshal_with(SuccessSchema)
     @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(404, "No Access", ErrorSchema)
+    @device_api.response(403, "No Access", ErrorSchema)
     @device_api.response(404, "Not Found", ErrorSchema)
     @require_session
     def delete(self, session, uuid):
