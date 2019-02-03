@@ -1,4 +1,6 @@
 from objects import db
+from config import config
+from requests import post
 from uuid import uuid4
 import random
 
@@ -60,3 +62,20 @@ class DeviceModel(db.Model):
         db.session.commit()
 
         return device
+
+    def check_access(self, session) -> bool:
+        """
+        Checks if user can access this device.
+
+        :param user: The accessing user
+        :return: The permission
+        """
+
+        if self.owner == session["owner"]:
+            return True
+
+        access: dict = post(config["SERVICE_API"] + "service/private/" + self.uuid, headers={
+                "Token": session["token"]
+            }).json()
+
+        return access["ok"]

@@ -98,7 +98,7 @@ class PrivateDeviceAPI(Resource):
         if device is None:
             abort(404, "invalid device uuid")
 
-        if session["owner"] != device.owner:
+        if device.check_access(session):
             abort(403, "no access to this device")
 
         return device.serialize
@@ -115,7 +115,7 @@ class PrivateDeviceAPI(Resource):
         if device is None:
             abort(404, "invalid device uuid")
 
-        if session["owner"] != device.owner:
+        if device.check_access(session):
             abort(403, "no access to this device")
 
         device.powered_on: bool = not device.powered_on
@@ -136,7 +136,7 @@ class PrivateDeviceAPI(Resource):
         if device is None:
             abort(404, "invalid device uuid")
 
-        if session["owner"] != device.owner:
+        if device.check_access(session):
             abort(403, "no access to this device")
 
         device.name = request.json["name"]
@@ -156,7 +156,7 @@ class PrivateDeviceAPI(Resource):
         if device is None:
             abort(404, "invalid device uuid")
 
-        if session["owner"] != device.owner:
+        if device.check_access(session):
             abort(403, "no access to this device")
 
         db.session.delete(device)
