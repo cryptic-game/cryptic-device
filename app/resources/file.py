@@ -62,6 +62,9 @@ class FileAPI(Resource):
         if device is None:
             abort(404, "unknown device")
 
+        if device.check_access(session):
+            abort(403, "no access to this device")
+
         return {
             "files": FileModel.query.filter_by(device=device.uuid).all()
         }
@@ -81,6 +84,9 @@ class FileAPI(Resource):
 
         if device is None:
             abort(404, "unknown device")
+
+        if device.check_access(session):
+            abort(403, "no access to this device")
 
         file_count: int = (db.session.query(func.count(FileModel.uuid)).filter(FileModel.device == device.uuid)
                            .filter(FileModel.filename == filename)).first()[0]
@@ -115,6 +121,9 @@ class FileModificationAPI(Resource):
         if device is None:
             abort(404, "unknown device")
 
+        if device.check_access(session):
+            abort(403, "no access to this device")
+
         file: Optional[FileModel] = FileModel.query.filter_by(uuid=uuid).first()
 
         if file is None:
@@ -134,6 +143,9 @@ class FileModificationAPI(Resource):
 
         if device is None:
             abort(404, "unknown device")
+
+        if device.check_access(session):
+            abort(403, "no access to this device")
 
         filename: str = request.json["filename"]
         content: str = request.json["content"]
@@ -170,6 +182,9 @@ class FileModificationAPI(Resource):
 
         if device is None:
             abort(404, "unknown device")
+
+        if device.check_access(session):
+            abort(403, "no access to this device")
 
         file: Optional[FileModel] = FileModel.query.filter_by(uuid=uuid).first()
 
