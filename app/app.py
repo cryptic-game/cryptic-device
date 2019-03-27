@@ -1,8 +1,7 @@
 from cryptic import MicroService
 from typing import Any, Dict, List
-from .objects import Base, engine
-from .resources.device import exist as device_exists, handle as device_handle
-from .resources.file import handle as file_handle
+from objects import Base, engine
+
 
 
 def handle(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, Any]:
@@ -14,7 +13,7 @@ def handle(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, An
     :return: The response
     """
     if endpoint[0] == 'device':
-        device_handle(endpoint[1:], data, user)
+        handle_device(endpoint[1:], data, user)
     elif endpoint[0] == 'file':
         file_handle(endpoint[1:], data, user)
     else:
@@ -38,16 +37,19 @@ def handle_microservice_requests(data: Dict[str, Any]) -> Dict[str, Any]:
                 'error': 'no device uuid given'
             }
 
-        return device_exists(device_uuid)
+        return exist(device_uuid)
 
     return {
         'ok': False,
         'error': 'endpoint not supported'
     }
 
+m: MicroService = MicroService('device', handle, handle_microservice_requests)
 
 if __name__ == '__main__':
-    Base.metadata.create_all(bind=engine)
 
-    m: MicroService = MicroService('device', handle, handle_microservice_requests)
+    from resources.device import handle_device, exist
+    from resources.file import file_handle
+
+    Base.metadata.create_all(bind=engine)
     m.run()

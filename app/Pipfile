@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+SQLAlchemy = "*"
+PyMySQL = "*"
+gunicorn = "*"
+microservicecryp = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7"
+
+[scripts]
+dev = "python3 app.py"
+prod = "gunicorn --workers 4 app:create_app() --bind 0.0.0.0:80 --log-syslog --log-level DEBUG"

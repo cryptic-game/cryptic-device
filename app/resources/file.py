@@ -1,8 +1,8 @@
 from typing import List, Dict, Any, Optional
-from app.models.file import File
-from app.objects import session
-from app.models.device import Device
-from app.models.file import CONTENT_LENGTH
+from models.file import File
+from objects import session
+from models.device import Device
+from models.file import CONTENT_LENGTH
 
 
 # ENDPOINTS FOR HANDLE #
@@ -220,7 +220,7 @@ def create(data: Dict[str, Any]) -> Dict[str, Any]:
 
 # HANDLE FUNCTION #
 
-def handle(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, Any]:
+def file_handle(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, Any]:
     """
     Handle function for microservice.
     :param endpoint: The list of the endpoint elements

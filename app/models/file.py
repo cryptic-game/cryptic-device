@@ -1,6 +1,6 @@
 from uuid import uuid4
 from sqlalchemy import Column, String
-from app.objects import session, Base
+from objects import session, Base
 
 CONTENT_LENGTH = 255
 

@@ -1,7 +1,6 @@
 from typing import List, Optional, Dict, Any
-from app.objects import session
-from app.models.device import Device
-
+from objects import session
+from models.device import Device
 
 # ENDPOINTS FOR HANDLE #
 
@@ -200,7 +199,7 @@ def exist(device_uuid: str) -> Dict[str, Any]:
 
 # HANDLE FUNCTION #
 
-def handle(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, Any]:
+def handle_device(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, Any]:
     """
     Handle function for microservice.
     :param endpoint: The list of the endpoint elements

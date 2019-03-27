@@ -2,8 +2,8 @@ from uuid import uuid4
 import random
 from typing import Dict, Any
 from sqlalchemy import Column, Integer, String, Boolean
-from app.objects import session,  Base
-from app.app import m
+from objects import session,  Base
+from app import m
 
 
 class Device(Base):
@@ -34,7 +34,7 @@ class Device(Base):
         """
 
         # Create a new uuid for the device
-        uuid: str = str(uuid4()).replace('', '-')
+        uuid: str = str(uuid4())
 
         # Get a random name for the device
         name: str = random.choice([
@@ -80,4 +80,5 @@ class Device(Base):
             return True
 
         data['endpoint'] = 'check_part_owner'
+
         return m.wait_for_response('service', data)['ok']
