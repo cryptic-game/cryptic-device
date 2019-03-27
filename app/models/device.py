@@ -1,37 +1,43 @@
-from objects import db
-from config import config
-from requests import post
 from uuid import uuid4
 import random
+from typing import Dict, Any
+from sqlalchemy import Column, Integer, String, Boolean
+from app.objects import session,  Base
+from app.app import m
 
 
-class DeviceModel(db.Model):
-    __tablename__: str = "device"
+class Device(Base):
+    """
+    This is the device-model for cryptic-device.
+    """
+    __tablename__: str = 'device'
 
-    uuid: db.Column = db.Column(db.String(32), primary_key=True, unique=True)
-    name: db.Column = db.Column(db.String(255), nullable=False)
-    owner: db.Column = db.Column(db.String(32), nullable=False)
-    power: db.Column = db.Column(db.Integer, nullable=False)
-    powered_on: db.Column = db.Column(db.Boolean, nullable=False, default=False)
+    uuid: Column = Column(String(32), primary_key=True, unique=True)
+    name: Column = Column(String(255), nullable=False)
+    owner: Column = Column(String(32), nullable=False)
+    power: Column = Column(Integer, nullable=False)
+    powered_on: Column = Column(Boolean, nullable=False, default=False)
 
     @property
-    def serialize(self):
-        _ = self.uuid
+    def serialize(self) -> Dict[str, Any]:
+        _: str = self.uuid
         return self.__dict__
 
     @staticmethod
-    def create(user: str, power: int, powered_on: bool) -> 'DeviceModel':
+    def create(user: str, power: int, powered_on: bool) -> 'Device':
         """
         Creates a new device.
-
         :param user: The owner's uuid
         :param power: The "processing power"
         :param powered_on: Is powered on?
-        :return: New DeviceModel
+        :return: New Device
         """
 
-        uuid = str(uuid4()).replace("-", "")
-        name = random.choice([
+        # Create a new uuid for the device
+        uuid: str = str(uuid4()).replace('', '-')
+
+        # Get a random name for the device
+        name: str = random.choice([
             "asterix",
             "obelix",
             "dogmatix",
@@ -50,7 +56,8 @@ class DeviceModel(db.Model):
             "titan",
         ])
 
-        device = DeviceModel(
+        # Return a new device
+        device: Device = Device(
             uuid=uuid,
             name=name,
             owner=user,
@@ -58,24 +65,19 @@ class DeviceModel(db.Model):
             powered_on=powered_on
         )
 
-        db.session.add(device)
-        db.session.commit()
+        session.add(device)
+        session.commit()
 
         return device
 
-    def check_access(self, session) -> bool:
+    def check_access(self, data: Dict[str, Any]) -> bool:
         """
-        Checks if user can access this device.
-
-        :param user: The accessing user
+        Check if the uuid has access to this device
+        :param data: The given data
         :return: The permission
         """
-
-        if self.owner == session["owner"]:
+        if data['user_uuid'] == self.owner:
             return True
 
-        access: dict = post(config["SERVICE_API"] + "service/private/" + self.uuid, headers={
-                "Token": session["token"]
-            }).json()
-
-        return access["ok"]
+        data['endpoint'] = 'check_part_owner'
+        return m.wait_for_response('service', data)['ok']

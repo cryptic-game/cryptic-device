@@ -1,16 +1,8 @@
-from flask_sqlalchemy import SQLAlchemy
-from flask_restplus import Api
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
-db: SQLAlchemy = SQLAlchemy()
-api: Api = Api(
-    version='1.0',
-    title="cryptic-device",
-    description="user application programming interface of cryptic-game",
-    authorizations={
-        "token": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "Token"
-        }
-    }
-)
+engine = create_engine('sqlite:///device.db')
+Session = sessionmaker(bind=engine)
+Base = declarative_base()
+session: Session = Session()

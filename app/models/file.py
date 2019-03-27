@@ -1,44 +1,47 @@
-from objects import db
 from uuid import uuid4
+from sqlalchemy import Column, String
+from app.objects import session, Base
 
 CONTENT_LENGTH = 255
 
 
-class FileModel(db.Model):
-    __tablename__: str = "file"
+class File(Base):
+    """
+    This is the file-model for cryptic-device.
+    """
+    __tablename__: str = 'file'
 
-    uuid: db.Column = db.Column(db.String(32), primary_key=True, unique=True)
-    device: db.Column = db.Column(db.String(32), nullable=False)
-    filename: db.Column = db.Column(db.String(255), nullable=False)
-    content: db.Column = db.Column(db.String(CONTENT_LENGTH), nullable=False)
+    uuid: Column = Column(String(32), primary_key=True, unique=True)
+    device: Column = Column(String(32), nullable=False)
+    filename: Column = Column(String(255), nullable=False)
+    content: Column = Column(String(CONTENT_LENGTH), nullable=False)
 
     @property
-    def serialize(self):
+    def serialize(self) -> dict:
         _ = self.uuid
         return self.__dict__
 
     @staticmethod
-    def create(device: str, filename: str, content: str) -> 'FileModel':
+    def create(device: str, filename: str, content: str) -> 'File':
         """
-        Creates a new device.
-
+        Creates a new file
         :param device: The device's uuid
         :param filename: The name of the new file
         :param content: The content of the new file
-        :return: New FileModel
+        :return: New File
         """
 
         uuid = str(uuid4()).replace("-", "")
 
-        file = FileModel(
+        # Return a new file
+        file: File = File(
             uuid=uuid,
             device=device,
             filename=filename,
-            content=content,
+            content=content
         )
 
-        db.session.add(file)
-        db.session.commit()
+        session.add(file)
+        session.commit()
 
         return file
-
