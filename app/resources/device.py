@@ -83,7 +83,7 @@ def create(user_uuid: str) -> Dict[str, Any]:
     :param user_uuid: The given user uuid
     :return: The response
     """
-    device_count = session.query(Device).filter(Device.owner == user_uuid).first()
+    device_count = Device.query.filter_by(owner=user_uuid).first()
 
     if device_count:
         return {
