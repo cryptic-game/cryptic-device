@@ -106,7 +106,7 @@ def update(data: Dict[str, Any]) -> Dict[str, Any]:
             'error': 'invalid file uuid'
         }
 
-    file_count: int = session.query(File).filter_by(device=device.uuid).filter_by(filename=filename).first()[0]
+    file_count: int = len(session.query(File).filter_by(device=device.uuid).filter_by(filename=filename).all())
 
     if file.filename != filename and file_count > 0:
         return {
@@ -197,9 +197,9 @@ def create(data: Dict[str, Any]) -> Dict[str, Any]:
             'error': 'no content given'
         }
 
-    file_count: int = session.query(File).filter_by(device=device.uuid).filter_by(filename=filename).first()[0]
+    file_count: int = len(session.query(File).filter_by(device=device.uuid).filter_by(filename=filename).all())
 
-    if file_count != 0:
+    if file_count > 0:
         return {
             'ok': False,
             'error': 'filename already taken'

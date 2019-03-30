@@ -11,7 +11,7 @@ def public_info(device_uuid: str) -> Dict[str, Any]:
     :param device_uuid: The uuid of the device
     :return: The response
     """
-    device: Optional[Device] = Device.query.filter_by(uuid=device_uuid).first()
+    device: Optional[Device] = session.query(Device).filter_by(uuid=device_uuid).first()
 
     if device is None:
         return {
@@ -28,7 +28,7 @@ def private_info(data: Dict[str, Any]) -> Dict[str, Any]:
     :param data: The given data
     :return: The response
     """
-    device: Optional[Device] = Device.query.filter_by(uuid=data['device_uuid']).first()
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
         return {
@@ -51,7 +51,7 @@ def ping(device_uuid: str) -> Dict[str, Any]:
     :param device_uuid: The given device uuid
     :return: The response
     """
-    device: Optional[Device] = Device.query.filter_by(uuid=device_uuid).first()
+    device: Optional[Device] = session.query(Device).filter_by(uuid=device_uuid).first()
 
     if device is None:
         return {
@@ -70,7 +70,7 @@ def get_all(user_uuid: str) -> Dict[str, Any]:
     :param user_uuid: The given user uuid
     :return: The response
     """
-    devices: List[Device] = Device.query.filter_by(owner=user_uuid).all()
+    devices: List[Device] = session.query(Device).filter_by(owner=user_uuid).all()
 
     return {
         "devices": [d.serialize for d in devices]
