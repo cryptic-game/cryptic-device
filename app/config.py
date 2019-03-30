@@ -1,7 +1,7 @@
 import os
-from typing import Union, Tuple
+from typing import Union, Tuple, List, Any
 
-to_load: Union[str, Tuple[str, bool]] = [
+to_load: List[Union[str, Tuple[str, Any]]] = [
     ("STORAGE_LOCATION", "data/"),
 ]
 

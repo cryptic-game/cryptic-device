@@ -1,9 +1,9 @@
 from typing import List, Optional, Dict, Any
 from objects import session
 from models.device import Device
-from sqlalchemy import func
 
 # ENDPOINTS FOR HANDLE #
+
 
 def public_info(device_uuid: str) -> Dict[str, Any]:
     """
@@ -218,7 +218,7 @@ def handle_device(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[
         /<string:uuid>    # The device's uuid
             /info         # Get private information about the device -> device.serialize
             /power        # Turn the device on/off
-            /name          # Change the name of the device
+            /name         # Change the name of the device
             /remove       # Delete a device
         /all              # Get a list of all devices
         /create           # Create a device
