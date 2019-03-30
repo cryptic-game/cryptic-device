@@ -1,6 +1,7 @@
 from typing import List, Optional, Dict, Any
 from objects import session
 from models.device import Device
+from sqlalchemy import func
 
 # ENDPOINTS FOR HANDLE #
 
@@ -82,9 +83,9 @@ def create(user_uuid: str) -> Dict[str, Any]:
     :param user_uuid: The given user uuid
     :return: The response
     """
-    device_count: int = session.query(Device).filter(Device.owner == user_uuid).first()[0]
+    device_count = session.query(Device).filter(Device.owner == user_uuid).first()
 
-    if device_count != 0:
+    if device_count:
         return {
             'ok': False,
             'error': 'you already own a device'

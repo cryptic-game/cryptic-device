@@ -13,9 +13,9 @@ def handle(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, An
     :return: The response
     """
     if endpoint[0] == 'device':
-        handle_device(endpoint[1:], data, user)
+        return handle_device(endpoint[1:], data, user)
     elif endpoint[0] == 'file':
-        file_handle(endpoint[1:], data, user)
+        return file_handle(endpoint[1:], data, user)
     else:
         return {
             'ok': False,
@@ -46,8 +46,8 @@ def handle_microservice_requests(data: Dict[str, Any]) -> Dict[str, Any]:
 
 m: MicroService = MicroService('device', handle, handle_microservice_requests)
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     from resources.device import handle_device, exist
     from resources.file import file_handle
 
