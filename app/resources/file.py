@@ -220,7 +220,7 @@ def create(data: Dict[str, Any]) -> Dict[str, Any]:
 
 # HANDLE FUNCTION #
 
-def file_handle(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, Any]:
+def handle_file(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, Any]:
     """
     Handle function for microservice.
     :param endpoint: The list of the endpoint elements
