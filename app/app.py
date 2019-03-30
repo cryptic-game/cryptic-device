@@ -3,7 +3,6 @@ from typing import Any, Dict, List
 from objects import Base, engine
 
 
-
 def handle(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, Any]:
     """
     The main handle function.
@@ -13,7 +12,9 @@ def handle(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, An
     :return: The response
     """
     if endpoint[0] == 'device':
-        return handle_device(endpoint[1:], data, user)
+        d = handle_device(endpoint[1:], data, user)
+        print(d)
+        return d
     elif endpoint[0] == 'file':
         return handle_file(endpoint[1:], data, user)
     else:

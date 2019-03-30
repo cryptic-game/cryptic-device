@@ -19,7 +19,11 @@ class File(Base):
     @property
     def serialize(self) -> dict:
         _ = self.uuid
-        return self.__dict__
+        d = self.__dict__
+
+        del d['_sa_instance_state']
+
+        return d
 
     @staticmethod
     def create(device: str, filename: str, content: str) -> 'File':

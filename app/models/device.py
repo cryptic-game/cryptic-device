@@ -21,7 +21,11 @@ class Device(Base):
     @property
     def serialize(self) -> Dict[str, Any]:
         _: str = self.uuid
-        return self.__dict__
+        d = self.__dict__
+
+        del d['_sa_instance_state']
+
+        return d
 
     @staticmethod
     def create(user: str, power: int, powered_on: bool) -> 'Device':
