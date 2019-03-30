@@ -31,7 +31,7 @@ class File(Base):
         :return: New File
         """
 
-        uuid = str(uuid4()).replace("-", "")
+        uuid = str(uuid4())
 
         # Return a new file
         file: File = File(

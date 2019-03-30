@@ -13,7 +13,7 @@ def get_all(data: Dict[str, Any]) -> Dict[str, Any]:
     :param data: The given data
     :return: The response
     """
-    device: Optional[Device] = Device.query.filter_by(uuid=data['device_uuid']).first()
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
         return {
@@ -28,7 +28,7 @@ def get_all(data: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     return {
-        'files': File.query.filter_by(device=device.uuid).first()
+        'files': session.query(File).filter_by(device=device.uuid).first()
     }
 
 
@@ -38,7 +38,7 @@ def info(data: Dict[str, Any]) -> Dict[str, Any]:
     :param data: The given data
     :return: The response
     """
-    device: Optional[Device] = Device.query.filter_by(uuid=data['device_uuid']).first()
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
         return {
@@ -52,7 +52,7 @@ def info(data: Dict[str, Any]) -> Dict[str, Any]:
             'error': 'no access to the file in this device'
         }
 
-    file: Optional[File] = File.query.filter_by(uuid=data['file_uuid']).first()
+    file: Optional[File] = session.query(File).filter_by(uuid=data['file_uuid']).first()
 
     if file is None:
         return {
@@ -69,7 +69,7 @@ def update(data: Dict[str, Any]) -> Dict[str, Any]:
     :param data: The given data
     :return: The response
     """
-    device: Optional[Device] = Device.query.filter_by(uuid=data['device_uuid']).first()
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
         return {
@@ -98,7 +98,7 @@ def update(data: Dict[str, Any]) -> Dict[str, Any]:
             'error': 'no content given'
         }
 
-    file: Optional[File] = File.query.filter_by(uuid=data['device_uuid']).first()
+    file: Optional[File] = session.query(File).filter_by(uuid=data['device_uuid']).first()
 
     if file is None:
         return {
@@ -106,7 +106,7 @@ def update(data: Dict[str, Any]) -> Dict[str, Any]:
             'error': 'invalid file uuid'
         }
 
-    file_count: int = File.query.filter_by(device=device.uuid).filter_by(filename=filename).first()[0]
+    file_count: int = session.query(File).filter_by(device=device.uuid).filter_by(filename=filename).first()[0]
 
     if file.filename != filename and file_count > 0:
         return {
@@ -134,7 +134,7 @@ def delete(data: Dict[str, Any]) -> Dict[str, Any]:
     :param data: The given data
     :return: The response
     """
-    device: Optional[Device] = Device.query.filter_by(uuid=data['device_uuid']).first()
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
         return {
@@ -148,7 +148,7 @@ def delete(data: Dict[str, Any]) -> Dict[str, Any]:
             'error': 'no access to the file in this device'
         }
 
-    file: Optional[File] = File.query.filter_by(uuid=data['file_uuid']).first()
+    file: Optional[File] = session.query(File).filter_by(uuid=data['file_uuid']).first()
 
     if file is None:
         return {
@@ -168,7 +168,7 @@ def create(data: Dict[str, Any]) -> Dict[str, Any]:
     :param data: The given data
     :return: The response
     """
-    device: Optional[Device] = Device.query.filter_by(uuid=data['device_uuid']).first()
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
         return {
@@ -197,7 +197,7 @@ def create(data: Dict[str, Any]) -> Dict[str, Any]:
             'error': 'no content given'
         }
 
-    file_count: int = File.query.filter_by(device=device.uuid).filter_by(filename=filename).first()[0]
+    file_count: int = session.query(File).filter_by(device=device.uuid).filter_by(filename=filename).first()[0]
 
     if file_count != 0:
         return {

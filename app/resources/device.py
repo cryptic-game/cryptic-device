@@ -83,7 +83,7 @@ def create(user_uuid: str) -> Dict[str, Any]:
     :param user_uuid: The given user uuid
     :return: The response
     """
-    device_count = Device.query.filter_by(owner=user_uuid).first()
+    device_count = session.query(Device).filter_by(owner=user_uuid).first()
 
     if device_count:
         return {
@@ -102,7 +102,7 @@ def power(data: Dict[str, Any]) -> Dict[str, Any]:
     :param data: The given data
     :return: The response
     """
-    device: Device = Device.query.filter_by(uuid=data['device_uuid']).first()
+    device: Device = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
         return {
@@ -128,7 +128,7 @@ def change_name(data: Dict[str, Any]) -> Dict[str, Any]:
     :param data: The given data
     :return: The response
     """
-    device: Optional[Device] = Device.query.filter_by(uuid=data['device_uuid']).first()
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
         return {
@@ -163,7 +163,7 @@ def delete(data: Dict[str, Any]) -> Dict[str, Any]:
     :param data: The given data
     :return: The response
     """
-    device: Device = Device.query.filter_by(uuid=data['device_uuid']).first()
+    device: Device = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
         return {
@@ -191,7 +191,7 @@ def exist(device_uuid: str) -> Dict[str, Any]:
     :param device_uuid: The device uuid
     :return: True or False
     """
-    device: Optional[Device] = Device.query.filter_by(uuid=device_uuid).first()
+    device: Optional[Device] = session.query(Device).filter_by(uuid=device_uuid).first()
 
     return {
         'exists': device is not None
