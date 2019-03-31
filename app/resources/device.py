@@ -200,12 +200,11 @@ def exist(device_uuid: str) -> Dict[str, Any]:
 
 # HANDLE FUNCTION #
 
-def handle_device(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, Any]:
+def handle_device(endpoint: List[str], data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle function for microservice.
     :param endpoint: The list of the endpoint elements
     :param data: The data given for this function
-    :param user: The user's uuid
     :return: The response
 
     Endpoints:
@@ -229,8 +228,6 @@ def handle_device(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[
     device_uuid: Optional[str}      # The device-uuid -> endpoint[1]
     user_uuid: str                  # The user's uuid -> :param: user
     """
-    data['user_uuid']: str = user
-
     if endpoint[0] == 'public':
         data['device_uuid']: str = endpoint[1]
 
@@ -242,10 +239,10 @@ def handle_device(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[
 
     elif endpoint[0] == 'private':
         if endpoint[1] == 'all':  # Get all devices
-            return get_all(user)
+            return get_all(data['user_uuid'])
 
         elif endpoint[1] == 'create':  # Create a device
-            return create(user)
+            return create(data['user_uuid'])
 
         else:
             data['device_uuid']: str = endpoint[1]

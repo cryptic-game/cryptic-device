@@ -218,12 +218,11 @@ def create(data: Dict[str, Any]) -> Dict[str, Any]:
 
 # HANDLE FUNCTION #
 
-def handle_file(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, Any]:
+def handle_file(endpoint: List[str], data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle function for microservice.
     :param endpoint: The list of the endpoint elements
     :param data: The data given for this function
-    :param user: The user's uuid
     :return: The response
 
     Endpoints:
@@ -244,7 +243,6 @@ def handle_file(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[st
     file_uuid: Optional[str]    # The file-uuid -> endpoint[1]
     user_uuid: str              # The user-uuid -> :param: user
     """
-    data['user_uuid']: str = user
     data['device_uuid']: str = endpoint[0]
 
     if len(endpoint) == 3:

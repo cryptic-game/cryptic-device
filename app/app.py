@@ -11,12 +11,11 @@ def handle(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[str, An
     :param user: The given user
     :return: The response
     """
+    data['user_uuid'] = user
     if endpoint[0] == 'device':
-        d = handle_device(endpoint[1:], data, user)
-        print(d)
-        return d
+        return handle_device(endpoint[1:], data)
     elif endpoint[0] == 'file':
-        return handle_file(endpoint[1:], data, user)
+        return handle_file(endpoint[1:], data)
     else:
         return {
             'ok': False,
