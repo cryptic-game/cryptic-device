@@ -58,6 +58,7 @@ class Device(Base):
             "puck",
             "proteus",
             "titan",
+            "sunti"  # easter egg :D
         ])
 
         # Return a new device
