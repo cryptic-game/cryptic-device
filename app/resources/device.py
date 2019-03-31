@@ -227,7 +227,7 @@ def handle_device(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[
 
     name                            # For /private/<string:uuid>/put to change the device's name
     device_uuid: Optional[str}      # The device-uuid -> endpoint[1]
-    user_uuid: str                  # The user's uuid
+    user_uuid: str                  # The user's uuid -> :param: user
     """
     data['user_uuid']: str = user
 

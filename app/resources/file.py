@@ -232,9 +232,9 @@ def handle_file(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[st
         /<string:uuid>      # Endpoint that requires uuid
             /info           # Get information about a file
             /update         # Update a file
-            /delete         # Delete a file
+            /remove         # Delete a file
         /all                # Get all files of a device
-        /remove             # Create a new file
+        /create             # Create a new file
 
     Data:
 
@@ -242,6 +242,7 @@ def handle_file(endpoint: List[str], data: Dict[str, Any], user: str) -> Dict[st
     content: str                # The content for creating and updating a file
     device_uuid: str            # The device-uuid -> endpoint[0]
     file_uuid: Optional[str]    # The file-uuid -> endpoint[1]
+    user_uuid: str              # The user-uuid -> :param: user
     """
     data['user_uuid']: str = user
     data['device_uuid']: str = endpoint[0]
