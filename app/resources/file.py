@@ -98,7 +98,7 @@ def update(data: Dict[str, Any]) -> Dict[str, Any]:
             'error': 'no content given'
         }
 
-    file: Optional[File] = session.query(File).filter_by(uuid=data['device_uuid']).first()
+    file: Optional[File] = session.query(File).filter_by(uuid=data['file_uuid']).first()
 
     if file is None:
         return {
