@@ -28,7 +28,7 @@ def get_all(data: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     return {
-        'files': session.query(File).filter_by(device=device.uuid).first()
+        'files': [f.serialize for f in session.query(File).filter_by(device=device.uuid).all()]
     }
 
 
