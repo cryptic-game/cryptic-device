@@ -7,7 +7,7 @@ name = "pypi"
 SQLAlchemy = "*"
 PyMySQL = "*"
 gunicorn = "*"
-microservicecryp = "*"
+cryptic-game = "*"
 
 [dev-packages]
 

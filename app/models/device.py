@@ -2,7 +2,7 @@ from uuid import uuid4
 import random
 from typing import Dict, Any
 from sqlalchemy import Column, Integer, String, Boolean
-from objects import session,  Base
+from objects import session, Base
 from app import m
 
 
@@ -75,15 +75,13 @@ class Device(Base):
 
         return device
 
-    def check_access(self, data: Dict[str, Any]) -> bool:
+    def check_access(self, user: str) -> bool:
         """
         Check if the uuid has access to this device
-        :param data: The given data
+        :param user:
         :return: The permission
         """
-        if data['user_uuid'] == self.owner:
+        if user == self.owner:
             return True
 
-        data['endpoint'] = 'check_part_owner'
-
-        return m.wait_for_response('service', data)['ok']
+        return m.contact_microservice("service", "exist", {"user_uuid": user})["ok"]

@@ -3,54 +3,47 @@ from models.file import File
 from objects import session
 from models.device import Device
 from models.file import CONTENT_LENGTH
+from app import m
 
 
 # ENDPOINTS FOR HANDLE #
 
-def get_all(data: Dict[str, Any]) -> Dict[str, Any]:
+@m.user_endpoint(path=["file", "all"])
+def get_all(data: dict, user: str) -> dict:
     """
     Get all files of a device.
+    :param user:
     :param data: The given data
     :return: The response
     """
     device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return {
-            'ok': False,
-            'error': 'invalid device uuid'
-        }
+        return {'ok': False, 'error': 'invalid device uuid'}
 
-    if not device.check_access(data):
-        return {
-            'ok': False,
-            'error': 'no access to the file in this device'
-        }
+    if not device.check_access(user):
+        return {'ok': False, 'error': 'no access to the file in this device'}
 
     return {
         'files': [f.serialize for f in session.query(File).filter_by(device=device.uuid).all()]
     }
 
 
-def info(data: Dict[str, Any]) -> Dict[str, Any]:
+@m.user_endpoint(path=["file", "info"])
+def info(data: dict, user: str) -> dict:
     """
     Get information about a file
+    :param user:
     :param data: The given data
     :return: The response
     """
     device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return {
-            'ok': False,
-            'error': 'invalid device uuid'
-        }
+        return {'ok': False, 'error': 'invalid device uuid'}
 
-    if not device.check_access(data):
-        return {
-            'ok': False,
-            'error': 'no access to the file in this device'
-        }
+    if not device.check_access(user):
+        return {'ok': False, 'error': 'no access to the file in this device'}
 
     file: Optional[File] = session.query(File).filter_by(uuid=data['file_uuid']).first()
 
@@ -63,9 +56,11 @@ def info(data: Dict[str, Any]) -> Dict[str, Any]:
     return file.serialize
 
 
-def update(data: Dict[str, Any]) -> Dict[str, Any]:
+@m.user_endpoint(path=["file", "update"])
+def update(data: dict, user: str) -> dict:
     """
     Update a file.
+    :param user:
     :param data: The given data
     :return: The response
     """
@@ -77,26 +72,13 @@ def update(data: Dict[str, Any]) -> Dict[str, Any]:
             'error': 'invalid device uuid'
         }
 
-    if not device.check_access(data):
-        return {
-            'ok': False,
-            'error': 'no access to the file in this device'
-        }
+    if not device.check_access(user):
+        return {'ok': False, 'error': 'no access to the file in this device'}
 
-    try:
-        filename: str = data['filename']
-    except KeyError:
-        return {
-            'ok': False,
-            'error': 'no filename given'
-        }
-    try:
-        content: str = data['content']
-    except KeyError:
-        return {
-            'ok': False,
-            'error': 'no content given'
-        }
+    if "filename" not in data:
+        return {'ok': False, 'error': 'no filename given'}
+    if "content" not in data:
+        return {'ok': False, 'error': 'no content given'}
 
     file: Optional[File] = session.query(File).filter_by(uuid=data['file_uuid']).first()
 
@@ -106,31 +88,30 @@ def update(data: Dict[str, Any]) -> Dict[str, Any]:
             'error': 'invalid file uuid'
         }
 
-    file_count: int = len(session.query(File).filter_by(device=device.uuid).filter_by(filename=filename).all())
+    file_count: int = len(session.query(File).filter_by(device=device.uuid).filter_by(filename=data["filename"]).all())
 
-    if file.filename != filename and file_count > 0:
-        return {
-            'ok': False,
-            'error': 'filename already taken'
-        }
+    if file.filename != data["filename"] and file_count > 0:
+        return {'ok': False, 'error': 'no file with this name exist'}
 
-    if len(content) > CONTENT_LENGTH:
+    if len(data["content"]) > CONTENT_LENGTH:
         return {
             'ok': False,
             'error': 'content is too big'
         }
 
-    file.filename: str = filename
-    file.content: str = content
+    file.filename: str = data["filename"]
+    file.content: str = data["content"]
 
     session.commit()
 
     return file.serialize
 
 
-def delete(data: Dict[str, Any]) -> Dict[str, Any]:
+@m.user_endpoint(path=["file", "delete"])
+def delete(data: dict, user: str) -> dict:
     """
     Delete a file.
+    :param user:
     :param data: The given data
     :return: The response
     """
@@ -142,7 +123,7 @@ def delete(data: Dict[str, Any]) -> Dict[str, Any]:
             'error': 'invalid device uuid'
         }
 
-    if not device.check_access(data):
+    if not device.check_access(user):
         return {
             'ok': False,
             'error': 'no access to the file in this device'
@@ -162,9 +143,11 @@ def delete(data: Dict[str, Any]) -> Dict[str, Any]:
     return {'ok': True}
 
 
-def create(data: Dict[str, Any]) -> Dict[str, Any]:
+@m.user_endpoint(path=["file", "create"])
+def create(data: dict, user: str) -> dict:
     """
     Create a new file.
+    :param user:
     :param data: The given data
     :return: The response
     """
@@ -176,7 +159,7 @@ def create(data: Dict[str, Any]) -> Dict[str, Any]:
             'error': 'invalid device uuid'
         }
 
-    if not device.check_access(data):
+    if not device.check_access(user):
         return {
             'ok': False,
             'error': 'no access to the file in this device'
@@ -214,56 +197,3 @@ def create(data: Dict[str, Any]) -> Dict[str, Any]:
     file: Optional[File] = File.create(device.uuid, filename, content)
 
     return file.serialize
-
-
-# HANDLE FUNCTION #
-
-def handle_file(endpoint: List[str], data: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Handle function for microservice.
-    :param endpoint: The list of the endpoint elements
-    :param data: The data given for this function
-    :return: The response
-
-    Endpoints:
-
-    /<string:device>        # Endpoint that doesn't require a file uuid
-        /<string:uuid>      # Endpoint that requires uuid
-            /info           # Get information about a file
-            /update         # Update a file
-            /remove         # Delete a file
-        /all                # Get all files of a device
-        /create             # Create a new file
-
-    Data:
-
-    filename: str               # The filename for creating and updating a file
-    content: str                # The content for creating and updating a file
-    device_uuid: str            # The device-uuid -> endpoint[0]
-    file_uuid: Optional[str]    # The file-uuid -> endpoint[1]
-    user_uuid: str              # The user-uuid -> :param: user
-    """
-    data['device_uuid']: str = endpoint[0]
-
-    if len(endpoint) == 3:
-        data['file_uuid']: str = endpoint[1]
-        if endpoint[2] == 'info':  # Get information about a file
-            return info(data)
-
-        elif endpoint[2] == 'update':  # Update a file
-            return update(data)
-
-        elif endpoint[2] == 'remove':  # Delete a file
-            return delete(data)
-
-    elif len(endpoint) == 2:
-        if endpoint[1] == 'all':  # Get all files of a device
-            return get_all(data)
-
-        elif endpoint[1] == 'create':  # Create a new file
-            return create(data)
-
-    return {
-        'ok': False,
-        'error': 'endpoint not supported'
-    }
