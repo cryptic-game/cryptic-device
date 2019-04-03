@@ -1,198 +1,189 @@
-from flask_restplus import Namespace, Resource, fields, abort
-from basics import ErrorSchema, require_session, SuccessSchema
-from objects import api
-from flask import request
-from typing import Optional, List
-from models.device import DeviceModel
-from objects import db
-from sqlalchemy import func
+from typing import List, Optional
 
-PublicDeviceResponseSchema = api.model("Public Device Response", {
-    "uuid": fields.String(example="12abc34d5efg67hi89j1klm2nop3pqrs",
-                          description="the uuid/address"),
-    "name": fields.String(example="asterix",
-                          description="the name/alias"),
-    "owner": fields.String(example="12abc34d5efg67hi89j1klm2nop3pqrs",
-                           description="the owner's uuid/address"),
-    "power": fields.Integer(example=3,
-                            description="the device's power"),
-    "powered_on": fields.Boolean(example=True,
-                                 description="the device's power state")
-})
-
-PublicDevicePingResponseSchema = api.model("Public Device Ping Response", {
-    "online": fields.Boolean(example=True,
-                             description="the device's online status")
-})
-
-PrivateDeviceChangeNameRequestSchema = api.model("Private Change Name Device Request", {
-    "name": fields.String(required=True,
-                          example="obelix",
-                          description="the new name of the devices")
-})
-
-PrivateDeviceResponseSchema = api.model("Private Device Response", {
-    "uuid": fields.String(example="12abc34d5efg67hi89j1klm2nop3pqrs",
-                          description="the uuid/address"),
-    "name": fields.String(example="asterix",
-                          description="the name/alias"),
-    "owner": fields.String(example="12abc34d5efg67hi89j1klm2nop3pqrs",
-                           description="the owner's uuid/address"),
-    "power": fields.Integer(example=3,
-                            description="the device's power"),
-    "powered_on": fields.Boolean(example=True,
-                                 description="the device's power state")
-})
-
-PrivateDevicesResponseSchema = api.model("Private Devices Response", {
-    "devices": fields.List(fields.Nested(PrivateDeviceResponseSchema),
-                           example="[{}, {}]",
-                           description="a list of devices")
-})
-
-device_api = Namespace('device')
+from app import m
+from models.device import Device
+from objects import session
 
 
-@device_api.route('/public/<string:uuid>')
-@device_api.doc("Public Device Application Programming Interface")
-class PublicDeviceAPI(Resource):
+@m.user_endpoint(path=["device", "info"])
+def info(data: dict, user: str) -> dict:
+    """
+    Get public information about a device.
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: The response
+    """
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
-    @device_api.doc("Get public information about a device")
-    @device_api.marshal_with(PublicDeviceResponseSchema)
-    @device_api.response(404, "Not Found", ErrorSchema)
-    def get(self, uuid):
-        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
-
-        if device is None:
-            abort(404, "invalid device uuid")
-
-        return device.serialize
-
-    @device_api.doc("Ping a device")
-    @device_api.marshal_with(PublicDevicePingResponseSchema)
-    @device_api.response(404, "Not Found", ErrorSchema)
-    def post(self, uuid):
-        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
-
-        if device is None:
-            abort(404, "invalid device uuid")
-
+    if device is None:
         return {
-            "online": device.powered_on
+            'ok': False,
+            'error': 'invalid device uuid'
         }
 
-
-@device_api.route('/private/<string:uuid>')
-@device_api.doc("Private Device Application Programming Interface")
-class PrivateDeviceAPI(Resource):
-
-    @device_api.doc("Get private information about the device")
-    @device_api.marshal_with(PrivateDeviceResponseSchema)
-    @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(403, "No Access", ErrorSchema)
-    @device_api.response(404, "Not Found", ErrorSchema)
-    @require_session
-    def get(self, session, uuid):
-        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
-
-        if device is None:
-            abort(404, "invalid device uuid")
-
-        if not device.check_access(session):
-            abort(403, "no access to this device")
-
-        return device.serialize
-
-    @device_api.doc("Turn the device on/off")
-    @device_api.marshal_with(PrivateDeviceResponseSchema)
-    @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(403, "No Access", ErrorSchema)
-    @device_api.response(404, "Not Found", ErrorSchema)
-    @require_session
-    def post(self, session, uuid):
-        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
-
-        if device is None:
-            abort(404, "invalid device uuid")
-
-        if not device.check_access(session):
-            abort(403, "no access to this device")
-
-        device.powered_on: bool = not device.powered_on
-        db.session.commit()
-
-        return device.serialize
-
-    @device_api.doc("Change the name of the device")
-    @device_api.marshal_with(PrivateDeviceResponseSchema)
-    @device_api.expect(PrivateDeviceChangeNameRequestSchema, validate=True)
-    @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(403, "No Access", ErrorSchema)
-    @device_api.response(404, "Not Found", ErrorSchema)
-    @require_session
-    def put(self, session, uuid):
-        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
-
-        if device is None:
-            abort(404, "invalid device uuid")
-
-        if not device.check_access(session):
-            abort(403, "no access to this device")
-
-        device.name = request.json["name"]
-        db.session.commit()
-
-        return device.serialize
-
-    @device_api.doc("Delete a device")
-    @device_api.marshal_with(SuccessSchema)
-    @device_api.response(400, "Invalid Input", ErrorSchema)
-    @device_api.response(403, "No Access", ErrorSchema)
-    @device_api.response(404, "Not Found", ErrorSchema)
-    @require_session
-    def delete(self, session, uuid):
-        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=uuid).first()
-
-        if device is None:
-            abort(404, "invalid device uuid")
-
-        if not device.check_access(session):
-            abort(403, "no access to this device")
-
-        db.session.delete(device)
-        db.session.commit()
-
-        return {"ok": True}
+    return device.serialize
 
 
-@device_api.route('/private')
-@device_api.doc("Private Device Application Programming Interface for Modifications")
-class PrivateDeviceModificationAPI(Resource):
+@m.user_endpoint(path=["device", "ping"])
+def ping(data: dict, user: str) -> dict:
+    """
+    Ping a device.
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: The response
+    """
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
-    @device_api.doc("Get all devices")
-    @device_api.marshal_with(PrivateDevicesResponseSchema, as_list=True)
-    @device_api.response(400, "Invalid Input", ErrorSchema)
-    @require_session
-    def get(self, session):
-        devices: List[DeviceModel] = DeviceModel.query.filter_by(owner=session["owner"]).all()
-
+    if device is None:
         return {
-            "devices": [e.serialize for e in devices]
+            'ok': False,
+            'error': 'invalid device uuid'
         }
 
-    @device_api.doc("Create a device")
-    @device_api.marshal_with(PrivateDeviceResponseSchema)
-    @device_api.response(400, "Invalid Input", ErrorSchema)
-    @require_session
-    def put(self, session):
-        owner: str = session["owner"]
+    return {
+        "online": device.powered_on
+    }
 
-        device_count: int = \
-            (db.session.query(func.count(DeviceModel.uuid)).filter(DeviceModel.owner == owner)).first()[0]
 
-        if device_count != 0:
-            abort(400, "you already own a device")
+@m.user_endpoint(path=["device", "all"])
+def get_all(data: dict, user: str) -> dict:
+    """
+    Get all devices
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: The response
+    """
+    devices: List[Device] = session.query(Device).filter_by(owner=user).all()
 
-        device: DeviceModel = DeviceModel.create(owner, 1, True)
+    return {
+        "devices": [d.serialize for d in devices]
+    }
 
-        return device.serialize
+
+@m.user_endpoint(path=["device", "create"])
+def create(data: dict, user: str) -> dict:
+    """
+    Create a device.
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: The response
+    """
+    device_count = session.query(Device).filter_by(owner=user).first()
+
+    if device_count:
+        return {
+            'ok': False,
+            'error': 'you already own a device'
+        }
+
+    device: Device = Device.create(data["user_uuid"], 1, True)
+
+    return device.serialize
+
+
+@m.user_endpoint(path=["device", "power"])
+def power(data: dict, user: str) -> dict:
+    """
+    Turn a device on/off.
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: The response
+    """
+    device: Device = session.query(Device).filter_by(uuid=data['device_uuid']).first()
+
+    if device is None:
+        return {
+            'ok': False,
+            'error': 'invalid device uuid'
+        }
+
+    if not device.check_access(user):
+        return {
+            'ok': False,
+            'error': 'no access to this device'
+        }
+
+    device.powered_on: bool = not device.powered_on
+    session.commit()
+
+    return device.serialize
+
+
+@m.user_endpoint(path=["device", "change_name"])
+def change_name(data: dict, user: str) -> dict:
+    """
+    Change the name of the device.
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: The response
+    """
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
+
+    if device is None:
+        return {
+            'ok': False,
+            'error': 'invalid device uuid'
+        }
+
+    if not device.check_access(user):
+        return {
+            'ok': False,
+            'error': 'no access to this device'
+        }
+
+    try:
+        name: str = str(data['name'])
+    except KeyError:
+        return {
+            'ok': False,
+            'error': 'no name given'
+        }
+
+    device.name: str = name
+
+    session.commit()
+
+    return device.serialize
+
+
+@m.user_endpoint(path=["device", "delete"])
+def delete(data: dict, user: str) -> dict:
+    """
+    Delete a device.
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: Success or not
+    """
+    device: Device = session.query(Device).filter_by(uuid=data['device_uuid']).first()
+
+    if device is None:
+        return {
+            'ok': False,
+            'error': 'invalid device uuid'
+        }
+
+    if not device.check_access(user):
+        return {
+            'ok': False,
+            'error': 'no access to this device'
+        }
+
+    session.delete(device)
+    session.commit()
+
+    return {"ok": True}
+
+
+@m.microservice_endpoint(path=["exist"])
+def exist(data: dict, microservice: str) -> dict:
+    """
+    Does a device exist?
+    :param data: The given data.
+    :param microservice: The microservice..
+    :return: True or False
+    """
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+
+    return {
+        'exists': device is not None
+    }

@@ -1,199 +1,198 @@
-from flask_restplus import Namespace, Resource, fields, abort
-from basics import ErrorSchema, require_session, SuccessSchema
-from objects import api
-from flask import request
-from models.file import FileModel, CONTENT_LENGTH
-from models.device import DeviceModel
-from objects import db
-from sqlalchemy import func
 from typing import Optional
 
-FileResponseSchema = api.model("File Response", {
-    "uuid": fields.String(example="12abc34d5efg67hi89j1klm2nop3pqrs",
-                          description="the file's uuid/address"),
-    "device": fields.String(example="12abc34d5efg67hi89j1klm2nop3pqrs",
-                            description="the device's uuid owning this device"),
-    "filename": fields.String(example="foo.bar",
-                              description="the file's name"),
-    "content": fields.String(example="lorem ipsum dolor sit amet",
-                             description="the files's content")
-})
-
-FileUpdateRequestSchema = api.model("File Update Request", {
-    "filename": fields.String(required=True,
-                              example="foo.bar",
-                              description="the name of the file"),
-    "content": fields.String(required=True,
-                             example="lorem ipsum dolor sit amet",
-                             description="the content of the file")
-})
-
-FileCreateRequestSchema = api.model("File Create Request Schema", {
-    "filename": fields.String(required=True,
-                              example="foo.bar",
-                              description="the name of the file"),
-    "content": fields.String(required=True,
-                             example="lorem ipsum dolor sit amet",
-                             description="the content of the file")
-})
-
-FileGetAllResponseSchema = api.model("File Get All Response", {
-    "files": fields.List(fields.Nested(FileResponseSchema),
-                         example="[{}, {}]",
-                         description="a list of files")
-})
-
-file_api = Namespace('file')
+from app import m
+from models.device import Device
+from models.file import CONTENT_LENGTH
+from models.file import File
+from objects import session
 
 
-@file_api.route('/<string:device>')
-@file_api.doc("Private File Application Programming Interface")
-class FileAPI(Resource):
+@m.user_endpoint(path=["file", "all"])
+def get_all(data: dict, user: str) -> dict:
+    """
+    Get all files of a device.
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: The response
+    """
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
-    @file_api.doc("Get all files of a device")
-    @file_api.marshal_with(FileGetAllResponseSchema)
-    @file_api.response(400, "Invalid Input", ErrorSchema)
-    @file_api.response(403, "No Access", ErrorSchema)
-    @file_api.response(404, "Not Found", ErrorSchema)
-    @require_session
-    def get(self, session, device):
-        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=device).first()
+    if device is None:
+        return {'ok': False, 'error': 'invalid device uuid'}
 
-        if device is None:
-            abort(404, "unknown device")
+    if not device.check_access(user):
+        return {'ok': False, 'error': 'no access to the file in this device'}
 
-        if not device.check_access(session):
-            abort(403, "no access to this device")
+    return {
+        'files': [f.serialize for f in session.query(File).filter_by(device=device.uuid).all()]
+    }
 
+
+@m.user_endpoint(path=["file", "info"])
+def info(data: dict, user: str) -> dict:
+    """
+    Get information about a file
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: The response
+    """
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
+
+    if device is None:
+        return {'ok': False, 'error': 'invalid device uuid'}
+
+    if not device.check_access(user):
+        return {'ok': False, 'error': 'no access to the file in this device'}
+
+    file: Optional[File] = session.query(File).filter_by(uuid=data['file_uuid']).first()
+
+    if file is None:
         return {
-            "files": FileModel.query.filter_by(device=device.uuid).all()
+            'ok': False,
+            'error': 'invalid file uuid'
         }
 
-    @file_api.doc("Change name of device")
-    @file_api.marshal_with(FileResponseSchema)
-    @file_api.expect(FileCreateRequestSchema, validate=True)
-    @file_api.response(400, "Invalid Input", ErrorSchema)
-    @file_api.response(403, "No Access", ErrorSchema)
-    @file_api.response(404, "Not Found", ErrorSchema)
-    @require_session
-    def put(self, session, device):
-        filename: str = request.json["filename"]
-        content: str = request.json["content"]
-
-        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=device).first()
-
-        if device is None:
-            abort(404, "unknown device")
-
-        if not device.check_access(session):
-            abort(403, "no access to this device")
-
-        file_count: int = (db.session.query(func.count(FileModel.uuid)).filter(FileModel.device == device.uuid)
-                           .filter(FileModel.filename == filename)).first()[0]
-
-        if file_count > 0:
-            abort(400, "filename already taken")
-
-        if len(content) > CONTENT_LENGTH:
-            abort(400, "content is too big")
-
-        file: Optional[FileModel] = FileModel.create(device.uuid, filename, content)
-
-        db.session.add(file)
-        db.session.commit()
-
-        return file.serialize
+    return file.serialize
 
 
-@file_api.route('/<string:device>/<string:uuid>')
-@file_api.doc("Public File Application Programming Interface")
-class FileModificationAPI(Resource):
+@m.user_endpoint(path=["file", "update"])
+def update(data: dict, user: str) -> dict:
+    """
+    Update a file.
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: The response
+    """
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
-    @file_api.doc("Get information about a file")
-    @file_api.marshal_with(FileResponseSchema)
-    @file_api.response(400, "Invalid Input", ErrorSchema)
-    @file_api.response(403, "No Access", ErrorSchema)
-    @file_api.response(404, "Not Found", ErrorSchema)
-    @require_session
-    def get(self, session, device, uuid):
-        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=device).first()
-
-        if device is None:
-            abort(404, "unknown device")
-
-        if not device.check_access(session):
-            abort(403, "no access to this device")
-
-        file: Optional[FileModel] = FileModel.query.filter_by(uuid=uuid).first()
-
-        if file is None:
-            abort(404, "invalid file uuid")
-
-        return file.serialize
-
-    @file_api.doc("Update a file")
-    @file_api.marshal_with(FileResponseSchema)
-    @file_api.expect(FileUpdateRequestSchema, validate=True)
-    @file_api.response(400, "Invalid Input", ErrorSchema)
-    @file_api.response(403, "No Access", ErrorSchema)
-    @file_api.response(404, "Not Found", ErrorSchema)
-    @require_session
-    def post(self, session, device, uuid):
-        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=device).first()
-
-        if device is None:
-            abort(404, "unknown device")
-
-        if not device.check_access(session):
-            abort(403, "no access to this device")
-
-        filename: str = request.json["filename"]
-        content: str = request.json["content"]
-
-        file: Optional[FileModel] = FileModel.query.filter_by(uuid=uuid).first()
-
-        if file is None:
-            abort(404, "invalid file uuid")
-
-        file_count: int = (db.session.query(func.count(FileModel.uuid)).filter(FileModel.device == device.uuid)
-                           .filter(FileModel.filename == filename)).first()[0]
-
-        if file.filename != filename and file_count > 0:
-            abort(400, "filename already taken")
-
-        if len(content) > CONTENT_LENGTH:
-            abort(400, "content is too big")
-
-        file.filename = filename
-        file.content = content
-
-        db.session.commit()
-
-        return file.serialize
-
-    @file_api.doc("Delete a file")
-    @file_api.marshal_with(SuccessSchema)
-    @file_api.response(400, "Invalid Input", ErrorSchema)
-    @file_api.response(403, "No Access", ErrorSchema)
-    @file_api.response(404, "Not Found", ErrorSchema)
-    @require_session
-    def delete(self, session, device, uuid):
-        device: Optional[DeviceModel] = DeviceModel.query.filter_by(uuid=device).first()
-
-        if device is None:
-            abort(404, "unknown device")
-
-        if not device.check_access(session):
-            abort(403, "no access to this device")
-
-        file: Optional[FileModel] = FileModel.query.filter_by(uuid=uuid).first()
-
-        if file is None:
-            abort(404, "invalid file uuid")
-
-        db.session.delete(file)
-        db.session.commit()
-
+    if device is None:
         return {
-            "ok": True
+            'ok': False,
+            'error': 'invalid device uuid'
         }
+
+    if not device.check_access(user):
+        return {'ok': False, 'error': 'no access to the file in this device'}
+
+    if "filename" not in data:
+        return {'ok': False, 'error': 'no filename given'}
+    if "content" not in data:
+        return {'ok': False, 'error': 'no content given'}
+
+    file: Optional[File] = session.query(File).filter_by(uuid=data['file_uuid']).first()
+
+    if file is None:
+        return {
+            'ok': False,
+            'error': 'invalid file uuid'
+        }
+
+    file_count: int = len(session.query(File).filter_by(device=device.uuid).filter_by(filename=data["filename"]).all())
+
+    if file.filename != data["filename"] and file_count > 0:
+        return {'ok': False, 'error': 'no file with this name exist'}
+
+    if len(data["content"]) > CONTENT_LENGTH:
+        return {
+            'ok': False,
+            'error': 'content is too big'
+        }
+
+    file.filename: str = data["filename"]
+    file.content: str = data["content"]
+
+    session.commit()
+
+    return file.serialize
+
+
+@m.user_endpoint(path=["file", "delete"])
+def delete(data: dict, user: str) -> dict:
+    """
+    Delete a file.
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: The response
+    """
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
+
+    if device is None:
+        return {
+            'ok': False,
+            'error': 'invalid device uuid'
+        }
+
+    if not device.check_access(user):
+        return {
+            'ok': False,
+            'error': 'no access to the file in this device'
+        }
+
+    file: Optional[File] = session.query(File).filter_by(uuid=data['file_uuid']).first()
+
+    if file is None:
+        return {
+            'ok': False,
+            'error': 'invalid file uuid'
+        }
+
+    session.delete(file)
+    session.commit()
+
+    return {'ok': True}
+
+
+@m.user_endpoint(path=["file", "create"])
+def create(data: dict, user: str) -> dict:
+    """
+    Create a new file.
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: The response
+    """
+    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
+
+    if device is None:
+        return {
+            'ok': False,
+            'error': 'invalid device uuid'
+        }
+
+    if not device.check_access(user):
+        return {
+            'ok': False,
+            'error': 'no access to the file in this device'
+        }
+
+    try:
+        filename: str = data['filename']
+    except KeyError:
+        return {
+            'ok': False,
+            'error': 'no filename given'
+        }
+    try:
+        content: str = data['content']
+    except KeyError:
+        return {
+            'ok': False,
+            'error': 'no content given'
+        }
+
+    file_count: int = len(session.query(File).filter_by(device=device.uuid).filter_by(filename=filename).all())
+
+    if file_count > 0:
+        return {
+            'ok': False,
+            'error': 'filename already taken'
+        }
+
+    if len(content) > CONTENT_LENGTH:
+        return {
+            'ok': False,
+            'error': 'content is too big'
+        }
+
+    file: Optional[File] = File.create(device.uuid, filename, content)
+
+    return file.serialize

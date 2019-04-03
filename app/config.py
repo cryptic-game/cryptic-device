@@ -1,31 +1,8 @@
 import os
-from typing import Union, Tuple
+from typing import Union, Tuple, List, Any
 
-to_load: Union[str, Tuple[str, bool]] = [
-    # flask settings
-    ("CROSS_ORIGIN", True),
-    ("DEBUG", True),
-    ("FLASK_DEBUG", True),
-    ("FLASK_ENV", "development"),
-
-    # sqlalchemy
-    ("MYSQL_HOSTNAME", "localhost"),
-    ("MYSQL_PORT", 3306),
-    ("MYSQL_DATABASE", "cryptic"),
-    ("MYSQL_USERNAME", "cryptic"),
-    ("MYSQL_PASSWORD", "cryptic"),
-    ("SQLALCHEMY_TRACK_MODIFICATIONS", False),
-
-    # flask-restplus
-    ("SWAGGER_UI_JSONEDITOR", True),
-    ("RESTPLUS_MASK_SWAGGER", False),
-
-    # other apis
-    # default (online)
-    ("AUTH_API", "https://user.api.cryptic-game.net/"),
-    ("SERVICE_API", "https://service.api.cryptic-game.net/")
-    # default (local)
-    # ("AUTH_API", "http://localhost:1240/")
+to_load: List[Union[str, Tuple[str, Any]]] = [
+    ("STORAGE_LOCATION", "data/"),
 ]
 
 # the final configuration dict
@@ -40,8 +17,3 @@ for key in to_load:
             config[key[0]] = key[1]
     elif key in os.environ:
         config[key] = os.environ.get(key)
-
-# set sqlalchemy database connection uri
-config["SQLALCHEMY_DATABASE_URI"]: str = \
-    f"mysql+pymysql://{config['MYSQL_USERNAME']}:{config['MYSQL_PASSWORD']}@" \
-    f"{config['MYSQL_HOSTNAME']}:{config['MYSQL_PORT']}/{config['MYSQL_DATABASE']}"
