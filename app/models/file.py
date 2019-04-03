@@ -1,5 +1,8 @@
+from typing import Union
 from uuid import uuid4
+
 from sqlalchemy import Column, String
+
 from objects import session, Base
 
 CONTENT_LENGTH = 255
@@ -11,10 +14,10 @@ class File(Base):
     """
     __tablename__: str = 'file'
 
-    uuid: Column = Column(String(32), primary_key=True, unique=True)
-    device: Column = Column(String(32), nullable=False)
-    filename: Column = Column(String(255), nullable=False)
-    content: Column = Column(String(CONTENT_LENGTH), nullable=False)
+    uuid: Union[Column, str] = Column(String(32), primary_key=True, unique=True)
+    device: Union[Column, str] = Column(String(32), nullable=False)
+    filename: Union[Column, str] = Column(String(255), nullable=False)
+    content: Union[Column, str] = Column(String(CONTENT_LENGTH), nullable=False)
 
     @property
     def serialize(self) -> dict:

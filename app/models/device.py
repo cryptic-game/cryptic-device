@@ -1,9 +1,11 @@
-from uuid import uuid4
 import random
-from typing import Dict, Any
+from typing import Dict, Any, Union
+from uuid import uuid4
+
 from sqlalchemy import Column, Integer, String, Boolean
-from objects import session, Base
+
 from app import m
+from objects import session, Base
 
 
 class Device(Base):
@@ -12,11 +14,11 @@ class Device(Base):
     """
     __tablename__: str = 'device'
 
-    uuid: Column = Column(String(32), primary_key=True, unique=True)
-    name: Column = Column(String(255), nullable=False)
-    owner: Column = Column(String(32), nullable=False)
-    power: Column = Column(Integer, nullable=False)
-    powered_on: Column = Column(Boolean, nullable=False, default=False)
+    uuid: Union[Column, str] = Column(String(32), primary_key=True, unique=True)
+    name: Union[Column, str] = Column(String(255), nullable=False)
+    owner: Union[Column, str] = Column(String(32), nullable=False)
+    power: Union[Column, int] = Column(Integer, nullable=False)
+    powered_on: Union[Column, bool] = Column(Boolean, nullable=False, default=False)
 
     @property
     def serialize(self) -> Dict[str, Any]:
@@ -84,4 +86,4 @@ class Device(Base):
         if user == self.owner:
             return True
 
-        return m.contact_microservice("service", "check_part_owner", {"user_uuid": user})["ok"]
+        return m.contact_microservice("service", ["check_part_owner"], {"user_uuid": user})["ok"]

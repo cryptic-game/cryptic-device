@@ -1,7 +1,8 @@
 from typing import List, Optional
-from objects import session
-from models.device import Device
+
 from app import m
+from models.device import Device
+from objects import session
 
 
 @m.user_endpoint(path=["device", "info"])

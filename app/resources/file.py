@@ -1,9 +1,10 @@
 from typing import Optional
-from models.file import File
-from objects import session
+
+from app import m
 from models.device import Device
 from models.file import CONTENT_LENGTH
-from app import m
+from models.file import File
+from objects import session
 
 
 @m.user_endpoint(path=["file", "all"])
