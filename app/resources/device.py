@@ -1,18 +1,15 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from objects import session
 from models.device import Device
 from app import m
 
 
-# ENDPOINTS FOR HANDLE #
-
-
-@m.user_endpoint(path=["device", "public_info"])
-def public_info(data: dict, user: str) -> dict:
+@m.user_endpoint(path=["device", "info"])
+def info(data: dict, user: str) -> dict:
     """
     Get public information about a device.
-    :param data:
-    :param user:
+    :param data: The given data.
+    :param user: The user uuid.
     :return: The response
     """
     device: Optional[Device] = session.query(Device).filter_by(uuid=data["device_uuid"]).first()
@@ -26,37 +23,12 @@ def public_info(data: dict, user: str) -> dict:
     return device.serialize
 
 
-@m.user_endpoint(path=["device", "private_info"])
-def private_info(data: dict, user: str) -> dict:
-    """
-    Get private information about a device.
-    :param user:
-    :param data: The given data
-    :return: The response
-    """
-    device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
-
-    if device is None:
-        return {
-            'ok': False,
-            'error': 'invalid device uuid'
-        }
-
-    if not device.check_access(user):
-        return {
-            'ok': False,
-            'error': 'no access to this device'
-        }
-
-    return device.serialize
-
-
 @m.user_endpoint(path=["device", "ping"])
 def ping(data: dict, user: str) -> dict:
     """
     Ping a device.
-    :param data:
-    :param user:
+    :param data: The given data.
+    :param user: The user uuid.
     :return: The response
     """
     device: Optional[Device] = session.query(Device).filter_by(uuid=data["device_uuid"]).first()
@@ -76,11 +48,11 @@ def ping(data: dict, user: str) -> dict:
 def get_all(data: dict, user: str) -> dict:
     """
     Get all devices
-    :param data:
-    :param user:
+    :param data: The given data.
+    :param user: The user uuid.
     :return: The response
     """
-    devices: List[Device] = session.query(Device).filter_by(owner=data["user_uuid"]).all()
+    devices: List[Device] = session.query(Device).filter_by(owner=user).all()
 
     return {
         "devices": [d.serialize for d in devices]
@@ -91,11 +63,11 @@ def get_all(data: dict, user: str) -> dict:
 def create(data: dict, user: str) -> dict:
     """
     Create a device.
-    :param data:
-    :param user:
+    :param data: The given data.
+    :param user: The user uuid.
     :return: The response
     """
-    device_count = session.query(Device).filter_by(owner=data["user_uuid"]).first()
+    device_count = session.query(Device).filter_by(owner=user).first()
 
     if device_count:
         return {
@@ -112,8 +84,8 @@ def create(data: dict, user: str) -> dict:
 def power(data: dict, user: str) -> dict:
     """
     Turn a device on/off.
-    :param user:
-    :param data: The given data
+    :param data: The given data.
+    :param user: The user uuid.
     :return: The response
     """
     device: Device = session.query(Device).filter_by(uuid=data['device_uuid']).first()
@@ -140,8 +112,8 @@ def power(data: dict, user: str) -> dict:
 def change_name(data: dict, user: str) -> dict:
     """
     Change the name of the device.
-    :param user:
-    :param data: The given data
+    :param data: The given data.
+    :param user: The user uuid.
     :return: The response
     """
     device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
@@ -177,9 +149,9 @@ def change_name(data: dict, user: str) -> dict:
 def delete(data: dict, user: str) -> dict:
     """
     Delete a device.
-    :param user:
-    :param data: The given data
-    :return: The response
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: Success or not
     """
     device: Device = session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
@@ -205,8 +177,8 @@ def delete(data: dict, user: str) -> dict:
 def exist(data: dict, microservice: str) -> dict:
     """
     Does a device exist?
-    :param data:
-    :param microservice:
+    :param data: The given data.
+    :param microservice: The microservice..
     :return: True or False
     """
     device: Optional[Device] = session.query(Device).filter_by(uuid=data["device_uuid"]).first()

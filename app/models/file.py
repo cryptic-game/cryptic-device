@@ -18,8 +18,8 @@ class File(Base):
 
     @property
     def serialize(self) -> dict:
-        _ = self.uuid
-        d = self.__dict__
+        _: str = self.uuid
+        d: dict = self.__dict__
 
         del d['_sa_instance_state']
 

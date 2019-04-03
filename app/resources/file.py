@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import Optional
 from models.file import File
 from objects import session
 from models.device import Device
@@ -6,14 +6,12 @@ from models.file import CONTENT_LENGTH
 from app import m
 
 
-# ENDPOINTS FOR HANDLE #
-
 @m.user_endpoint(path=["file", "all"])
 def get_all(data: dict, user: str) -> dict:
     """
     Get all files of a device.
-    :param user:
-    :param data: The given data
+    :param data: The given data.
+    :param user: The user uuid.
     :return: The response
     """
     device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
@@ -33,8 +31,8 @@ def get_all(data: dict, user: str) -> dict:
 def info(data: dict, user: str) -> dict:
     """
     Get information about a file
-    :param user:
-    :param data: The given data
+    :param data: The given data.
+    :param user: The user uuid.
     :return: The response
     """
     device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
@@ -60,8 +58,8 @@ def info(data: dict, user: str) -> dict:
 def update(data: dict, user: str) -> dict:
     """
     Update a file.
-    :param user:
-    :param data: The given data
+    :param data: The given data.
+    :param user: The user uuid.
     :return: The response
     """
     device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
@@ -111,8 +109,8 @@ def update(data: dict, user: str) -> dict:
 def delete(data: dict, user: str) -> dict:
     """
     Delete a file.
-    :param user:
-    :param data: The given data
+    :param data: The given data.
+    :param user: The user uuid.
     :return: The response
     """
     device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()
@@ -147,8 +145,8 @@ def delete(data: dict, user: str) -> dict:
 def create(data: dict, user: str) -> dict:
     """
     Create a new file.
-    :param user:
-    :param data: The given data
+    :param data: The given data.
+    :param user: The user uuid.
     :return: The response
     """
     device: Optional[Device] = session.query(Device).filter_by(uuid=data['device_uuid']).first()

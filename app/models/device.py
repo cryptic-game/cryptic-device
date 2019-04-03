@@ -84,4 +84,4 @@ class Device(Base):
         if user == self.owner:
             return True
 
-        return m.contact_microservice("service", "exist", {"user_uuid": user})["ok"]
+        return m.contact_microservice("service", "check_part_owner", {"user_uuid": user})["ok"]
