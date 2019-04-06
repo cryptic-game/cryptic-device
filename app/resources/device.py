@@ -76,7 +76,7 @@ def create(data: dict, user: str) -> dict:
             'error': 'you already own a device'
         }
 
-    device: Device = Device.create(data["user_uuid"], 1, True)
+    device: Device = Device.create(user, 1, True)
 
     return device.serialize
 
