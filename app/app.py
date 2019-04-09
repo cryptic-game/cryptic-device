@@ -1,5 +1,4 @@
 from cryptic import MicroService
-
 from objects import Base, engine
 
 m: MicroService = MicroService('device')

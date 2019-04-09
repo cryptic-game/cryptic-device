@@ -1,14 +1,18 @@
 import os
-from typing import Union, Tuple, List, Any
+from typing import Tuple, Union, List
 
-to_load: List[Union[str, Tuple[str, Any]]] = [
-    ("STORAGE_LOCATION", "data/"),
+to_load: List[Union[Tuple[str,str],Tuple[str,int]]] = [
+    ("MYSQL_HOSTNAME", "localhost"),
+    ("MYSQL_PORT", 3306),
+    ("MYSQL_DATABASE", "crytpic"),
+    ("MYSQL_USERNAME", "cryptic"),
+    ("MYSQL_PASSWORD", "cryptic"),
+
+    ("STORAGE_LOCATION", "data/")
 ]
 
-# the final configuration dict
 config: dict = {}
 
-# load all configuration values from the env
 for key in to_load:
     if isinstance(key, tuple):
         if key[0] in os.environ:
@@ -17,3 +21,7 @@ for key in to_load:
             config[key[0]] = key[1]
     elif key in os.environ:
         config[key] = os.environ.get(key)
+
+config["SQLALCHEMY_DATABASE_URI"]: str = \
+    f"mysql+pymysql://{config['MYSQL_USERNAME']}:{config['MYSQL_PASSWORD']}@" \
+        f"{config['MYSQL_HOSTNAME']}:{config['MYSQL_PORT']}/{config['MYSQL_DATABASE']}"

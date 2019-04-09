@@ -7,6 +7,7 @@ name = "pypi"
 SQLAlchemy = "*"
 PyMySQL = "*"
 cryptic-game = "*"
+argparse = "*"
 
 [dev-packages]
 
@@ -14,5 +15,5 @@ cryptic-game = "*"
 python_version = "3.7"
 
 [scripts]
-dev = "python3 app.py"
+dev = "python3 app.py --debug"
 prod = "python3 app.py"
