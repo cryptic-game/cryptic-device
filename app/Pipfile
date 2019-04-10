@@ -8,6 +8,7 @@ SQLAlchemy = "*"
 PyMySQL = "*"
 cryptic-game = "*"
 argparse = "*"
+cryptography = "*"
 
 [dev-packages]
 

@@ -14,9 +14,9 @@ class Device(Base):
     """
     __tablename__: str = 'device'
 
-    uuid: Union[Column, str] = Column(String(32), primary_key=True, unique=True)
+    uuid: Union[Column, str] = Column(String(36), primary_key=True, unique=True)
     name: Union[Column, str] = Column(String(255), nullable=False)
-    owner: Union[Column, str] = Column(String(32), nullable=False)
+    owner: Union[Column, str] = Column(String(36), nullable=False)
     power: Union[Column, int] = Column(Integer, nullable=False)
     powered_on: Union[Column, bool] = Column(Boolean, nullable=False, default=False)
 

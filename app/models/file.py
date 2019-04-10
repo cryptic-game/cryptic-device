@@ -14,8 +14,8 @@ class File(Base):
     """
     __tablename__: str = 'file'
 
-    uuid: Union[Column, str] = Column(String(32), primary_key=True, unique=True)
-    device: Union[Column, str] = Column(String(32), nullable=False)
+    uuid: Union[Column, str] = Column(String(36), primary_key=True, unique=True)
+    device: Union[Column, str] = Column(String(36), nullable=False)
     filename: Union[Column, str] = Column(String(255), nullable=False)
     content: Union[Column, str] = Column(String(CONTENT_LENGTH), nullable=False)
 
