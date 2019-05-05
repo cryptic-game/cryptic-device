@@ -174,6 +174,13 @@ def delete(data: dict, user: str) -> dict:
     return {"ok": True}
 
 
+@m.user_endpoint(path=["device", "spot"])
+def spot(data: dict, user: str) -> dict:
+    device: Device = Device.random(user)
+
+    return device.serialize
+
+
 @m.microservice_endpoint(path=["exist"])
 def exist(data: dict, microservice: str) -> dict:
     """

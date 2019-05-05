@@ -3,6 +3,7 @@ from typing import Dict, Any, Union
 from uuid import uuid4
 
 from sqlalchemy import Column, Integer, String, Boolean
+from  sqlalchemy.sql.expression import func, select
 
 from app import m
 from objects import session, Base
@@ -87,3 +88,15 @@ class Device(Base):
             return True
 
         return m.contact_microservice("service", ["check_part_owner"], {"user_uuid": user})["ok"]
+
+    @staticmethod
+    def random(user: str) -> 'Device':
+
+        # Warning this only works for mysql
+
+        while True:
+
+            device : Device  = session.query(Device).order_by(func.rand()).first()
+
+            if device.owner != user:
+                return device

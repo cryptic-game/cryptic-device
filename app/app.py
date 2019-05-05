@@ -8,5 +8,4 @@ if __name__ == '__main__':
     from resources.file import *
 
     Base.metadata.create_all(bind=engine)
-
     m.run()
