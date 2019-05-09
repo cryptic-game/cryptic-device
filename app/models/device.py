@@ -3,13 +3,12 @@ from typing import Dict, Any, Union
 from uuid import uuid4
 
 from sqlalchemy import Column, Integer, String, Boolean
-from  sqlalchemy.sql.expression import func, select
+from sqlalchemy.sql.expression import func, select
 
 from app import m
-from objects import session, Base
 
 
-class Device(Base):
+class Device(m.Base):
     """
     This is the device-model for cryptic-device.
     """
@@ -73,8 +72,8 @@ class Device(Base):
             powered_on=powered_on
         )
 
-        session.add(device)
-        session.commit()
+        m.session.add(device)
+        m.session.commit()
 
         return device
 
@@ -96,7 +95,7 @@ class Device(Base):
 
         while True:
 
-            device : Device  = session.query(Device).order_by(func.rand()).first()
+            device: Device = m.session.query(Device).order_by(func.rand()).first()
 
             if device.owner != user:
                 return device
