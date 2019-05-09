@@ -3,12 +3,12 @@ from uuid import uuid4
 
 from sqlalchemy import Column, String
 
-from app import m
+from app import m, wrapper
 
 CONTENT_LENGTH = 255
 
 
-class File(m.Base):
+class File(wrapper.Base):
     """
     This is the file-model for cryptic-device.
     """
@@ -48,7 +48,7 @@ class File(m.Base):
             content=content
         )
 
-        m.session.add(file)
-        m.session.commit()
+        wrapper.session.add(file)
+        wrapper.session.commit()
 
         return file

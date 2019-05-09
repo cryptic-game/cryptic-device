@@ -5,10 +5,10 @@ from uuid import uuid4
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.expression import func, select
 
-from app import m
+from app import m, wrapper
 
 
-class Device(m.Base):
+class Device(wrapper.Base):
     """
     This is the device-model for cryptic-device.
     """
@@ -72,8 +72,8 @@ class Device(m.Base):
             powered_on=powered_on
         )
 
-        m.session.add(device)
-        m.session.commit()
+        wrapper.session.add(device)
+        wrapper.session.commit()
 
         return device
 
@@ -95,7 +95,7 @@ class Device(m.Base):
 
         while True:
 
-            device: Device = m.session.query(Device).order_by(func.random()).first() #Maxi to blame it does not work
+            device: Device = wrapper.session.query(Device).order_by(func.random()).first() #Maxi to blame it does not work
 
             if device.owner != user:
                 return device

@@ -1,4 +1,4 @@
-from cryptic import MicroService, _config
+from cryptic import MicroService, _config, DatabaseWrapper
 
 import argparse
 
@@ -15,15 +15,17 @@ if args.debug is True:
 
 else:
 
-    mode: str = "prod"
+    mode: str = "production"
 
 _config.set_mode(mode)
 
 m: MicroService = MicroService('device')
 
+wrapper : DatabaseWrapper = m.get_wrapper()
+
 if __name__ == '__main__':
     from resources.device import *
     from resources.file import *
 
-    m.Base.metadata.create_all(bind=m.engine)
+    wrapper.Base.metadata.create_all(bind=wrapper.engine)
     m.run()

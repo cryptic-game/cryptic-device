@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from app import m
+from app import m, wrapper
 from models.device import Device
 
 
@@ -12,7 +12,7 @@ def info(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = m.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
         return {
@@ -31,7 +31,7 @@ def ping(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = m.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
         return {
@@ -52,7 +52,7 @@ def get_all(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    devices: List[Device] = m.session.query(Device).filter_by(owner=user).all()
+    devices: List[Device] = wrapper.session.query(Device).filter_by(owner=user).all()
 
     return {
         "devices": [d.serialize for d in devices]
@@ -67,7 +67,7 @@ def create(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device_count = m.session.query(Device).filter_by(owner=user).first()
+    device_count = wrapper.session.query(Device).filter_by(owner=user).first()
 
     if device_count:
         return {
@@ -88,7 +88,7 @@ def power(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Device = m.session.query(Device).filter_by(uuid=data['device_uuid']).first()
+    device: Device = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
         return {
@@ -103,7 +103,7 @@ def power(data: dict, user: str) -> dict:
         }
 
     device.powered_on: bool = not device.powered_on
-    session.commit()
+    wrapper.session.commit()
 
     return device.serialize
 
@@ -116,7 +116,7 @@ def change_name(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = m.session.query(Device).filter_by(uuid=data['device_uuid']).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
         return {
@@ -140,7 +140,7 @@ def change_name(data: dict, user: str) -> dict:
 
     device.name: str = name
 
-    session.commit()
+    wrapper.session.commit()
 
     return device.serialize
 
@@ -153,7 +153,7 @@ def delete(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: Success or not
     """
-    device: Device = m.session.query(Device).filter_by(uuid=data['device_uuid']).first()
+    device: Device = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
         return {
@@ -167,8 +167,8 @@ def delete(data: dict, user: str) -> dict:
             'error': 'no access to this device'
         }
 
-    m.session.delete(device)
-    m.session.commit()
+    wrapper.session.delete(device)
+    wrapper.session.commit()
 
     return {"ok": True}
 
@@ -188,7 +188,7 @@ def exist(data: dict, microservice: str) -> dict:
     :param microservice: The microservice..
     :return: True or False
     """
-    device: Optional[Device] = m.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     return {
         'exists': device is not None
