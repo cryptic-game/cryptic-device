@@ -1,5 +1,5 @@
 from cryptic import MicroService, _config
-from objects import Base, engine
+
 import argparse
 
 parser: argparse.ArgumentParser = argparse.ArgumentParser()
@@ -25,5 +25,5 @@ if __name__ == '__main__':
     from resources.device import *
     from resources.file import *
 
-    Base.metadata.create_all(bind=engine)
+    m.Base.metadata.create_all(bind=m.engine)
     m.run()

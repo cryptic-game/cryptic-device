@@ -95,7 +95,7 @@ class Device(m.Base):
 
         while True:
 
-            device: Device = m.session.query(Device).order_by(func.rand()).first()
+            device: Device = m.session.query(Device).order_by(func.random()).first() #Maxi to blame it does not work
 
             if device.owner != user:
                 return device
