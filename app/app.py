@@ -1,6 +1,6 @@
 from cryptic import MicroService, Config, DatabaseWrapper, get_config
 
-config: Config = get_config("debug")  # / production
+config: Config = get_config("production")  # / production
 
 m: MicroService = MicroService('device')
 
