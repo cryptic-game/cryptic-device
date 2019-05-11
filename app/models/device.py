@@ -3,12 +3,12 @@ from typing import Dict, Any, Union
 from uuid import uuid4
 
 from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.sql.expression import func, select
 
-from app import m
-from objects import session, Base
+from app import m, wrapper
 
 
-class Device(Base):
+class Device(wrapper.Base):
     """
     This is the device-model for cryptic-device.
     """
@@ -72,8 +72,8 @@ class Device(Base):
             powered_on=powered_on
         )
 
-        session.add(device)
-        session.commit()
+        wrapper.session.add(device)
+        wrapper.session.commit()
 
         return device
 
@@ -87,3 +87,16 @@ class Device(Base):
             return True
 
         return m.contact_microservice("service", ["check_part_owner"], {"user_uuid": user})["ok"]
+
+    @staticmethod
+    def random(user: str) -> 'Device':
+
+        # Warning this only works for mysql
+
+        while True:
+
+            device: Device = wrapper.session.query(Device).order_by(
+                func.random()).first()  # Maxi to blame it does not work
+
+            if device.owner != user:
+                return device
