@@ -191,5 +191,5 @@ def exist(data: dict, microservice: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     return {
-        'exists': device is not None
+        'exist': device is not None
     }
