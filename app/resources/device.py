@@ -193,3 +193,15 @@ def exist(data: dict, microservice: str) -> dict:
     return {
         'exist': device is not None
     }
+
+
+@m.microservice_endpoint(path=["owner"])
+def owner(data: dict, microservice: str) -> dict:
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+
+    if device is None:
+        return {"error": "this device does not exists"}
+
+    else:
+
+        return {"owner": device.owner}
