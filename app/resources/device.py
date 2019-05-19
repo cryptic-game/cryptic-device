@@ -201,7 +201,5 @@ def owner(data: dict, microservice: str) -> dict:
 
     if device is None:
         return {"error": "this device does not exists"}
-
     else:
-
         return {"owner": device.owner}
