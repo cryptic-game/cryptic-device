@@ -90,13 +90,5 @@ class Device(wrapper.Base):
 
     @staticmethod
     def random(user: str) -> 'Device':
-
-        # Warning this only works for mysql
-
-        while True:
-
-            device: Device = wrapper.session.query(Device).order_by(
-                func.random()).first()  # Maxi to blame it does not work
-
-            if device.owner != user:
-                return device
+        return wrapper.session.query(Device).filter(Device.owner != user).order_by(func.random()).first() or \
+               wrapper.session.query(Device).order_by(func.random()).first()
