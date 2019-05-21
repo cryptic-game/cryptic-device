@@ -23,7 +23,7 @@ class Device(wrapper.Base):
     @property
     def serialize(self) -> Dict[str, Any]:
         _: str = self.uuid
-        d = self.__dict__
+        d = self.__dict__.copy()
 
         del d['_sa_instance_state']
 
