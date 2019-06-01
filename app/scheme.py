@@ -1,23 +1,27 @@
-invalid_device: dict = {'error': 'invalid device uuid'}
+def make_error(*args: str, origin: str, sep: str = "") -> dict:
+    return {"error": sep.join(map(str, args)), "origin": origin}
 
-invalid_file: dict = {'error': 'invalid file uuid'}
 
-alread_have_device: dict = {'error': 'you already own a device'}
+invalid_device: dict = make_error('invalid device uuid', origin='user')
 
-permission_denied: dict = {'error': 'no access to this device'}
+invalid_file: dict = make_error('invalid file uuid', origin='user')
 
-no_name: dict = {'error': 'no name given'}
+alread_have_device: dict = make_error('you already own a device', origin='user')
+
+permission_denied: dict = make_error('no access to this device', origin='user')
+
+no_name: dict = make_error('no name given', origin='user')
+
+this_device_does_not_exists: dict = make_error("this device does not exists", origin='user')
+
+no_content: dict = make_error('no content given', origin='user')
+
+no_file_name: dict = make_error('no filename given', origin='user')
+
+length_exceeded: dict = make_error('file length exceeded', origin='user')
+
+no_file: dict = make_error('no file with this name exist', origin='user')
+
+file_already_exists: dict = make_error('filename already taken', origin='user')
 
 success: dict = {'ok': True}
-
-this_device_does_not_exists: dict = {"error": "this device does not exists"}
-
-no_content: dict = {'error': 'no content given'}
-
-no_file_name: dict = {'error': 'no filename given'}
-
-length_exceeded: dict = {'file length exceeded'}
-
-no_file: dict = {'error': 'no file with this name exist'}
-
-file_already_exists: dict = {'filename already taken'}
