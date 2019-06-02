@@ -138,6 +138,12 @@ def change_name(data: dict, user: str) -> dict:
             'error': 'no name given'
         }
 
+    if len(name) > 15:
+        return {
+            'ok': False,
+            'error': 'name is too long'
+        }
+
     device.name: str = name
 
     wrapper.session.commit()
