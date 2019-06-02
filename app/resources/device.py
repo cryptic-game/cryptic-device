@@ -113,6 +113,9 @@ def change_name(data: dict, user: str) -> dict:
     except KeyError:
         return no_name
 
+    if len(name) > 15:
+        return name_too_long
+
     device.name: str = name
 
     wrapper.session.commit()

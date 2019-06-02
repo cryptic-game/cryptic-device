@@ -10,6 +10,8 @@ alread_have_device: dict = make_error('you already own a device', origin='user')
 
 permission_denied: dict = make_error('no access to this device', origin='user')
 
+name_too_long: dict = make_error('name is too long', origin='user')
+
 no_name: dict = make_error('no name given', origin='user')
 
 this_device_does_not_exists: dict = make_error("this device does not exists", origin='user')
