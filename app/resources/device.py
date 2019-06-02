@@ -114,10 +114,7 @@ def change_name(data: dict, user: str) -> dict:
         return no_name
 
     if len(name) > 15:
-        return {
-            'ok': False,
-            'error': 'name is too long'
-        }
+        return name_too_long
 
     device.name: str = name
 
