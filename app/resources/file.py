@@ -144,7 +144,7 @@ def create(data: dict, user: str) -> dict:
     else:
         return no_content
 
-    file_count: int = wrapper.session.query(File).filter_by(device=device.uuid, filename = filename).count()
+    file_count: int = wrapper.session.query(File).filter_by(device=device.uuid, filename=filename).count()
 
     if file_count > 0:
         return file_already_exists
