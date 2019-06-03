@@ -148,6 +148,9 @@ def create(data: dict, user: str) -> dict:
     if file_count > 0:
         return file_already_exists
 
+    if len(filename) == 0:
+        return empty_name_not_allowed
+
     if len(filename) > 64:
         return name_too_long
 
