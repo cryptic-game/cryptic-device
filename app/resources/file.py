@@ -135,15 +135,16 @@ def create(data: dict, user: str) -> dict:
 
     if not device.check_access(user):
         return permission_denied
-    try:
+    if 'filename' in data:
         filename: str = data['filename']
-    except KeyError:
+    else:
         return no_file_name
-    try:
+    if 'content' in data:
         content: str = data['content']
-    except KeyError:
+    else:
         return no_content
-    file_count: int = len(wrapper.session.query(File).filter_by(device=device.uuid).filter_by(filename=filename).all())
+
+    file_count: int = len(wrapper.session.query(File).filter_by(device=device.uuid, filename = filename).count())
 
     if file_count > 0:
         return file_already_exists
