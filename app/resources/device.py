@@ -1,5 +1,5 @@
 from typing import List, Optional
-
+from scheme import *
 from app import m, wrapper
 from models.device import Device
 
@@ -15,10 +15,7 @@ def info(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
-        return {
-            'ok': False,
-            'error': 'invalid device uuid'
-        }
+        return invalid_device
 
     return device.serialize
 
@@ -34,10 +31,7 @@ def ping(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
-        return {
-            'ok': False,
-            'error': 'invalid device uuid'
-        }
+        return invalid_device
 
     return {
         "online": device.powered_on
@@ -70,10 +64,7 @@ def create(data: dict, user: str) -> dict:
     device_count = wrapper.session.query(Device).filter_by(owner=user).first()
 
     if device_count:
-        return {
-            'ok': False,
-            'error': 'you already own a device'
-        }
+        return already_have_device
 
     device: Device = Device.create(user, 1, True)
 
@@ -91,16 +82,10 @@ def power(data: dict, user: str) -> dict:
     device: Device = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return {
-            'ok': False,
-            'error': 'invalid device uuid'
-        }
+        return invalid_device
 
     if not device.check_access(user):
-        return {
-            'ok': False,
-            'error': 'no access to this device'
-        }
+        return permission_denied
 
     device.powered_on: bool = not device.powered_on
     wrapper.session.commit()
@@ -119,24 +104,17 @@ def change_name(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return {
-            'ok': False,
-            'error': 'invalid device uuid'
-        }
+        return invalid_device
 
     if not device.check_access(user):
-        return {
-            'ok': False,
-            'error': 'no access to this device'
-        }
-
+        return permission_denied
     try:
         name: str = str(data['name'])
     except KeyError:
-        return {
-            'ok': False,
-            'error': 'no name given'
-        }
+        return no_name
+
+    if len(name) > 15:
+        return name_too_long
 
     device.name: str = name
 
@@ -156,21 +134,15 @@ def delete(data: dict, user: str) -> dict:
     device: Device = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return {
-            'ok': False,
-            'error': 'invalid device uuid'
-        }
+        return invalid_device
 
     if not device.check_access(user):
-        return {
-            'ok': False,
-            'error': 'no access to this device'
-        }
+        return permission_denied
 
     wrapper.session.delete(device)
     wrapper.session.commit()
 
-    return {"ok": True}
+    return success
 
 
 @m.user_endpoint(path=["device", "spot"])
@@ -200,6 +172,6 @@ def owner(data: dict, microservice: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
-        return {"error": "this device does not exists"}
+        return this_device_does_not_exists
     else:
         return {"owner": device.owner}

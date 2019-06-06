@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from sqlalchemy import Column, String
 
-from app import m, wrapper
+from app import wrapper
 
 CONTENT_LENGTH = 255
 
