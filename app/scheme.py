@@ -6,7 +6,7 @@ invalid_device: dict = make_error('invalid device uuid', origin='user')
 
 invalid_file: dict = make_error('invalid file uuid', origin='user')
 
-alread_have_device: dict = make_error('you already own a device', origin='user')
+already_have_device: dict = make_error('you already own a device', origin='user')
 
 permission_denied: dict = make_error('no access to this device', origin='user')
 

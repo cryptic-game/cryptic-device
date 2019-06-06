@@ -64,7 +64,7 @@ def create(data: dict, user: str) -> dict:
     device_count = wrapper.session.query(Device).filter_by(owner=user).first()
 
     if device_count:
-        return alread_have_device
+        return already_have_device
 
     device: Device = Device.create(user, 1, True)
 
