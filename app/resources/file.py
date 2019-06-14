@@ -130,7 +130,6 @@ def delete(data: dict, user: str) -> dict:
 
 @m.user_endpoint(path=["file", "create"], requires={
     "device_uuid": UUID(),
-    "file_uuid": UUID(),
     "filename": Text(min_length=1, max_length=64),
     "content": Text(max_length=CONTENT_LENGTH)
 })
