@@ -1,12 +1,17 @@
 from typing import Optional
-from scheme import *
+
+from scheme import UUID, Text
+
 from app import m, wrapper
 from models.device import Device
 from models.file import CONTENT_LENGTH
 from models.file import File
+from schemes import *
 
 
-@m.user_endpoint(path=["file", "all"])
+@m.user_endpoint(path=["file", "all"], requires={
+    "device_uuid": UUID()
+})
 def get_all(data: dict, user: str) -> dict:
     """
     Get all files of a device.
@@ -27,7 +32,10 @@ def get_all(data: dict, user: str) -> dict:
     }
 
 
-@m.user_endpoint(path=["file", "info"])
+@m.user_endpoint(path=["file", "info"], requires={
+    "device_uuid": UUID(),
+    "file_uuid": UUID()
+})
 def info(data: dict, user: str) -> dict:
     """
     Get information about a file
@@ -51,7 +59,12 @@ def info(data: dict, user: str) -> dict:
     return file.serialize
 
 
-@m.user_endpoint(path=["file", "update"])
+@m.user_endpoint(path=["file", "update"], requires={
+    "device_uuid": UUID(),
+    "file_uuid": UUID(),
+    "filename": Text(min_length=1, max_length=64),
+    "content": Text(max_length=CONTENT_LENGTH)
+})
 def update(data: dict, user: str) -> dict:
     """
     Update a file.
@@ -67,11 +80,6 @@ def update(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
-    if "filename" not in data:
-        return no_file_name
-    if "content" not in data:
-        return no_content
-
     file: Optional[File] = wrapper.session.query(File).filter_by(uuid=data['file_uuid']).first()
 
     if file is None:
@@ -82,9 +90,6 @@ def update(data: dict, user: str) -> dict:
     if file.filename != data["filename"] and file_count > 0:
         return no_file
 
-    if len(data["content"]) > CONTENT_LENGTH:
-        return length_exceeded
-
     file.filename: str = data["filename"]
     file.content: str = data["content"]
 
@@ -93,7 +98,10 @@ def update(data: dict, user: str) -> dict:
     return file.serialize
 
 
-@m.user_endpoint(path=["file", "delete"])
+@m.user_endpoint(path=["file", "delete"], requires={
+    "device_uuid": UUID(),
+    "file_uuid": UUID()
+})
 def delete(data: dict, user: str) -> dict:
     """
     Delete a file.
@@ -120,7 +128,12 @@ def delete(data: dict, user: str) -> dict:
     return success
 
 
-@m.user_endpoint(path=["file", "create"])
+@m.user_endpoint(path=["file", "create"], requires={
+    "device_uuid": UUID(),
+    "file_uuid": UUID(),
+    "filename": Text(min_length=1, max_length=64),
+    "content": Text(max_length=CONTENT_LENGTH)
+})
 def create(data: dict, user: str) -> dict:
     """
     Create a new file.
@@ -135,28 +148,14 @@ def create(data: dict, user: str) -> dict:
 
     if not device.check_access(user):
         return permission_denied
-    if 'filename' in data:
-        filename: str = data['filename']
-    else:
-        return no_file_name
-    if 'content' in data:
-        content: str = data['content']
-    else:
-        return no_content
+
+    filename: str = data['filename']
+    content: str = data['content']
 
     file_count: int = wrapper.session.query(File).filter_by(device=device.uuid, filename=filename).count()
 
     if file_count > 0:
         return file_already_exists
-
-    if len(filename) == 0:
-        return empty_name_not_allowed
-
-    if len(filename) > 64:
-        return name_too_long
-
-    if len(content) > CONTENT_LENGTH:
-        return length_exceeded
 
     file: Optional[File] = File.create(device.uuid, filename, content)
 
