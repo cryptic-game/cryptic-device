@@ -1,10 +1,15 @@
 from typing import List, Optional
-from scheme import *
+
+from scheme import UUID, Text
+
 from app import m, wrapper
 from models.device import Device
+from schemes import *
 
 
-@m.user_endpoint(path=["device", "info"])
+@m.user_endpoint(path=["device", "info"], requires={
+    "device_uuid": UUID()
+})
 def info(data: dict, user: str) -> dict:
     """
     Get public information about a device.
@@ -20,7 +25,9 @@ def info(data: dict, user: str) -> dict:
     return device.serialize
 
 
-@m.user_endpoint(path=["device", "ping"])
+@m.user_endpoint(path=["device", "ping"], requires={
+    "device_uuid": UUID()
+})
 def ping(data: dict, user: str) -> dict:
     """
     Ping a device.
@@ -38,7 +45,7 @@ def ping(data: dict, user: str) -> dict:
     }
 
 
-@m.user_endpoint(path=["device", "all"])
+@m.user_endpoint(path=["device", "all"], requires={})
 def get_all(data: dict, user: str) -> dict:
     """
     Get all devices
@@ -53,7 +60,7 @@ def get_all(data: dict, user: str) -> dict:
     }
 
 
-@m.user_endpoint(path=["device", "create"])
+@m.user_endpoint(path=["device", "create"], requires={})
 def create(data: dict, user: str) -> dict:
     """
     Create a device.
@@ -71,7 +78,9 @@ def create(data: dict, user: str) -> dict:
     return device.serialize
 
 
-@m.user_endpoint(path=["device", "power"])
+@m.user_endpoint(path=["device", "power"], requires={
+    "device_uuid": UUID()
+})
 def power(data: dict, user: str) -> dict:
     """
     Turn a device on/off.
@@ -93,7 +102,10 @@ def power(data: dict, user: str) -> dict:
     return device.serialize
 
 
-@m.user_endpoint(path=["device", "change_name"])
+@m.user_endpoint(path=["device", "change_name"], requires={
+    "device_uuid": UUID(),
+    "name": Text(min_length=1, max_length=15)
+})
 def change_name(data: dict, user: str) -> dict:
     """
     Change the name of the device.
@@ -108,13 +120,8 @@ def change_name(data: dict, user: str) -> dict:
 
     if not device.check_access(user):
         return permission_denied
-    try:
-        name: str = str(data['name'])
-    except KeyError:
-        return no_name
 
-    if len(name) > 15:
-        return name_too_long
+    name: str = str(data['name'])
 
     device.name: str = name
 
@@ -123,7 +130,9 @@ def change_name(data: dict, user: str) -> dict:
     return device.serialize
 
 
-@m.user_endpoint(path=["device", "delete"])
+@m.user_endpoint(path=["device", "delete"], requires={
+    "device_uuid": UUID()
+})
 def delete(data: dict, user: str) -> dict:
     """
     Delete a device.
@@ -145,7 +154,7 @@ def delete(data: dict, user: str) -> dict:
     return success
 
 
-@m.user_endpoint(path=["device", "spot"])
+@m.user_endpoint(path=["device", "spot"], requires={})
 def spot(data: dict, user: str) -> dict:
     device: Device = Device.random(user)
 
