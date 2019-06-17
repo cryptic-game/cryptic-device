@@ -20,7 +20,7 @@ def info(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
-        return invalid_device_uuid
+        return device_not_found
 
     return device.serialize
 
@@ -38,7 +38,7 @@ def ping(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
-        return invalid_device_uuid
+        return device_not_found
 
     return {
         "online": device.powered_on
@@ -91,7 +91,7 @@ def power(data: dict, user: str) -> dict:
     device: Device = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return invalid_device_uuid
+        return device_not_found
 
     if not device.check_access(user):
         return permission_denied
@@ -116,7 +116,7 @@ def change_name(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return invalid_device_uuid
+        return device_not_found
 
     if not device.check_access(user):
         return permission_denied
@@ -143,7 +143,7 @@ def delete(data: dict, user: str) -> dict:
     device: Device = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return invalid_device_uuid
+        return device_not_found
 
     if not device.check_access(user):
         return permission_denied
