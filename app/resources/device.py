@@ -20,7 +20,7 @@ def info(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
-        return invalid_device
+        return device_not_found
 
     return device.serialize
 
@@ -38,7 +38,7 @@ def ping(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
-        return invalid_device
+        return device_not_found
 
     return {
         "online": device.powered_on
@@ -71,7 +71,7 @@ def create(data: dict, user: str) -> dict:
     device_count = wrapper.session.query(Device).filter_by(owner=user).first()
 
     if device_count:
-        return already_have_device
+        return already_own_a_device
 
     device: Device = Device.create(user, 1, True)
 
@@ -91,7 +91,7 @@ def power(data: dict, user: str) -> dict:
     device: Device = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return invalid_device
+        return device_not_found
 
     if not device.check_access(user):
         return permission_denied
@@ -116,7 +116,7 @@ def change_name(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return invalid_device
+        return device_not_found
 
     if not device.check_access(user):
         return permission_denied
@@ -143,7 +143,7 @@ def delete(data: dict, user: str) -> dict:
     device: Device = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return invalid_device
+        return device_not_found
 
     if not device.check_access(user):
         return permission_denied
@@ -181,6 +181,6 @@ def owner(data: dict, microservice: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
-        return this_device_does_not_exists
+        return device_not_found
     else:
         return {"owner": device.owner}

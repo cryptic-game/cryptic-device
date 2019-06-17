@@ -22,7 +22,7 @@ def get_all(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return invalid_device
+        return device_not_found
 
     if not device.check_access(user):
         return permission_denied
@@ -46,7 +46,7 @@ def info(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return invalid_device
+        return device_not_found
 
     if not device.check_access(user):
         return permission_denied
@@ -54,7 +54,7 @@ def info(data: dict, user: str) -> dict:
     file: Optional[File] = wrapper.session.query(File).filter_by(uuid=data['file_uuid']).first()
 
     if file is None:
-        return invalid_file
+        return file_not_found
 
     return file.serialize
 
@@ -75,7 +75,7 @@ def update(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return invalid_device
+        return device_not_found
 
     if not device.check_access(user):
         return permission_denied
@@ -83,12 +83,12 @@ def update(data: dict, user: str) -> dict:
     file: Optional[File] = wrapper.session.query(File).filter_by(uuid=data['file_uuid']).first()
 
     if file is None:
-        return invalid_file
+        return file_not_found
 
     file_count: int = wrapper.session.query(File).filter_by(device=device.uuid, filename=data["filename"]).count()
 
     if file.filename != data["filename"] and file_count > 0:
-        return no_file
+        return file_not_found
 
     file.filename: str = data["filename"]
     file.content: str = data["content"]
@@ -112,7 +112,7 @@ def delete(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return invalid_device
+        return device_not_found
 
     if not device.check_access(user):
         return permission_denied
@@ -120,7 +120,7 @@ def delete(data: dict, user: str) -> dict:
     file: Optional[File] = wrapper.session.query(File).filter_by(uuid=data['file_uuid']).first()
 
     if file is None:
-        return invalid_file
+        return file_not_found
 
     wrapper.session.delete(file)
     wrapper.session.commit()
@@ -143,7 +143,7 @@ def create(data: dict, user: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
 
     if device is None:
-        return invalid_device
+        return device_not_found
 
     if not device.check_access(user):
         return permission_denied
