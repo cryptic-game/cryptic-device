@@ -59,40 +59,68 @@ def info(data: dict, user: str) -> dict:
     return file.serialize
 
 
-@m.user_endpoint(path=["file", "update"], requires={
+@m.user_endpoint(path=["file", "move"], requires={
     "device_uuid": UUID(),
     "file_uuid": UUID(),
-    "filename": Text(min_length=1, max_length=64),
-    "content": Text(max_length=CONTENT_LENGTH)
+    "filename": Text(min_length=1, max_length=64)
 })
-def update(data: dict, user: str) -> dict:
-    """
-    Update a file.
-    :param data: The given data.
-    :param user: The user uuid.
-    :return: The response
-    """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data['device_uuid']).first()
+def move(data: dict, user: str) -> dict:
+    device_uuid: str = data['device_uuid']
+    file_uuid = data['file_uuid']
+    filename = data['filename']
+
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=device_uuid).first()
 
     if device is None:
         return device_not_found
-
     if not device.check_access(user):
         return permission_denied
 
-    file: Optional[File] = wrapper.session.query(File).filter_by(uuid=data['file_uuid']).first()
+    file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
 
     if file is None:
         return file_not_found
 
-    file_count: int = wrapper.session.query(File).filter_by(device=device.uuid, filename=data["filename"]).count()
+    if wrapper.session.query(File).filter_by(device=device_uuid, filename=filename).first() is not None:
+        return file_already_exists
 
-    if file.filename != data["filename"] and file_count > 0:
+    file.filename: str = filename
+    wrapper.session.commit()
+
+    return file.serialize
+
+
+@m.user_endpoint(path=["file", "update"], requires={
+    "device_uuid": UUID(),
+    "file_uuid": UUID(),
+    "content": Text(max_length=CONTENT_LENGTH)
+})
+def update(data: dict, user: str) -> dict:
+    """
+    Update the content of a file.
+
+    :param data: The given data.
+    :param user: The user uuid.
+    :return: The response
+    """
+
+    device_uuid: str = data['device_uuid']
+    file_uuid = data['file_uuid']
+    content = data['content']
+
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=device_uuid).first()
+
+    if device is None:
+        return device_not_found
+    if not device.check_access(user):
+        return permission_denied
+
+    file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
+
+    if file is None:
         return file_not_found
 
-    file.filename: str = data["filename"]
-    file.content: str = data["content"]
-
+    file.content: str = content
     wrapper.session.commit()
 
     return file.serialize
