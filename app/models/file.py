@@ -12,7 +12,8 @@ class File(wrapper.Base):
     """
     This is the file-model for cryptic-device.
     """
-    __tablename__: str = 'file'
+
+    __tablename__: str = "file"
 
     uuid: Union[Column, str] = Column(String(36), primary_key=True, unique=True)
     device: Union[Column, str] = Column(String(36), nullable=False)
@@ -24,12 +25,12 @@ class File(wrapper.Base):
         _: str = self.uuid
         d: dict = self.__dict__.copy()
 
-        del d['_sa_instance_state']
+        del d["_sa_instance_state"]
 
         return d
 
     @staticmethod
-    def create(device: str, filename: str, content: str) -> 'File':
+    def create(device: str, filename: str, content: str) -> "File":
         """
         Creates a new file
         :param device: The device's uuid
@@ -41,12 +42,7 @@ class File(wrapper.Base):
         uuid = str(uuid4())
 
         # Return a new file
-        file: File = File(
-            uuid=uuid,
-            device=device,
-            filename=filename,
-            content=content
-        )
+        file: File = File(uuid=uuid, device=device, filename=filename, content=content)
 
         wrapper.session.add(file)
         wrapper.session.commit()
