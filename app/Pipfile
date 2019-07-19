@@ -7,8 +7,6 @@ name = "pypi"
 SQLAlchemy = "*"
 PyMySQL = "*"
 cryptic-game = "*"
-argparse = "*"
-cryptography = "*"
 scheme = "*"
 
 [dev-packages]
