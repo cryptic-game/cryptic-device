@@ -2,7 +2,7 @@ import random
 from typing import Dict, Any, Union
 from uuid import uuid4
 
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, Float
 from sqlalchemy.sql.expression import func, select
 
 from app import m, wrapper
@@ -18,8 +18,8 @@ class Device(wrapper.Base):
     uuid: Union[Column, str] = Column(String(36), primary_key=True, unique=True)
     name: Union[Column, str] = Column(String(255), nullable=False)
     owner: Union[Column, str] = Column(String(36), nullable=False)
-    power: Union[Column, int] = Column(Integer, nullable=False)
     powered_on: Union[Column, bool] = Column(Boolean, nullable=False, default=False)
+    performance: Union[Column, str] = Column(String(36), unique=True)
 
     @property
     def serialize(self) -> Dict[str, Any]:
@@ -31,7 +31,7 @@ class Device(wrapper.Base):
         return d
 
     @staticmethod
-    def create(user: str, power: int, powered_on: bool) -> "Device":
+    def create(user: str, power: float, powered_on: bool) -> "Device":
         """
         Creates a new device.
         :param user: The owner's uuid

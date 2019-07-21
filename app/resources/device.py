@@ -5,6 +5,7 @@ from scheme import UUID, Text
 from app import m, wrapper
 from models.device import Device
 from schemes import *
+from resources.game_content import check_compatible, calculate_power, create_hardware
 
 
 @m.user_endpoint(path=["device", "info"], requires={"device_uuid": UUID()})
@@ -56,7 +57,7 @@ def get_all(data: dict, user: str) -> dict:
     return {"devices": [d.serialize for d in devices]}
 
 
-@m.user_endpoint(path=["device", "create"], requires={})
+@m.user_endpoint(path=["device", "create"], requires=requirement_build)
 def create(data: dict, user: str) -> dict:
     """
     Create a device.
@@ -64,12 +65,16 @@ def create(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device_count = wrapper.session.query(Device).filter_by(owner=user).first()
+    comp, message = check_compatible(data)
 
-    if device_count:
-        return already_own_a_device
+    if not comp:
+        return message
 
-    device: Device = Device.create(user, 1, True)
+    performance: tuple = calculate_power(data)
+
+    device: Device = Device.create(user, performance, True)
+
+    create_hardware(data, device.uuid)
 
     return device.serialize
 
