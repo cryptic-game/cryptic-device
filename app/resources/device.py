@@ -4,8 +4,9 @@ from scheme import UUID, Text
 
 from app import m, wrapper
 from models.device import Device
+from models.workload import Workload
 from schemes import *
-from resources.game_content import check_compatible, calculate_power, create_hardware
+from resources.game_content import check_compatible, calculate_power, create_hardware, check_exists, delete
 
 
 @m.user_endpoint(path=["device", "info"], requires={"device_uuid": UUID()})
@@ -16,9 +17,7 @@ def info(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(
-        uuid=data["device_uuid"]
-    ).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
         return device_not_found
@@ -34,9 +33,7 @@ def ping(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(
-        uuid=data["device_uuid"]
-    ).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
         return device_not_found
@@ -66,15 +63,22 @@ def create(data: dict, user: str) -> dict:
     :return: The response
     """
     comp, message = check_compatible(data)
+    if not comp:
+        return message
 
+    comp, message = check_exists(user, data)
     if not comp:
         return message
 
     performance: tuple = calculate_power(data)
 
-    device: Device = Device.create(user, performance, True)
+    device: Device = Device.create(user, True)
+
+    Workload.create(device.uuid, performance)
 
     create_hardware(data, device.uuid)
+
+    delete(user, data)
 
     return device.serialize
 
@@ -87,9 +91,7 @@ def power(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Device = wrapper.session.query(Device).filter_by(
-        uuid=data["device_uuid"]
-    ).first()
+    device: Device = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
         return device_not_found
@@ -104,8 +106,7 @@ def power(data: dict, user: str) -> dict:
 
 
 @m.user_endpoint(
-    path=["device", "change_name"],
-    requires={"device_uuid": UUID(), "name": Text(min_length=1, max_length=15)},
+    path=["device", "change_name"], requires={"device_uuid": UUID(), "name": Text(min_length=1, max_length=15)}
 )
 def change_name(data: dict, user: str) -> dict:
     """
@@ -114,9 +115,7 @@ def change_name(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(
-        uuid=data["device_uuid"]
-    ).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
         return device_not_found
@@ -141,9 +140,7 @@ def delete(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: Success or not
     """
-    device: Device = wrapper.session.query(Device).filter_by(
-        uuid=data["device_uuid"]
-    ).first()
+    device: Device = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
         return device_not_found
@@ -172,18 +169,14 @@ def exist(data: dict, microservice: str) -> dict:
     :param microservice: The microservice..
     :return: True or False
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(
-        uuid=data["device_uuid"]
-    ).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     return {"exist": device is not None}
 
 
 @m.microservice_endpoint(path=["owner"])
 def owner(data: dict, microservice: str) -> dict:
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(
-        uuid=data["device_uuid"]
-    ).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
         return device_not_found

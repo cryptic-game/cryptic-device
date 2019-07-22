@@ -29,9 +29,7 @@ class Workload(wrapper.Base):
     usage_network: Union[float, Column] = Column(Float)
 
     @staticmethod
-    def create(
-        device: str, attributes: Tuple[float, float, float, float, float]
-    ) -> "Workload":
+    def create(device: str, attributes: Tuple[float, float, float, float, float]) -> "Workload":
 
         work: Workload = Workload(
             device_uuid=device,

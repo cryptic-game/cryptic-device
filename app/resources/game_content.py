@@ -3,6 +3,44 @@ from typing import Tuple, List
 import math
 from models.hardware import Hardware
 from models.device import Device
+from app import m
+
+
+def check_exists(user: str, elements: dict) -> Tuple[bool, dict]:
+    response: dict = m.contact_microservice("inventory", ["inventory", "list"], {"user": user})
+
+    names: List[str] = [x["element_name"] for x in response["elements"]]
+
+    if elements["cpu"] not in names:
+        return (False, {"error": "you_dont_own_such_cpu"})
+    if elements["motherboard"] not in names:
+        return (False, {"error": "you_dont_own_such_motherboard"})
+    if elements["gpu"] not in names:
+        return (False, {"error": "you_dont_own_such_gpu"})
+    for ram in elements["ram"]:
+        if ram not in names:
+            return (False, {"error": "you_dont_own_such_ram"})
+        else:
+            names.remove(ram)
+    for disk in elements["disk"]:
+        if disk not in names:
+            return (False, {"error": "you_dont_own_such_disk"})
+        else:
+            names.remove(disk)
+
+    return (True, {})
+
+
+def delete(user: str, elements: dict):
+    m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"user": user, "name": elements["cpu"]})
+    m.contact_microservice(
+        "inventory", ["inventory", "delete_by_name"], {"user": user, "name": elements["motherboard"]}
+    )
+    m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"user": user, "name": elements["gpu"]})
+    for ram in elements["ram"]:
+        m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"user": user, "name": ram})
+    for disk in elements["disk"]:
+        m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"user": user, "name": disk})
 
 
 def check_element_existens(elements: dict) -> Tuple[bool, dict]:
@@ -42,26 +80,12 @@ def check_compatible(elements: dict) -> Tuple[bool, dict]:
         return (False, {"error": "mainboard_has_not_this_many_ram_slots"})
 
     for ram_stick in ram:
-        if (
-            hardware["ram"][ram_stick]["ramTyp"]
-            != hardware["mainboards"][motherboard]["ram"]["typ"]
-        ):
-            return (
-                False,
-                {"error": "ram_type_does_not_fit_what_you_have_on_your_mainboard"},
-            )
+        if hardware["ram"][ram_stick]["ramTyp"] != hardware["mainboards"][motherboard]["ram"]["typ"]:
+            return (False, {"error": "ram_type_does_not_fit_what_you_have_on_your_mainboard"})
 
     for i in disk:
-        if (
-            hardware["diskStorage"][i]["interface"]
-            != hardware["mainboards"][motherboard]["diskStorage"]["interface"]
-        ):
-            return (
-                False,
-                {
-                    "error": "your_hard_drive_interface_does_not_fit_with_the_motherboards_one"
-                },
-            )
+        if hardware["diskStorage"][i]["interface"] != hardware["mainboards"][motherboard]["diskStorage"]["interface"]:
+            return (False, {"error": "your_hard_drive_interface_does_not_fit_with_the_motherboards_one"})
 
     return (True, {})
 
@@ -74,9 +98,7 @@ def calculate_power(elements: dict) -> Tuple[float, float, float, float, float]:
     gpu: str = elements["gpu"]
     disk: List[str] = elements["disk"]
 
-    performance_cpu: float = hardware["cpu"][cpu]["cores"] * hardware["cpu"][cpu][
-        "frequencyMax"
-    ]
+    performance_cpu: float = hardware["cpu"][cpu]["cores"] * hardware["cpu"][cpu]["frequencyMax"]
 
     performance_ram: float = 1
     for ram_stick in ram:
@@ -88,19 +110,15 @@ def calculate_power(elements: dict) -> Tuple[float, float, float, float, float]:
             * hardware["ram"][ram_stick]["ramsize"]
         )
 
-    performance_gpu: float = resolve_gpu_type[
-        hardware["graphiccards"][gpu]["interface"]
-    ] * math.sqrt(
-        hardware["graphiccard"][gpu]["ramsize"]
-        * hardware["graphiccard"][gpu]["frequency"]
+    performance_gpu: float = resolve_gpu_type[hardware["graphiccards"][gpu]["interface"]] * math.sqrt(
+        hardware["graphiccard"][gpu]["ramsize"] * hardware["graphiccard"][gpu]["frequency"]
     )
 
     dick_storage: float = 1
 
     for i in disk:
         dick_storage += hardware["diskStorage"][i]["capacity"] * math.log1p(
-            hardware["diskStorage"][i]["writingSpeed"]
-            * hardware["diskStorage"][i]["readingSpeed"]
+            hardware["diskStorage"][i]["writingSpeed"] * hardware["diskStorage"][i]["readingSpeed"]
         )
 
     network: float = hardware["mainboards"][motherboard]["speed"]

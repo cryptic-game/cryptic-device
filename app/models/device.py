@@ -31,7 +31,7 @@ class Device(wrapper.Base):
         return d
 
     @staticmethod
-    def create(user: str, power: float, powered_on: bool) -> "Device":
+    def create(user: str, powered_on: bool) -> "Device":
         """
         Creates a new device.
         :param user: The owner's uuid
@@ -67,9 +67,7 @@ class Device(wrapper.Base):
         )
 
         # Return a new device
-        device: Device = Device(
-            uuid=uuid, name=name, owner=user, power=power, powered_on=powered_on
-        )
+        device: Device = Device(uuid=uuid, name=name, owner=user, powered_on=powered_on)
 
         wrapper.session.add(device)
         wrapper.session.commit()
@@ -85,18 +83,13 @@ class Device(wrapper.Base):
         if user == self.owner:
             return True
 
-        return m.contact_microservice(
-            "service",
-            ["check_part_owner"],
-            {"user_uuid": user, "device_uuid": self.uuid},
-        )["ok"]
+        return m.contact_microservice("service", ["check_part_owner"], {"user_uuid": user, "device_uuid": self.uuid})[
+            "ok"
+        ]
 
     @staticmethod
     def random(user: str) -> "Device":
         return (
-            wrapper.session.query(Device)
-            .filter(Device.owner != user)
-            .order_by(func.random())
-            .first()
+            wrapper.session.query(Device).filter(Device.owner != user).order_by(func.random()).first()
             or wrapper.session.query(Device).order_by(func.random()).first()
         )

@@ -17,9 +17,7 @@ def get_all(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(
-        uuid=data["device_uuid"]
-    ).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
         return device_not_found
@@ -27,17 +25,10 @@ def get_all(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
-    return {
-        "files": [
-            f.serialize
-            for f in wrapper.session.query(File).filter_by(device=device.uuid).all()
-        ]
-    }
+    return {"files": [f.serialize for f in wrapper.session.query(File).filter_by(device=device.uuid).all()]}
 
 
-@m.user_endpoint(
-    path=["file", "info"], requires={"device_uuid": UUID(), "file_uuid": UUID()}
-)
+@m.user_endpoint(path=["file", "info"], requires={"device_uuid": UUID(), "file_uuid": UUID()})
 def info(data: dict, user: str) -> dict:
     """
     Get information about a file
@@ -45,9 +36,7 @@ def info(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(
-        uuid=data["device_uuid"]
-    ).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
         return device_not_found
@@ -55,9 +44,7 @@ def info(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
-    file: Optional[File] = wrapper.session.query(File).filter_by(
-        uuid=data["file_uuid"]
-    ).first()
+    file: Optional[File] = wrapper.session.query(File).filter_by(uuid=data["file_uuid"]).first()
 
     if file is None:
         return file_not_found
@@ -67,39 +54,26 @@ def info(data: dict, user: str) -> dict:
 
 @m.user_endpoint(
     path=["file", "move"],
-    requires={
-        "device_uuid": UUID(),
-        "file_uuid": UUID(),
-        "filename": Text(min_length=1, max_length=64),
-    },
+    requires={"device_uuid": UUID(), "file_uuid": UUID(), "filename": Text(min_length=1, max_length=64)},
 )
 def move(data: dict, user: str) -> dict:
     device_uuid: str = data["device_uuid"]
     file_uuid = data["file_uuid"]
     filename = data["filename"]
 
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(
-        uuid=device_uuid
-    ).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=device_uuid).first()
 
     if device is None:
         return device_not_found
     if not device.check_access(user):
         return permission_denied
 
-    file: Optional[File] = wrapper.session.query(File).filter_by(
-        device=device_uuid, uuid=file_uuid
-    ).first()
+    file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
 
     if file is None:
         return file_not_found
 
-    if (
-        wrapper.session.query(File)
-        .filter_by(device=device_uuid, filename=filename)
-        .first()
-        is not None
-    ):
+    if wrapper.session.query(File).filter_by(device=device_uuid, filename=filename).first() is not None:
         return file_already_exists
 
     file.filename: str = filename
@@ -110,11 +84,7 @@ def move(data: dict, user: str) -> dict:
 
 @m.user_endpoint(
     path=["file", "update"],
-    requires={
-        "device_uuid": UUID(),
-        "file_uuid": UUID(),
-        "content": Text(max_length=CONTENT_LENGTH),
-    },
+    requires={"device_uuid": UUID(), "file_uuid": UUID(), "content": Text(max_length=CONTENT_LENGTH)},
 )
 def update(data: dict, user: str) -> dict:
     """
@@ -129,18 +99,14 @@ def update(data: dict, user: str) -> dict:
     file_uuid = data["file_uuid"]
     content = data["content"]
 
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(
-        uuid=device_uuid
-    ).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=device_uuid).first()
 
     if device is None:
         return device_not_found
     if not device.check_access(user):
         return permission_denied
 
-    file: Optional[File] = wrapper.session.query(File).filter_by(
-        device=device_uuid, uuid=file_uuid
-    ).first()
+    file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
 
     if file is None:
         return file_not_found
@@ -151,9 +117,7 @@ def update(data: dict, user: str) -> dict:
     return file.serialize
 
 
-@m.user_endpoint(
-    path=["file", "delete"], requires={"device_uuid": UUID(), "file_uuid": UUID()}
-)
+@m.user_endpoint(path=["file", "delete"], requires={"device_uuid": UUID(), "file_uuid": UUID()})
 def delete(data: dict, user: str) -> dict:
     """
     Delete a file.
@@ -161,9 +125,7 @@ def delete(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(
-        uuid=data["device_uuid"]
-    ).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
         return device_not_found
@@ -171,9 +133,7 @@ def delete(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
-    file: Optional[File] = wrapper.session.query(File).filter_by(
-        uuid=data["file_uuid"]
-    ).first()
+    file: Optional[File] = wrapper.session.query(File).filter_by(uuid=data["file_uuid"]).first()
 
     if file is None:
         return file_not_found
@@ -199,9 +159,7 @@ def create(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(
-        uuid=data["device_uuid"]
-    ).first()
+    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
 
     if device is None:
         return device_not_found
@@ -212,9 +170,7 @@ def create(data: dict, user: str) -> dict:
     filename: str = data["filename"]
     content: str = data["content"]
 
-    file_count: int = wrapper.session.query(File).filter_by(
-        device=device.uuid, filename=filename
-    ).count()
+    file_count: int = wrapper.session.query(File).filter_by(device=device.uuid, filename=filename).count()
 
     if file_count > 0:
         return file_already_exists

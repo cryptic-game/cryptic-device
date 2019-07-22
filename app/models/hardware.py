@@ -22,9 +22,7 @@ class Hardware(wrapper.Base):
     @staticmethod
     def create(device: str, hardware: str, hardware_typ: str) -> "Hardware":
 
-        hd: Hardware = Hardware(
-            device_uuid=device, hardware_element=hardware, hardware_typ=hardware_typ
-        )
+        hd: Hardware = Hardware(device_uuid=device, hardware_element=hardware, hardware_typ=hardware_typ)
 
         wrapper.session.add(hd)
         wrapper.session.commit()
