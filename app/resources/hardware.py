@@ -30,12 +30,11 @@ def hardware_resources(data: dict, user: str):
     if wl is None:
         return device_not_found
 
-    return wl.serialize
+    return wl.display()
 
 
 @m.microservice_endpoint(path=["hardware", "register"])
 def hardware_register(data: dict, microservice: str):
-
     # cpu_requirements, ram_req, gpu_req, disk_req, network_req
 
     wl: Workload = wrapper.session.query(Workload).filter_by(device_uuid=data["device_uuid"])
@@ -74,7 +73,6 @@ def hardware_register(data: dict, microservice: str):
 
 @m.microservice_endpoint(path=["hardware", "stop"])
 def hardware_stop(data: dict, microservice: str):
-
     ser: Service = wrapper.session.query(Service).filter_by(service_uuid=data["service_uuid"]).first()
     if ser is None:
         return {"error": "service_is_not_running"}
@@ -84,11 +82,14 @@ def hardware_stop(data: dict, microservice: str):
         return device_not_found
 
     attributes: Tuple[float, float, float, float, float] = turn(ser.export())
+
     wrapper.session.delete(ser)
     wrapper.session.commit()
+
     wl.service(attributes)
     new_scales: Tuple[float, float, float, float, float] = generate_scale(attributes, wl)
 
     other: List[Service] = wrapper.session.query(Service).filter_by(device_uuid=data["device_uuid"]).all()
     scale_resources(other, new_scales)
+
     return {"ok": True}
