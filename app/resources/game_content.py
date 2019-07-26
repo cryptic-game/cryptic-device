@@ -3,6 +3,8 @@ from typing import Tuple, List
 import math
 from models.hardware import Hardware
 from models.device import Device
+from models.service import Service
+from models.workload import Workload
 from app import m
 
 
@@ -150,3 +152,58 @@ def create_hardware(elements: dict, device_uuid: str) -> None:
         Hardware.create(device_uuid, disk, "diskStorage")
     for ram in elements["ram"]:
         Hardware.create(device_uuid, ram, "ram")
+
+
+def scale_resources(s: List[Service], scale: Tuple[float, float, float, float, float]):
+
+    for service in s:
+        send: dict = {}
+        send["service_uuid"] = service.service_uuid
+        send["cpu"] = scale[0] * service.allocated_cpu
+        send["ram"] = scale[1] * service.allocated_raml
+        send["gpu"] = scale[2] * service.allocated_gpu
+        send["disk"] = scale[3] * service.allocated_disk
+        send["network"] = scale[4] * service.allocated_network
+
+        m.contact_microservice("service", ["hardware", "scale"], send)
+
+
+def generate_scale(
+    data: Tuple[float, float, float, float, float], wl: Workload
+) -> Tuple[float, float, float, float, float]:
+
+    if wl.usage_cpu + data[0] < wl.performance_cpu:
+        cpu: float = 1
+    else:
+        scale: float = (1 - (wl.usage_cpu + data[0] - wl.performance_cpu)) / (wl.usage_cpu + data[0])
+        cpu: float = scale
+
+    if wl.usage_ram + data[1] < wl.performance_ram:
+        ram: float = 1
+    else:
+        scale: float = (1 - (wl.usage_ram + data[1] - wl.performance_ram)) / (wl.usage_cpu + data[1])
+        ram: float = scale
+    if wl.usage_gpu + data[2] > wl.performance_gpu:
+        gpu: float = 1
+    else:
+        scale: float = (1 - (wl.usage_gpu + data[2] - wl.performance_gpu)) / (wl.usage_cpu + data[2])
+        gpu: float = scale
+    if wl.usage_disk + data[3] > wl.performance_disk:
+        disk: float = 1
+    else:
+        scale: float = (1 - (wl.usage_disk + data[3] - wl.performance_disk)) / (wl.usage_disk + data[3])
+        disk: float = scale
+    if wl.usage_network + data[4] > wl.performance_network:
+        network: float = 1
+    else:
+        scale: float = (1 - (wl.usage_network + data[4] - wl.performance_network)) / (wl.usage_network + data[4])
+        network: float = scale
+    return (cpu, ram, gpu, disk, network)
+
+
+def dict2tuple(data: dict) -> Tuple[float, float, float, float, float]:
+    return (data["cpu"], data["ram"], data["gpu"], data["disk"], data["network"])
+
+
+def turn(data: Tuple[float, float, float, float, float]) -> Tuple[float, float, float, float, float]:
+    return (-1 * data[0], -1 * data[1], -1 * data[2], -1 * data[3], -1 * data[4])

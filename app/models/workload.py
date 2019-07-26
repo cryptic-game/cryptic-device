@@ -28,6 +28,15 @@ class Workload(wrapper.Base):
     usage_disk: Union[float, Column] = Column(Float)
     usage_network: Union[float, Column] = Column(Float)
 
+    @property
+    def serialize(self) -> Dict[str, Any]:
+        _: str = self.uuid
+        d = self.__dict__.copy()
+
+        del d["_sa_instance_state"]
+
+        return d
+
     @staticmethod
     def create(device: str, attributes: Tuple[float, float, float, float, float]) -> "Workload":
 
@@ -38,9 +47,22 @@ class Workload(wrapper.Base):
             performance_gpu=attributes[2],
             performance_disk=attributes[3],
             performance_network=attributes[4],
+            usage_cpu=0,
+            usage_gpu=0,
+            usage_ram=0,
+            usage_disk=0,
+            usage_network=0,
         )
 
         wrapper.session.add(work)
         wrapper.session.commit()
 
         return work
+
+    def service(self, new_service: Tuple[float, float, float, float, float]):
+        self.usage_cpu += new_service[0]
+        self.usage_ram += new_service[1]
+        self.usage_gpu += new_service[2]
+        self.usage_disk += new_service[3]
+        self.usage_network += new_service[4]
+        wrapper.session.commit()
