@@ -67,14 +67,13 @@ class Workload(wrapper.Base):
         self.usage_network += new_service[4]
         wrapper.session.commit()
 
-
     def display(self) -> dict:
 
         return_value: dict = {
-            "cpu": min(self.usage_cpu/self.performance_cpu, 1),
+            "cpu": min(self.usage_cpu / self.performance_cpu, 1),
             "ram": min(self.usage_ram / self.performance_ram, 1),
             "gpu": min(self.usage_gpu / self.performance_gpu, 1),
-            "disk": min(self.usage_disk/self.performance_disk, 1),
-            "network": min(self.usage_network/self.performance_network, 1),
+            "disk": min(self.usage_disk / self.performance_disk, 1),
+            "network": min(self.usage_network / self.performance_network, 1),
         }
         return return_value

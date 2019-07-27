@@ -4,6 +4,7 @@ from resources.game_content import check_compatible, calculate_power, scale_reso
 from scheme import UUID
 from models.workload import Workload
 from models.service import Service
+from models.device import Device
 from typing import List, Tuple
 
 
@@ -68,6 +69,8 @@ def hardware_register(data: dict, microservice: str):
         "network": ser.allocated_network * scales[4],
     }
 
+    m.contact_user(data["user"], wl.display())
+
     return return_value
 
 
@@ -91,5 +94,7 @@ def hardware_stop(data: dict, microservice: str):
 
     other: List[Service] = wrapper.session.query(Service).filter_by(device_uuid=data["device_uuid"]).all()
     scale_resources(other, new_scales)
+
+    m.contact_user(data["user"], wl.display())
 
     return {"ok": True}
