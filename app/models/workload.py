@@ -17,17 +17,17 @@ class Workload(wrapper.Base):
 
     uuid: Union[Column, str] = Column(String(36), primary_key=True, unique=True)
 
-    performance_cpu: Union[float, Column] = Column(Float, unique=False, nullable=True)
-    performance_gpu: Union[float, Column] = Column(Float, unique=False, nullable=True)
-    performance_ram: Union[float, Column] = Column(Float, unique=False, nullable=True)
-    performance_disk: Union[float, Column] = Column(Float, unique=False, nullable=True)
-    performance_network: Union[float, Column] = Column(Float, unique=False, nullable=True)
+    performance_cpu: Union[float, Column] = Column(Float)
+    performance_gpu: Union[float, Column] = Column(Float)
+    performance_ram: Union[float, Column] = Column(Float)
+    performance_disk: Union[float, Column] = Column(Float)
+    performance_network: Union[float, Column] = Column(Float)
 
-    usage_cpu: Union[float, Column] = Column(Float, unique=False, nullable=True)
-    usage_gpu: Union[float, Column] = Column(Float, unique=False, nullable=True)
-    usage_ram: Union[float, Column] = Column(Float, unique=False, nullable=True)
-    usage_disk: Union[float, Column] = Column(Float, unique=False, nullable=True)
-    usage_network: Union[float, Column] = Column(Float, unique=False, nullable=True)
+    usage_cpu: Union[float, Column] = Column(Float)
+    usage_gpu: Union[float, Column] = Column(Float)
+    usage_ram: Union[float, Column] = Column(Float)
+    usage_disk: Union[float, Column] = Column(Float)
+    usage_network: Union[float, Column] = Column(Float)
 
     @property
     def serialize(self) -> Dict[str, Any]:
