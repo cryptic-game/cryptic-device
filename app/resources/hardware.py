@@ -26,7 +26,7 @@ def build(data: dict, user: str):
 
 @m.user_endpoint(path=["hardware", "resources"], requires={"device_uuid": UUID()})
 def hardware_resources(data: dict, user: str):
-    wl: Workload = wrapper.session.query(Workload).filter_by(device_uuid=data["device_uuid"])
+    wl: Workload = wrapper.session.query(Workload).filter_by(uuid=data["device_uuid"])
 
     if wl is None:
         return device_not_found
@@ -38,7 +38,7 @@ def hardware_resources(data: dict, user: str):
 def hardware_register(data: dict, microservice: str):
     # cpu_requirements, ram_req, gpu_req, disk_req, network_req
 
-    wl: Workload = wrapper.session.query(Workload).filter_by(device_uuid=data["device_uuid"])
+    wl: Workload = wrapper.session.query(Workload).filter_by(uuid=data["device_uuid"])
 
     if wl is None:
         return device_not_found
@@ -80,7 +80,7 @@ def hardware_stop(data: dict, microservice: str):
     if ser is None:
         return {"error": "service_is_not_running"}
 
-    wl: Workload = wrapper.session.query(Workload).filter_by(device_uuid=data["device_uuid"]).first()
+    wl: Workload = wrapper.session.query(Workload).filter_by(uuid=data["device_uuid"]).first()
     if wl is None:
         return device_not_found
 
