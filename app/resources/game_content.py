@@ -45,26 +45,25 @@ def delete(user: str, elements: dict):
         m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": disk})
 
 
-def check_element_existens(elements: dict) -> Tuple[bool, dict]:
-
+def check_element_existence(elements: dict) -> Tuple[bool, dict]:
     if elements["cpu"] not in hardware["cpu"]:
-        return (False, {"error": "element_cpu_not_found"})
+        return False, {"error": "element_cpu_not_found"}
     if elements["gpu"] not in hardware["gpu"]:
-        return (False, {"error": "element_gpu_not_found"})
+        return False, {"error": "element_gpu_not_found"}
     if elements["motherboard"] not in hardware["mainboards"]:
-        return (False, {"error": "element_motherboard_not_found"})
+        return False, {"error": "element_motherboard_not_found"}
     for disk in elements["disk"]:
         if disk not in hardware["disk"]:
-            return (False, {"error": "element_disk_not_found"})
+            return False, {"error": "element_disk_not_found"}
     for ram in elements["ram"]:
         if ram not in hardware["ram"]:
-            return (False, {"error": "element_ram_not_found"})
+            return False, {"error": "element_ram_not_found"}
 
     return True, {}
 
 
 def check_compatible(elements: dict) -> Tuple[bool, dict]:
-    exists, message = check_element_existens(elements)
+    exists, message = check_element_existence(elements)
     if not exists:
         return False, message
 
@@ -86,7 +85,7 @@ def check_compatible(elements: dict) -> Tuple[bool, dict]:
 
     for i in disk:
         if hardware["disk"][i]["interface"] != hardware["mainboards"][motherboard]["disk"]["interface"]:
-            return (False, {"error": "your_hard_drive_interface_does_not_fit_with_the_motherboards_one"})
+            return False, {"error": "your_hard_drive_interface_does_not_fit_with_the_motherboards_one"}
 
     return True, {}
 
