@@ -2,8 +2,8 @@ import random
 from typing import Dict, Any, Union
 from uuid import uuid4
 
-from sqlalchemy import Column, Integer, String, Boolean, Float
-from sqlalchemy.sql.expression import func, select
+from sqlalchemy import Column, String, Boolean
+from sqlalchemy.sql.expression import func
 
 from app import m, wrapper
 
@@ -35,7 +35,6 @@ class Device(wrapper.Base):
         """
         Creates a new device.
         :param user: The owner's uuid
-        :param power: The "processing power"
         :param powered_on: Is powered on?
         :return: New Device
         """

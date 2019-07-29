@@ -1,48 +1,48 @@
-from vars import hardware, resolve_ram_type, resolve_gpu_type
-from typing import Tuple, List
 import math
+from typing import Tuple, List
+
+from app import m
 from models.hardware import Hardware
-from models.device import Device
 from models.service import Service
 from models.workload import Workload
-from app import m
+from vars import hardware, resolve_ram_type, resolve_gpu_type
 
 
 def check_exists(user: str, elements: dict) -> Tuple[bool, dict]:
-    response: dict = m.contact_microservice("inventory", ["inventory", "list"], {"user": user})
+    response: dict = m.contact_microservice("inventory", ["inventory", "list"], {"owner": user})
 
     names: List[str] = [x["element_name"] for x in response["elements"]]
 
     if elements["cpu"] not in names:
-        return (False, {"error": "you_dont_own_such_cpu"})
+        return False, {"error": "you_dont_own_such_cpu"}
     if elements["motherboard"] not in names:
-        return (False, {"error": "you_dont_own_such_motherboard"})
+        return False, {"error": "you_dont_own_such_motherboard"}
     if elements["gpu"] not in names:
-        return (False, {"error": "you_dont_own_such_gpu"})
+        return False, {"error": "you_dont_own_such_gpu"}
     for ram in elements["ram"]:
         if ram not in names:
-            return (False, {"error": "you_dont_own_such_ram"})
+            return False, {"error": "you_dont_own_such_ram"}
         else:
             names.remove(ram)
     for disk in elements["disk"]:
         if disk not in names:
-            return (False, {"error": "you_dont_own_such_disk"})
+            return False, {"error": "you_dont_own_such_disk"}
         else:
             names.remove(disk)
 
-    return (True, {})
+    return True, {}
 
 
 def delete(user: str, elements: dict):
-    m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"user": user, "name": elements["cpu"]})
+    m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": elements["cpu"]})
     m.contact_microservice(
-        "inventory", ["inventory", "delete_by_name"], {"user": user, "name": elements["motherboard"]}
+        "inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": elements["motherboard"]}
     )
-    m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"user": user, "name": elements["gpu"]})
+    m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": elements["gpu"]})
     for ram in elements["ram"]:
-        m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"user": user, "name": ram})
+        m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": ram})
     for disk in elements["disk"]:
-        m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"user": user, "name": disk})
+        m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": disk})
 
 
 def check_element_existens(elements: dict) -> Tuple[bool, dict]:
@@ -54,20 +54,19 @@ def check_element_existens(elements: dict) -> Tuple[bool, dict]:
     if elements["motherboard"] not in hardware["mainboards"]:
         return (False, {"error": "element_motherboard_not_found"})
     for disk in elements["disk"]:
-        if not disk in hardware["disk"]:
+        if disk not in hardware["disk"]:
             return (False, {"error": "element_disk_not_found"})
     for ram in elements["ram"]:
-        if not ram in hardware["ram"]:
+        if ram not in hardware["ram"]:
             return (False, {"error": "element_ram_not_found"})
 
-    return (True, {})
+    return True, {}
 
 
 def check_compatible(elements: dict) -> Tuple[bool, dict]:
-
     exists, message = check_element_existens(elements)
     if not exists:
-        return (False, message)
+        return False, message
 
     cpu: str = elements["cpu"]
     motherboard: str = elements["motherboard"]
@@ -76,24 +75,23 @@ def check_compatible(elements: dict) -> Tuple[bool, dict]:
     disk: List[str] = elements["disk"]
 
     if hardware["cpu"][cpu]["sockel"] != hardware["mainboards"][motherboard]["sockel"]:
-        return (False, {"error": "cpu_and_mainboard_sockel_do_not_fit"})
+        return False, {"error": "cpu_and_mainboard_sockel_do_not_fit"}
 
     if hardware["mainboards"][motherboard]["ram"]["ramSlots"] < len(ram):
-        return (False, {"error": "mainboard_has_not_this_many_ram_slots"})
+        return False, {"error": "mainboard_has_not_this_many_ram_slots"}
 
     for ram_stick in ram:
         if hardware["ram"][ram_stick]["ramTyp"] != hardware["mainboards"][motherboard]["ram"]["typ"]:
-            return (False, {"error": "ram_type_does_not_fit_what_you_have_on_your_mainboard"})
+            return False, {"error": "ram_type_does_not_fit_what_you_have_on_your_mainboard"}
 
     for i in disk:
         if hardware["disk"][i]["interface"] != hardware["mainboards"][motherboard]["disk"]["interface"]:
             return (False, {"error": "your_hard_drive_interface_does_not_fit_with_the_motherboards_one"})
 
-    return (True, {})
+    return True, {}
 
 
 def calculate_power(elements: dict) -> Tuple[float, float, float, float, float]:
-
     cpu: str = elements["cpu"]
     motherboard: str = elements["motherboard"]
     ram: List[str] = elements["ram"]
@@ -125,11 +123,10 @@ def calculate_power(elements: dict) -> Tuple[float, float, float, float, float]:
 
     network: float = hardware["mainboards"][motherboard]["networkCard"]["speed"]
 
-    return (performance_cpu, performance_ram, performance_gpu, dick_storage, network)
+    return performance_cpu, performance_ram, performance_gpu, dick_storage, network
 
 
 def create_hardware(elements: dict, device_uuid: str) -> None:
-
     Hardware.create(device_uuid, elements["cpu"], "cpu")
     Hardware.create(device_uuid, elements["gpu"], "gpu")
     Hardware.create(device_uuid, elements["motherboard"], "mainboard")
@@ -140,15 +137,15 @@ def create_hardware(elements: dict, device_uuid: str) -> None:
 
 
 def scale_resources(s: List[Service], scale: Tuple[float, float, float, float, float]):
-
     for service in s:
-        send: dict = {}
-        send["service_uuid"] = service.service_uuid
-        send["cpu"] = scale[0] * service.allocated_cpu
-        send["ram"] = scale[1] * service.allocated_raml
-        send["gpu"] = scale[2] * service.allocated_gpu
-        send["disk"] = scale[3] * service.allocated_disk
-        send["network"] = scale[4] * service.allocated_network
+        send: dict = {
+            "service_uuid": service.service_uuid,
+            "cpu": scale[0] * service.allocated_cpu,
+            "ram": scale[1] * service.allocated_raml,
+            "gpu": scale[2] * service.allocated_gpu,
+            "disk": scale[3] * service.allocated_disk,
+            "network": scale[4] * service.allocated_network,
+        }
 
         m.contact_microservice("service", ["hardware", "scale"], send)
 
@@ -156,7 +153,6 @@ def scale_resources(s: List[Service], scale: Tuple[float, float, float, float, f
 def generate_scale(
     data: Tuple[float, float, float, float, float], wl: Workload
 ) -> Tuple[float, float, float, float, float]:
-
     if wl.usage_cpu + data[0] < wl.performance_cpu:
         cpu: float = 1
     else:
@@ -183,12 +179,12 @@ def generate_scale(
     else:
         scale: float = (1 - (wl.usage_network + data[4] - wl.performance_network)) / (wl.usage_network + data[4])
         network: float = scale
-    return (cpu, ram, gpu, disk, network)
+    return cpu, ram, gpu, disk, network
 
 
 def dict2tuple(data: dict) -> Tuple[float, float, float, float, float]:
-    return (data["cpu"], data["ram"], data["gpu"], data["disk"], data["network"])
+    return data["cpu"], data["ram"], data["gpu"], data["disk"], data["network"]
 
 
 def turn(data: Tuple[float, float, float, float, float]) -> Tuple[float, float, float, float, float]:
-    return (-1 * data[0], -1 * data[1], -1 * data[2], -1 * data[3], -1 * data[4])
+    return -1 * data[0], -1 * data[1], -1 * data[2], -1 * data[3], -1 * data[4]

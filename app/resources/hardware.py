@@ -1,11 +1,12 @@
-from app import wrapper, m
-from schemes import requirement_build, device_not_found
-from resources.game_content import check_compatible, calculate_power, scale_resources, generate_scale, dict2tuple, turn
-from scheme import UUID
-from models.workload import Workload
-from models.service import Service
-from models.device import Device
 from typing import List, Tuple
+
+from scheme import UUID
+
+from app import wrapper, m
+from models.service import Service
+from models.workload import Workload
+from resources.game_content import check_compatible, calculate_power, scale_resources, generate_scale, dict2tuple, turn
+from schemes import requirement_build, device_not_found
 
 
 @m.user_endpoint(path=["hardware", "build"], requires=requirement_build)

@@ -1,7 +1,5 @@
 from typing import Optional
 
-from scheme import UUID, Text
-
 from app import m, wrapper
 from models.device import Device
 from models.file import CONTENT_LENGTH

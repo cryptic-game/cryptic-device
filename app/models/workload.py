@@ -1,11 +1,8 @@
-import random
 from typing import Dict, Any, Union, Tuple
-from uuid import uuid4
 
-from sqlalchemy import Column, Integer, String, Boolean, Float
-from sqlalchemy.sql.expression import func, select
+from sqlalchemy import Column, String, Float
 
-from app import m, wrapper
+from app import wrapper
 
 
 class Workload(wrapper.Base):
@@ -40,7 +37,6 @@ class Workload(wrapper.Base):
 
     @staticmethod
     def create(device: str, attributes: Tuple[float, float, float, float, float]) -> "Workload":
-
         work: Workload = Workload(
             uuid=device,
             performance_cpu=attributes[0],
@@ -69,7 +65,6 @@ class Workload(wrapper.Base):
         wrapper.session.commit()
 
     def display(self) -> dict:
-
         return_value: dict = {
             "cpu": min(self.usage_cpu / self.performance_cpu, 1),
             "ram": min(self.usage_ram / self.performance_ram, 1),
