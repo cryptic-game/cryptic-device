@@ -9,7 +9,7 @@ from app import m
 
 
 def check_exists(user: str, elements: dict) -> Tuple[bool, dict]:
-    response: dict = m.contact_microservice("inventory", ["inventory", "list"], {"user": user})
+    response: dict = m.contact_microservice("inventory", ["inventory", "list"], {"owner": user})
 
     names: List[str] = [x["element_name"] for x in response["elements"]]
 
