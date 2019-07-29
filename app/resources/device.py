@@ -1,12 +1,10 @@
 from typing import List, Optional
 
-from scheme import UUID, Text
-
 from app import m, wrapper
 from models.device import Device
 from models.workload import Workload
-from schemes import *
 from resources.game_content import check_compatible, calculate_power, create_hardware, check_exists, delete
+from schemes import *
 
 
 @m.user_endpoint(path=["device", "info"], requires={"device_uuid": UUID()})

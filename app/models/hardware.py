@@ -1,11 +1,9 @@
-import random
-from typing import Dict, Any, Union
+from typing import Union
 from uuid import uuid4
 
-from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.sql.expression import func, select
+from sqlalchemy import Column, String
 
-from app import m, wrapper
+from app import wrapper
 
 
 class Hardware(wrapper.Base):
@@ -22,7 +20,6 @@ class Hardware(wrapper.Base):
 
     @staticmethod
     def create(device: str, hardware: str, hardware_typ: str) -> "Hardware":
-
         hd: Hardware = Hardware(
             uuid=str(uuid4()), device_uuid=device, hardware_element=hardware, hardware_typ=hardware_typ
         )

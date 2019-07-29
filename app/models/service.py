@@ -1,6 +1,8 @@
 from typing import Dict, Any, Union, Tuple
-from sqlalchemy import Column, Integer, String, Boolean, Float
-from app import m, wrapper
+
+from sqlalchemy import Column, String, Float
+
+from app import wrapper
 
 
 class Service(wrapper.Base):
@@ -30,7 +32,6 @@ class Service(wrapper.Base):
 
     @staticmethod
     def create(device: str, service: str, allocates: Tuple[float, float, float, float, float]) -> "Service":
-
         s: Service = Service(
             service_uuid=service,
             device_uuid=device,
@@ -47,4 +48,4 @@ class Service(wrapper.Base):
         return s
 
     def export(self) -> Tuple[float, float, float, float, float]:
-        return (self.allocated_cpu, self.allocated_ram, self.allocated_gpu, self.allocated_disk, self.allocated_network)
+        return self.allocated_cpu, self.allocated_ram, self.allocated_gpu, self.allocated_disk, self.allocated_network
