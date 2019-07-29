@@ -19,7 +19,6 @@ class Device(wrapper.Base):
     name: Union[Column, str] = Column(String(255), nullable=False)
     owner: Union[Column, str] = Column(String(36), nullable=False)
     powered_on: Union[Column, bool] = Column(Boolean, nullable=False, default=False)
-    performance: Union[Column, str] = Column(String(36), unique=True)
 
     @property
     def serialize(self) -> Dict[str, Any]:
@@ -31,7 +30,7 @@ class Device(wrapper.Base):
         return d
 
     @staticmethod
-    def create(user: str, powered_on: bool) -> "Device":
+    def create(user: str, powered_on: bool, performance: str) -> "Device":
         """
         Creates a new device.
         :param user: The owner's uuid
