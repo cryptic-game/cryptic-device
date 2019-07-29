@@ -26,7 +26,7 @@ def build(data: dict, user: str):
 
 @m.user_endpoint(path=["hardware", "resources"], requires={"device_uuid": UUID()})
 def hardware_resources(data: dict, user: str):
-    wl: Workload = wrapper.session.query(Workload).filter_by(uuid=data["device_uuid"])
+    wl: Workload = wrapper.session.query(Workload).get(data["device_uuid"])
 
     if wl is None:
         return device_not_found
@@ -38,12 +38,12 @@ def hardware_resources(data: dict, user: str):
 def hardware_register(data: dict, microservice: str):
     # cpu_requirements, ram_req, gpu_req, disk_req, network_req
 
-    wl: Workload = wrapper.session.query(Workload).filter_by(uuid=data["device_uuid"])
+    wl: Workload = wrapper.session.query(Workload).get(data["device_uuid"])
 
     if wl is None:
         return device_not_found
 
-    ser: Service = wrapper.session.query(Service).filter_by(service_uuid=data["service_uuid"]).first()
+    ser: Service = wrapper.session.query(Service).get(data["service_uuid"])
 
     if ser is not None:
         return {"error": "Service already running"}
@@ -76,11 +76,11 @@ def hardware_register(data: dict, microservice: str):
 
 @m.microservice_endpoint(path=["hardware", "stop"])
 def hardware_stop(data: dict, microservice: str):
-    ser: Service = wrapper.session.query(Service).filter_by(service_uuid=data["service_uuid"]).first()
+    ser: Service = wrapper.session.query(Service).get(data["service_uuid"])
     if ser is None:
         return {"error": "service_is_not_running"}
 
-    wl: Workload = wrapper.session.query(Workload).filter_by(uuid=data["device_uuid"]).first()
+    wl: Workload = wrapper.session.query(Workload).get(data["device_uuid"]).first()
     if wl is None:
         return device_not_found
 

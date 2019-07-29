@@ -47,17 +47,17 @@ def delete(user: str, elements: dict):
 
 def check_element_existens(elements: dict) -> Tuple[bool, dict]:
 
-    if not elements["cpu"] in hardware["cpu"].key():
+    if elements["cpu"] not in hardware["cpu"]:
         return (False, {"error": "element_cpu_not_found"})
-    if not elements["gpu"] in hardware["gpu"].keys():
+    if elements["gpu"] not in hardware["gpu"]:
         return (False, {"error": "element_gpu_not_found"})
-    if not elements["motherboard"] in hardware["mainboards"].keys():
+    if elements["motherboard"] not in hardware["mainboards"]:
         return (False, {"error": "element_motherboard_not_found"})
     for disk in elements["disk"]:
-        if not disk in hardware["diskStorage"].keys():
+        if not disk in hardware["disk"]:
             return (False, {"error": "element_disk_not_found"})
     for ram in elements["ram"]:
-        if not ram in hardware["ram"].keys():
+        if not ram in hardware["ram"]:
             return (False, {"error": "element_ram_not_found"})
 
     return (True, {})
@@ -86,7 +86,7 @@ def check_compatible(elements: dict) -> Tuple[bool, dict]:
             return (False, {"error": "ram_type_does_not_fit_what_you_have_on_your_mainboard"})
 
     for i in disk:
-        if hardware["diskStorage"][i]["interface"] != hardware["mainboards"][motherboard]["diskStorage"]["interface"]:
+        if hardware["disk"][i]["interface"] != hardware["mainboards"][motherboard]["disk"]["interface"]:
             return (False, {"error": "your_hard_drive_interface_does_not_fit_with_the_motherboards_one"})
 
     return (True, {})
@@ -109,38 +109,23 @@ def calculate_power(elements: dict) -> Tuple[float, float, float, float, float]:
                 resolve_ram_type[hardware["mainboards"][motherboard]["ram"]["type"]],
                 resolve_ram_type[hardware["ram"][ram_stick]["ramTyp"]],
             )
-            * hardware["ram"][ram_stick]["ramsize"]
+            * hardware["ram"][ram_stick]["ramSize"]
         )
 
-    performance_gpu: float = resolve_gpu_type[hardware["graphiccards"][gpu]["interface"]] * math.sqrt(
-        hardware["graphiccard"][gpu]["ramsize"] * hardware["graphiccard"][gpu]["frequency"]
+    performance_gpu: float = resolve_gpu_type[hardware["gpu"][gpu]["interface"]] * math.sqrt(
+        hardware["gpu"][gpu]["ramSize"] * hardware["gpu"][gpu]["frequency"]
     )
 
     dick_storage: float = 1
 
     for i in disk:
-        dick_storage += hardware["diskStorage"][i]["capacity"] * math.log1p(
-            hardware["diskStorage"][i]["writingSpeed"] * hardware["diskStorage"][i]["readingSpeed"]
+        dick_storage += hardware["disk"][i]["capacity"] * math.log1p(
+            hardware["disk"][i]["writingSpeed"] * hardware["disk"][i]["readingSpeed"]
         )
 
-    network: float = hardware["mainboards"][motherboard]["speed"]
+    network: float = hardware["mainboards"][motherboard]["networkCard"]["speed"]
 
     return (performance_cpu, performance_ram, performance_gpu, dick_storage, network)
-
-
-def add_able(elements: dict, type_new: str) -> bool:
-
-    if type_new == "cpu" and "cpu" in elements.keys():
-        return False
-    if type_new == "motherboard" and "motherboard" in elements.keys():
-        return False
-    if type_new == "gpu" and "gpu" in elements.keys():
-        return False
-    if type_new == "harddrive":
-        # TODO check for multiple harddrives dependinng on spaces in the motherboard
-        pass
-
-    return True
 
 
 def create_hardware(elements: dict, device_uuid: str) -> None:
@@ -149,7 +134,7 @@ def create_hardware(elements: dict, device_uuid: str) -> None:
     Hardware.create(device_uuid, elements["gpu"], "gpu")
     Hardware.create(device_uuid, elements["motherboard"], "mainboard")
     for disk in elements["disk"]:
-        Hardware.create(device_uuid, disk, "diskStorage")
+        Hardware.create(device_uuid, disk, "disk")
     for ram in elements["ram"]:
         Hardware.create(device_uuid, ram, "ram")
 

@@ -17,7 +17,7 @@ def info(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
 
     if device is None:
         return device_not_found
@@ -33,7 +33,7 @@ def ping(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Optional[Device] = wrapper.session.query(Device).ge(data["device_uuid"])
 
     if device is None:
         return device_not_found
@@ -91,7 +91,7 @@ def power(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Device = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Device = wrapper.session.query(Device).get(data["device_uuid"])
 
     if device is None:
         return device_not_found
@@ -115,7 +115,7 @@ def change_name(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
 
     if device is None:
         return device_not_found
@@ -140,7 +140,7 @@ def delete(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: Success or not
     """
-    device: Device = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Device = wrapper.session.query(Device).get(data["device_uuid"])
 
     if device is None:
         return device_not_found
@@ -169,14 +169,15 @@ def exist(data: dict, microservice: str) -> dict:
     :param microservice: The microservice..
     :return: True or False
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
 
     return {"exist": device is not None}
 
 
 @m.microservice_endpoint(path=["owner"])
 def owner(data: dict, microservice: str) -> dict:
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    if __name__ == "__main__":
+        device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
 
     if device is None:
         return device_not_found

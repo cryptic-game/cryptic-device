@@ -17,7 +17,7 @@ hardware = {
             "networkCard": {"name": "Name der karte", "interface": "Gigabit Ethernet", "speed": 1000},
         }
     },
-    "processor": {
+    "cpu": {
         "CoreOne A100": {
             "name": "CoreOne A100",
             "frequencyMin": 800,
@@ -56,7 +56,7 @@ hardware = {
             "power": 5,
         },
     },
-    "graphiccards": {
+    "gpu": {
         "Forcevid MX1000": {
             "name": "Forcevid MX1000",
             "ramSize": 128,
@@ -74,7 +74,7 @@ hardware = {
             "power": 400,
         },
     },
-    "diskStorage": {
+    "disk": {
         "HDD Elements Zero": {
             "name": "HDD Elements Zero",
             "diskTyp": "HDD",

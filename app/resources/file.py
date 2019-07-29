@@ -17,7 +17,7 @@ def get_all(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
 
     if device is None:
         return device_not_found
@@ -36,7 +36,7 @@ def info(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
 
     if device is None:
         return device_not_found
@@ -44,7 +44,7 @@ def info(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
-    file: Optional[File] = wrapper.session.query(File).filter_by(uuid=data["file_uuid"]).first()
+    file: Optional[File] = wrapper.session.query(File).get(data["file_uuid"])
 
     if file is None:
         return file_not_found
@@ -61,7 +61,7 @@ def move(data: dict, user: str) -> dict:
     file_uuid = data["file_uuid"]
     filename = data["filename"]
 
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=device_uuid).first()
+    device: Optional[Device] = wrapper.session.query(Device).get(device_uuid)
 
     if device is None:
         return device_not_found
@@ -99,7 +99,7 @@ def update(data: dict, user: str) -> dict:
     file_uuid = data["file_uuid"]
     content = data["content"]
 
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=device_uuid).first()
+    device: Optional[Device] = wrapper.session.query(Device).get(device_uuid)
 
     if device is None:
         return device_not_found
@@ -125,7 +125,7 @@ def delete(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
 
     if device is None:
         return device_not_found
@@ -133,7 +133,7 @@ def delete(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
-    file: Optional[File] = wrapper.session.query(File).filter_by(uuid=data["file_uuid"]).first()
+    file: Optional[File] = wrapper.session.query(File).get(data["file_uuid"])
 
     if file is None:
         return file_not_found
@@ -159,7 +159,7 @@ def create(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).filter_by(uuid=data["device_uuid"]).first()
+    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
 
     if device is None:
         return device_not_found
