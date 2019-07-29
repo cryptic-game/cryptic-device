@@ -30,7 +30,7 @@ class Device(wrapper.Base):
         return d
 
     @staticmethod
-    def create(user: str, powered_on: bool, performance: str) -> "Device":
+    def create(user: str, powered_on: bool) -> "Device":
         """
         Creates a new device.
         :param user: The owner's uuid
