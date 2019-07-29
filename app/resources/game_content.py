@@ -34,15 +34,15 @@ def check_exists(user: str, elements: dict) -> Tuple[bool, dict]:
 
 
 def delete(user: str, elements: dict):
-    m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"user": user, "name": elements["cpu"]})
+    m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": elements["cpu"]})
     m.contact_microservice(
-        "inventory", ["inventory", "delete_by_name"], {"user": user, "name": elements["motherboard"]}
+        "inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": elements["motherboard"]}
     )
-    m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"user": user, "name": elements["gpu"]})
+    m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": elements["gpu"]})
     for ram in elements["ram"]:
-        m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"user": user, "name": ram})
+        m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": ram})
     for disk in elements["disk"]:
-        m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"user": user, "name": disk})
+        m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": disk})
 
 
 def check_element_existens(elements: dict) -> Tuple[bool, dict]:
