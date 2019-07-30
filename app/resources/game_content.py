@@ -1,7 +1,7 @@
 import math
 from typing import Tuple, List
 
-from app import m
+from app import m, wrapper
 from models.hardware import Hardware
 from models.service import Service
 from models.workload import Workload
@@ -33,7 +33,7 @@ def check_exists(user: str, elements: dict) -> Tuple[bool, dict]:
     return True, {}
 
 
-def delete(user: str, elements: dict):
+def delete_items(user: str, elements: dict):
     m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": elements["cpu"]})
     m.contact_microservice(
         "inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": elements["motherboard"]}
@@ -70,7 +70,7 @@ def check_compatible(elements: dict) -> Tuple[bool, dict]:
     cpu: str = elements["cpu"]
     motherboard: str = elements["motherboard"]
     ram: List[str] = elements["ram"]
-    gpu: str = elements["gpu"]
+    # gpu: str = elements["gpu"] ask gamedesign
     disk: List[str] = elements["disk"]
 
     if hardware["cpu"][cpu]["sockel"] != hardware["mainboards"][motherboard]["sockel"]:
@@ -87,6 +87,11 @@ def check_compatible(elements: dict) -> Tuple[bool, dict]:
         if hardware["disk"][i]["interface"] != hardware["mainboards"][motherboard]["disk"]["interface"]:
             return False, {"error": "your_hard_drive_interface_does_not_fit_with_the_motherboards_one"}
 
+    if len(ram) < 1:
+        return False, {"error": "you_need_at_least_one_ramstick"}
+    if len(disk) < 1:
+        return False, {"error": "you_need_at_least_one_harddrive"}
+
     return True, {}
 
 
@@ -99,7 +104,7 @@ def calculate_power(elements: dict) -> Tuple[float, float, float, float, float]:
 
     performance_cpu: float = hardware["cpu"][cpu]["cores"] * hardware["cpu"][cpu]["frequencyMax"]
 
-    performance_ram: float = 1
+    performance_ram: float = 0
     for ram_stick in ram:
         performance_ram += (
             min(
@@ -113,7 +118,7 @@ def calculate_power(elements: dict) -> Tuple[float, float, float, float, float]:
         hardware["gpu"][gpu]["ramSize"] * hardware["gpu"][gpu]["frequency"]
     )
 
-    dick_storage: float = 1
+    dick_storage: float = 0
 
     for i in disk:
         dick_storage += hardware["disk"][i]["capacity"] * math.log1p(
@@ -187,3 +192,17 @@ def dict2tuple(data: dict) -> Tuple[float, float, float, float, float]:
 
 def turn(data: Tuple[float, float, float, float, float]) -> Tuple[float, float, float, float, float]:
     return -1 * data[0], -1 * data[1], -1 * data[2], -1 * data[3], -1 * data[4]
+
+
+def stop_all_service(device_uuid: str, delete: bool = False) -> None:
+    for obj in wrapper.session.query(Service).filter_by(device_uuid=device_uuid).all():
+        wrapper.session.delete(obj)
+    wl: Workload = wrapper.session.query(Workload).get(device_uuid)
+    wl.usage_cpu = 0
+    wl.usage_ram = 0
+    wl.usage_gpu = 0
+    wl.usage_disk = 0
+    wl.usage_network = 0
+    if delete:
+        wrapper.session.delete(wl)
+    wrapper.session.commit()

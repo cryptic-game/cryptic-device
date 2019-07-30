@@ -3,7 +3,15 @@ from typing import List, Optional
 from app import m, wrapper
 from models.device import Device
 from models.workload import Workload
-from resources.game_content import check_compatible, calculate_power, create_hardware, check_exists, delete
+from models.service import Service
+from resources.game_content import (
+    check_compatible,
+    calculate_power,
+    create_hardware,
+    check_exists,
+    delete_items,
+    stop_all_service,
+)
 from schemes import *
 
 
@@ -76,7 +84,7 @@ def create(data: dict, user: str) -> dict:
 
     create_hardware(data, device.uuid)
 
-    delete(user, data)
+    delete_items(user, data)
 
     return device.serialize
 
@@ -98,6 +106,9 @@ def power(data: dict, user: str) -> dict:
         return permission_denied
 
     device.powered_on: bool = not device.powered_on
+    if not device.powered_on:  # False
+        stop_all_service(data["device_uuid"])
+
     wrapper.session.commit()
 
     return device.serialize
@@ -146,6 +157,8 @@ def delete(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
+    stop_all_service(data["device_uuid"], delete=True)
+
     wrapper.session.delete(device)
     wrapper.session.commit()
 
@@ -174,8 +187,7 @@ def exist(data: dict, microservice: str) -> dict:
 
 @m.microservice_endpoint(path=["owner"])
 def owner(data: dict, microservice: str) -> dict:
-    if __name__ == "__main__":
-        device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
+    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
 
     if device is None:
         return device_not_found
