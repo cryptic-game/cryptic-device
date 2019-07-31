@@ -13,7 +13,7 @@ class Service(wrapper.Base):
     __tablename__: str = "service_req"
 
     service_uuid: Union[str, Column] = Column(String(36), primary_key=True, unique=True)
-    device_uuid: Union[str, Column] = Column(String(36))
+    device_uuid: Union[str, Column] = Column(String(36), nullable=False)
 
     allocated_cpu: Union[float, Column] = Column(Float)
     allocated_ram: Union[float, Column] = Column(Float)

@@ -14,11 +14,11 @@ class Workload(wrapper.Base):
 
     uuid: Union[Column, str] = Column(String(36), primary_key=True, unique=True)
 
-    performance_cpu: Union[float, Column] = Column(Float)
-    performance_gpu: Union[float, Column] = Column(Float)
-    performance_ram: Union[float, Column] = Column(Float)
-    performance_disk: Union[float, Column] = Column(Float)
-    performance_network: Union[float, Column] = Column(Float)
+    performance_cpu: Union[float, Column] = Column(Float, nullable=False)
+    performance_gpu: Union[float, Column] = Column(Float, nullable=False)
+    performance_ram: Union[float, Column] = Column(Float, nullable=False)
+    performance_disk: Union[float, Column] = Column(Float, nullable=False)
+    performance_network: Union[float, Column] = Column(Float, nullable=False)
 
     usage_cpu: Union[float, Column] = Column(Float)
     usage_gpu: Union[float, Column] = Column(Float)
