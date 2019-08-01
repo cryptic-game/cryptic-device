@@ -17,7 +17,6 @@ file_already_exists: dict = make_error("file_already_exists", origin="user")
 
 success: dict = {"ok": True}
 
-
 requirement_build: dict = {
     "gpu": Text(),
     "cpu": Text(),
