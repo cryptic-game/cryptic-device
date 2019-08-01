@@ -12,6 +12,7 @@ from resources.game_content import (
     delete_items,
     stop_all_service,
     stop_services,
+    delete_services,
 )
 from schemes import *
 
@@ -160,6 +161,7 @@ def delete(data: dict, user: str) -> dict:
         return permission_denied
 
     stop_all_service(data["device_uuid"], delete=True)
+    delete_services(data["device_uuid"]) # Removes all Services in MS_Service
 
     wrapper.session.delete(device)
     wrapper.session.commit()
