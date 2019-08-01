@@ -40,7 +40,7 @@ def ping(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).ge(data["device_uuid"])
+    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
 
     if device is None:
         return device_not_found
