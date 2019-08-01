@@ -11,6 +11,7 @@ from resources.game_content import (
     check_exists,
     delete_items,
     stop_all_service,
+    stop_services,
 )
 from schemes import *
 
@@ -108,6 +109,7 @@ def power(data: dict, user: str) -> dict:
     device.powered_on: bool = not device.powered_on
     if not device.powered_on:  # False
         stop_all_service(data["device_uuid"])
+        stop_services(data["device_uuid"])
 
     wrapper.session.commit()
 

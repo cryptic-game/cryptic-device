@@ -201,3 +201,7 @@ def stop_all_service(device_uuid: str, delete: bool = False) -> None:
     if delete:
         wrapper.session.delete(wl)
     wrapper.session.commit()
+
+
+def stop_services(device_uuid: str) -> None:
+    m.contact_microservice("service", ["hardware", "stop"], {"device_uuid": device_uuid})
