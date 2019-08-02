@@ -118,16 +118,16 @@ def calculate_power(elements: dict) -> Tuple[float, float, float, float, float]:
         hardware["gpu"][gpu]["ramSize"] * hardware["gpu"][gpu]["frequency"]
     )
 
-    dick_storage: float = 0
+    disk_storage: float = 0
 
     for i in disk:
-        dick_storage += hardware["disk"][i]["capacity"] * math.log1p(
+        disk_storage += hardware["disk"][i]["capacity"] * math.log1p(
             hardware["disk"][i]["writingSpeed"] * hardware["disk"][i]["readingSpeed"]
         )
 
     network: float = hardware["mainboards"][motherboard]["networkCard"]["speed"]
 
-    return performance_cpu, performance_ram, performance_gpu, dick_storage, network
+    return performance_cpu, performance_ram, performance_gpu, disk_storage, network
 
 
 def create_hardware(elements: dict, device_uuid: str) -> None:
@@ -145,7 +145,7 @@ def scale_resources(s: List[Service], scale: Tuple[float, float, float, float, f
         send: dict = {
             "service_uuid": service.service_uuid,
             "cpu": scale[0] * service.allocated_cpu,
-            "ram": scale[1] * service.allocated_raml,
+            "ram": scale[1] * service.allocated_ram,
             "gpu": scale[2] * service.allocated_gpu,
             "disk": scale[3] * service.allocated_disk,
             "network": scale[4] * service.allocated_network,
@@ -166,18 +166,22 @@ def generate_scale(
         ram: float = 1
     else:
         ram: float = wl.performance_ram / (wl.usage_ram + data[1])
-    if wl.usage_gpu + data[2] > wl.performance_gpu:
+
+    if wl.usage_gpu + data[2] < wl.performance_gpu:
         gpu: float = 1
     else:
         gpu: float = wl.performance_gpu / (wl.usage_gpu + data[2])
-    if wl.usage_disk + data[3] > wl.performance_disk:
+
+    if wl.usage_disk + data[3] < wl.performance_disk:
         disk: float = 1
     else:
         disk: float = wl.performance_disk / (wl.usage_disk + data[3])
-    if wl.usage_network + data[4] > wl.performance_network:
+
+    if wl.usage_network + data[4] < wl.performance_network:
         network: float = 1
     else:
         network: float = wl.performance_network / (wl.usage_network + data[4])
+
     return cpu, ram, gpu, disk, network
 
 
