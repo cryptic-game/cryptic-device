@@ -1,5 +1,5 @@
 from typing import List, Optional
-
+from scheme import UUID, Text
 from app import m, wrapper
 from models.device import Device
 from models.workload import Workload
@@ -13,7 +13,7 @@ from resources.game_content import (
     stop_services,
     delete_services,
 )
-from schemes import *
+from schemes import success, device_not_found, permission_denied, requirement_build
 
 
 @m.user_endpoint(path=["device", "info"], requires={"device_uuid": UUID()})

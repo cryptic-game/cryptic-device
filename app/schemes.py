@@ -1,4 +1,4 @@
-from scheme import *
+from scheme import Text, Sequence
 
 
 def make_error(*args: str, origin: str, sep: str = "") -> dict:
@@ -14,6 +14,8 @@ device_not_found: dict = make_error("device_not_found", origin="user")
 file_not_found: dict = make_error("file_not_found", origin="user")
 
 file_already_exists: dict = make_error("file_already_exists", origin="user")
+
+service_not_found: dict = make_error("service_not_found", origin="service")
 
 success: dict = {"ok": True}
 

@@ -49,3 +49,10 @@ class Service(wrapper.Base):
 
     def export(self) -> Tuple[float, float, float, float, float]:
         return self.allocated_cpu, self.allocated_ram, self.allocated_gpu, self.allocated_disk, self.allocated_network
+
+    def overwrite(self, data: Tuple[float, float, float, float, float]) -> None:
+        self.allocated_cpu = data[0]
+        self.allocated_ram = data[1]
+        self.allocated_gpu = data[2]
+        self.allocated_disk = data[3]
+        self.allocated_network = data[4]

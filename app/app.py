@@ -7,8 +7,9 @@ m: MicroService = MicroService("device")
 wrapper: DatabaseWrapper = m.get_wrapper()
 
 if __name__ == "__main__":
-    from resources.device import *
-    from resources.file import *
+    import resources.device
+    import resources.file
+    import resources.hardware
 
     wrapper.Base.metadata.create_all(bind=wrapper.engine)
     m.run()

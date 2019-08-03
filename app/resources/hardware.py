@@ -6,7 +6,7 @@ from app import wrapper, m
 from models.service import Service
 from models.workload import Workload
 from resources.game_content import check_compatible, calculate_power, scale_resources, generate_scale, dict2tuple, turn
-from schemes import requirement_build, device_not_found
+from schemes import requirement_build, device_not_found, service_not_found
 
 
 @m.user_endpoint(path=["hardware", "build"], requires=requirement_build)
@@ -81,7 +81,7 @@ def hardware_stop(data: dict, microservice: str):
     if ser is None:
         return {"error": "service_is_not_running"}
 
-    wl: Workload = wrapper.session.query(Workload).get(data["device_uuid"]).first()
+    wl: Workload = wrapper.session.query(Workload).get(data["device_uuid"])
     if wl is None:
         return device_not_found
 
@@ -99,3 +99,38 @@ def hardware_stop(data: dict, microservice: str):
     m.contact_user(data["user"], wl.display())
 
     return {"ok": True}
+
+
+@m.microservice_endpoint(path=["hardware", "scale"])
+def hardware_scale(data: dict, user: str):
+
+    ser: Service = wrapper.session.query(Service).get(data["service_uuid"])
+    if ser is None:
+        return service_not_found
+
+    wl: Workload = wrapper.session.query(Workload).get(data["device_uuid"])
+    other: List[Service] = wrapper.session.query(Service).filter_by(device_uuid=data["device_uuid"]).all()
+
+    wl.service(turn(ser.export()))
+
+    new: Tuple[float, float, float, float, float] = dict2tuple(data)
+
+    scales: Tuple[float, float, float, float, float] = generate_scale(new, wl)
+
+    wl.service(new)
+    ser.overwrite(new)
+
+    scale_resources(other, scales)
+
+    return_value: dict = {
+        "service_uuid": ser.service_uuid,
+        "cpu": ser.allocated_cpu * scales[0],
+        "ram": ser.allocated_ram * scales[1],
+        "gpu": ser.allocated_gpu * scales[2],
+        "disk": ser.allocated_disk * scales[3],
+        "network": ser.allocated_network * scales[4],
+    }
+
+    m.contact_user(data["user"], wl.display())
+
+    return return_value

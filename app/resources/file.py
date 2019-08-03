@@ -1,10 +1,10 @@
 from typing import Optional
-
+from scheme import UUID, Text
 from app import m, wrapper
 from models.device import Device
 from models.file import CONTENT_LENGTH
 from models.file import File
-from schemes import *
+from schemes import file_already_exists, file_not_found, device_not_found, permission_denied, success
 
 
 @m.user_endpoint(path=["file", "all"], requires={"device_uuid": UUID()})
