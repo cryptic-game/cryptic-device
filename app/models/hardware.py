@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Dict, Any
 from uuid import uuid4
 
 from sqlalchemy import Column, String
@@ -17,6 +17,15 @@ class Hardware(wrapper.Base):
     device_uuid: Union[str, Column] = Column(String(36), nullable=False)
     hardware_element: Union[str, Column] = Column(String(40), nullable=False)
     hardware_typ: Union[str, Column] = Column(String(36), nullable=False)
+
+    @property
+    def serialize(self) -> Dict[str, Any]:
+        _: str = self.uuid
+        d = self.__dict__.copy()
+
+        del d["_sa_instance_state"]
+
+        return d
 
     @staticmethod
     def create(device: str, hardware: str, hardware_typ: str) -> "Hardware":

@@ -1,7 +1,10 @@
 from typing import List, Optional
+
 from scheme import UUID, Text
+
 from app import m, wrapper
 from models.device import Device
+from models.hardware import Hardware
 from models.workload import Workload
 from resources.game_content import (
     check_compatible,
@@ -29,7 +32,8 @@ def info(data: dict, user: str) -> dict:
     if device is None:
         return device_not_found
 
-    return device.serialize
+    return {**device.serialize, "hardware": [hardware.serialize for hardware in
+                                             wrapper.session.query(Hardware).filter_by(device_uuid=device.uuid)]}
 
 
 @m.user_endpoint(path=["device", "ping"], requires={"device_uuid": UUID()})
@@ -106,8 +110,8 @@ def power(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
-    device.powered_on: bool = not device.powered_on
-    if not device.powered_on:  # False
+    device.powered_on = not device.powered_on
+    if not device.powered_on:
         stop_all_service(data["device_uuid"])
         stop_services(data["device_uuid"])
 
@@ -136,7 +140,7 @@ def change_name(data: dict, user: str) -> dict:
 
     name: str = str(data["name"])
 
-    device.name: str = name
+    device.name = name
 
     wrapper.session.commit()
 

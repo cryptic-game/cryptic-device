@@ -84,7 +84,7 @@ def check_compatible(elements: dict) -> Tuple[bool, dict]:
             return False, {"error": "ram_type_does_not_fit_what_you_have_on_your_mainboard"}
 
     for i in disk:
-        if hardware["disk"][i]["interface"] != hardware["mainboards"][motherboard]["disk"]["interface"]:
+        if hardware["disk"][i]["interface"] != hardware["mainboards"][motherboard]["diskStorage"]["interface"]:
             return False, {"error": "your_hard_drive_interface_does_not_fit_with_the_motherboards_one"}
 
     if len(ram) < 1:
@@ -108,7 +108,7 @@ def calculate_power(elements: dict) -> Tuple[float, float, float, float, float]:
     for ram_stick in ram:
         performance_ram += (
             min(
-                resolve_ram_type[hardware["mainboards"][motherboard]["ram"]["type"]],
+                resolve_ram_type[hardware["mainboards"][motherboard]["ram"]["typ"]],
                 resolve_ram_type[hardware["ram"][ram_stick]["ramTyp"]],
             )
             * hardware["ram"][ram_stick]["ramSize"]
