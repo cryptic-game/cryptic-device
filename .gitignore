@@ -158,6 +158,4 @@ venv.bak/
 .idea/inspectionProfiles/profiles_settings.xml
 #This Project
 .idea
-.lock
-Pipfile.lock
 data/

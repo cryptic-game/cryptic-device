@@ -8,6 +8,7 @@ SQLAlchemy = "*"
 PyMySQL = "*"
 cryptic-game = "*"
 scheme = "*"
+sentry-sdk = "*"
 
 [dev-packages]
 

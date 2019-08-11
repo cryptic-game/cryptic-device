@@ -32,8 +32,12 @@ def info(data: dict, user: str) -> dict:
     if device is None:
         return device_not_found
 
-    return {**device.serialize, "hardware": [hardware.serialize for hardware in
-                                             wrapper.session.query(Hardware).filter_by(device_uuid=device.uuid)]}
+    return {
+        **device.serialize,
+        "hardware": [
+            hardware.serialize for hardware in wrapper.session.query(Hardware).filter_by(device_uuid=device.uuid)
+        ],
+    }
 
 
 @m.user_endpoint(path=["device", "ping"], requires={"device_uuid": UUID()})
