@@ -115,11 +115,11 @@ def power(data: dict, user: str) -> dict:
         return permission_denied
 
     device.powered_on = not device.powered_on
+    wrapper.session.commit()
+
     if not device.powered_on:
         stop_all_service(data["device_uuid"])
         stop_services(data["device_uuid"])
-
-    wrapper.session.commit()
 
     return device.serialize
 
@@ -170,6 +170,7 @@ def delete(data: dict, user: str) -> dict:
     stop_all_service(data["device_uuid"], delete=True)
     delete_services(data["device_uuid"])  # Removes all Services in MS_Service
 
+    device: Device = wrapper.session.query(Device).get(data["device_uuid"])
     wrapper.session.delete(device)
     wrapper.session.commit()
 
