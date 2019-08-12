@@ -11,7 +11,7 @@ class Hardware(wrapper.Base):
     This is the hardware-model for cryptic-game
     """
 
-    __tablename__: str = "hardware"
+    __tablename__: str = "device_hardware"
 
     uuid: Union[str, Column] = Column(String(36), primary_key=True, unique=True)
     device_uuid: Union[str, Column] = Column(String(36), nullable=False)

@@ -13,7 +13,7 @@ class Device(wrapper.Base):
     This is the device-model for cryptic-device.
     """
 
-    __tablename__: str = "device"
+    __tablename__: str = "device_device"
 
     uuid: Union[Column, str] = Column(String(36), primary_key=True, unique=True)
     name: Union[Column, str] = Column(String(255), nullable=False)

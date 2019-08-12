@@ -10,7 +10,7 @@ class Workload(wrapper.Base):
     This is the workload-model for cryptic-game
     """
 
-    __tablename__: str = "workload"
+    __tablename__: str = "device_workload"
 
     uuid: Union[Column, str] = Column(String(36), primary_key=True, unique=True)
 

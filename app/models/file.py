@@ -13,7 +13,7 @@ class File(wrapper.Base):
     This is the file-model for cryptic-device.
     """
 
-    __tablename__: str = "file"
+    __tablename__: str = "device_file"
 
     uuid: Union[Column, str] = Column(String(36), primary_key=True, unique=True)
     device: Union[Column, str] = Column(String(36), nullable=False)

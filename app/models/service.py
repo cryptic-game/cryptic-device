@@ -10,7 +10,7 @@ class Service(wrapper.Base):
     This is the service-requirements-model for cryptic-game
     """
 
-    __tablename__: str = "service_req"
+    __tablename__: str = "device_service_req"
 
     service_uuid: Union[str, Column] = Column(String(36), primary_key=True, unique=True)
     device_uuid: Union[str, Column] = Column(String(36), nullable=False)
