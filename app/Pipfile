@@ -10,6 +10,7 @@ cryptic-game = "*"
 argparse = "*"
 cryptography = "*"
 scheme = "*"
+sentry-sdk = "*"
 
 [dev-packages]
 
