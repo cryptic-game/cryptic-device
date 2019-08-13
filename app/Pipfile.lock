@@ -72,12 +72,8 @@
             "version": "==1.12.3"
         },
         "cryptic-game": {
-            "hashes": [
-                "sha256:23e4033e487aa978c146476a9c04b0d9806b009a073b29e5542c006dff452b27",
-                "sha256:3d46858634bfed17b57ccfd65724f2aa9cf18a6286540d0e41409bf4003e679d"
-            ],
-            "index": "pypi",
-            "version": "==0.3.3"
+           "index": "pypi",
+            "version": "==0.4.0.dev0"
         },
         "cryptography": {
             "hashes": [
