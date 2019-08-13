@@ -6,9 +6,11 @@ ENV MYSQL_PORT 3306
 
 WORKDIR /app
 
-ADD ./Pipfile /app/
-
 RUN pip install pipenv
+
+ADD ./Pipfile /app/
+ADD ./Pipfile.lock /app/
+
 RUN pipenv sync
 
 ADD . /app/
