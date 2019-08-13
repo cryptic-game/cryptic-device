@@ -9,7 +9,7 @@ WORKDIR /app
 ADD ./Pipfile /app/
 
 RUN pip install pipenv
-RUN pipenv install
+RUN pipenv sync
 
 ADD . /app/
 
