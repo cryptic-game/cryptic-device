@@ -11,10 +11,13 @@ scheme = "*"
 sentry-sdk = "*"
 
 [dev-packages]
+coverage = "*"
 
 [requires]
 python_version = "3.7"
 
 [scripts]
+test = "python3 -m unittest discover -v tests"
+coverage = "sh coverage.sh"
 dev = "python3 app.py --debug"
 prod = "python3 app.py"

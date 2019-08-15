@@ -1,4 +1,6 @@
-from scheme import Text, Sequence
+from scheme import Text, Sequence, UUID
+
+from models.file import CONTENT_LENGTH
 
 
 def make_error(*args: str, origin: str, sep: str = "") -> dict:
@@ -19,10 +21,30 @@ service_not_found: dict = make_error("service_not_found", origin="service")
 
 success: dict = {"ok": True}
 
+requirement_device: dict = {"device_uuid": UUID()}
+
+requirement_change_name: dict = {"device_uuid": UUID(), "name": Text(min_length=1, max_length=15)}
+
 requirement_build: dict = {
     "gpu": Text(),
     "cpu": Text(),
     "motherboard": Text(),
     "ram": Sequence(Text(nonempty=True)),
     "disk": Sequence(Text(nonempty=True)),
+}
+
+requirement_file: dict = {"device_uuid": UUID(), "file_uuid": UUID()}
+
+requirement_file_move: dict = {
+    "device_uuid": UUID(),
+    "file_uuid": UUID(),
+    "filename": Text(min_length=1, max_length=64),
+}
+
+requirement_file_update: dict = {"device_uuid": UUID(), "file_uuid": UUID(), "content": Text(max_length=CONTENT_LENGTH)}
+
+requirement_file_create: dict = {
+    "device_uuid": UUID(),
+    "filename": Text(min_length=1, max_length=64),
+    "content": Text(max_length=CONTENT_LENGTH),
 }
