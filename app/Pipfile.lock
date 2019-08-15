@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "192be9746c736c1cafdd44e8653d00045344537dfc08f9999af6dcad0f750795"
+            "sha256": "27443bbd5c5661f7e0d0e237508e0a46c94dc140ef665c6fa45265cc8293f816"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -25,10 +25,11 @@
         },
         "cryptic-game": {
             "hashes": [
-                "sha256:bfe00e12ae817df4a98be1ded28c069f713903c5943bf9283349db91ff52e5b5"
+                "sha256:2e6acfbefbfa0b6fae56a06116d699dc8af4ddf64dd2a399cf0892fa27b27eda",
+                "sha256:3d378ceeeebc453ff4390243fd8a96538d003d8b4609e15695d11de4dfc4c2fb"
             ],
             "index": "pypi",
-            "version": "==0.4.0.dev0"
+            "version": "==0.4.2.dev0"
         },
         "jinja2": {
             "hashes": [
@@ -114,10 +115,10 @@
         },
         "sqlalchemy": {
             "hashes": [
-                "sha256:217e7fc52199a05851eee9b6a0883190743c4fb9c8ac4313ccfceaffd852b0ff"
+                "sha256:0459bf0ea6478f3e904de074d65769a11d74cdc34438ab3159250c96d089aef0"
             ],
             "index": "pypi",
-            "version": "==1.3.6"
+            "version": "==1.3.7"
         },
         "urllib3": {
             "hashes": [
@@ -125,6 +126,12 @@
                 "sha256:dbe59173209418ae49d485b87d1681aefa36252ee85884c31346debd19463232"
             ],
             "version": "==1.25.3"
+        },
+        "uuid": {
+            "hashes": [
+                "sha256:1f87cc004ac5120466f36c5beae48b4c48cc411968eed0eaecd3da82aa96193f"
+            ],
+            "version": "==1.30"
         }
     },
     "develop": {}
