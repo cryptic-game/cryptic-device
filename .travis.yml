@@ -17,4 +17,4 @@ install:
 
 script:
   - pipenv run coverage
-  - sonar-scanner
+  - cd .. && sonar-scanner
