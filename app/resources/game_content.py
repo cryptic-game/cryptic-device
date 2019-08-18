@@ -157,32 +157,13 @@ def scale_resources(s: List[Service], scale: Tuple[float, float, float, float, f
 def generate_scale(
     data: Tuple[float, float, float, float, float], wl: Workload
 ) -> Tuple[float, float, float, float, float]:
-    if wl.usage_cpu + data[0] < wl.performance_cpu:
-        cpu: float = 1
-    else:
-        cpu: float = wl.performance_cpu / (wl.usage_cpu + data[0])
-
-    if wl.usage_ram + data[1] < wl.performance_ram:
-        ram: float = 1
-    else:
-        ram: float = wl.performance_ram / (wl.usage_ram + data[1])
-
-    if wl.usage_gpu + data[2] < wl.performance_gpu:
-        gpu: float = 1
-    else:
-        gpu: float = wl.performance_gpu / (wl.usage_gpu + data[2])
-
-    if wl.usage_disk + data[3] < wl.performance_disk:
-        disk: float = 1
-    else:
-        disk: float = wl.performance_disk / (wl.usage_disk + data[3])
-
-    if wl.usage_network + data[4] < wl.performance_network:
-        network: float = 1
-    else:
-        network: float = wl.performance_network / (wl.usage_network + data[4])
-
-    return cpu, ram, gpu, disk, network
+    return (
+        min(wl.performance_cpu / (wl.usage_cpu + data[0]), 1),
+        min(wl.performance_ram / (wl.usage_ram + data[1]), 1),
+        min(wl.performance_gpu / (wl.usage_gpu + data[2]), 1),
+        min(wl.performance_disk / (wl.usage_disk + data[3]), 1),
+        min(wl.performance_network / (wl.usage_network + data[4]), 1),
+    )
 
 
 def dict2tuple(data: dict) -> Tuple[float, float, float, float, float]:

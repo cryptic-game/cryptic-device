@@ -56,3 +56,5 @@ def reset_mocks():
     get_config.reset_mock()
 
     wrapper.Base.metadata.reset_mock()
+    m.contact_microservice.side_effect = None
+    wrapper.session.delete.side_effect = None
