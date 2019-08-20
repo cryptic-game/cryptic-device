@@ -1,6 +1,7 @@
 from typing import List, Optional
 
-from scheme import UUID, Text
+from scheme import UUID, Text, Union
+from sqlalchemy import func
 
 from app import m, wrapper
 from models.device import Device
@@ -16,7 +17,8 @@ from resources.game_content import (
     stop_services,
     delete_services,
 )
-from schemes import success, device_not_found, permission_denied, requirement_build
+from schemes import success, device_not_found, permission_denied, requirement_build, already_own_a_device
+from vars import hardware
 
 
 @m.user_endpoint(path=["device", "info"], requires={"device_uuid": UUID()})
@@ -94,6 +96,31 @@ def create(data: dict, user: str) -> dict:
     create_hardware(data, device.uuid)
 
     delete_items(user, data)
+
+    return device.serialize
+
+
+@m.user_endpoint(path=["device", "starter_device"], requires={})
+def starter_device(data: dict, user: str) -> dict:
+    """
+    Creates a device for starters
+    :param data: The given data
+    :param user: The user uuid.
+    :return: the response
+    """
+
+    count: int = wrapper.session.query(Device).filter_by(owner=user).count()
+
+    if count > 0:
+        return already_own_a_device
+
+    performance: tuple = calculate_power(hardware["start_pc"])
+
+    device: Device = Device.create(user, True)
+
+    Workload.create(device.uuid, performance)
+
+    create_hardware(hardware["start_pc"], device.uuid)
 
     return device.serialize
 
