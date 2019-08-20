@@ -21,7 +21,9 @@ from schemes import (
     requirement_build,
     requirement_device,
     requirement_change_name,
+    already_own_a_device,
 )
+from vars import hardware
 
 
 @m.user_endpoint(path=["device", "info"], requires=requirement_device)
@@ -99,6 +101,31 @@ def create_device(data: dict, user: str) -> dict:
     create_hardware(data, device.uuid)
 
     delete_items(user, data)
+
+    return device.serialize
+
+
+@m.user_endpoint(path=["device", "starter_device"], requires={})
+def starter_device(data: dict, user: str) -> dict:
+    """
+    Creates a device for starters
+    :param data: The given data
+    :param user: The user uuid.
+    :return: the response
+    """
+
+    count: int = wrapper.session.query(Device).filter_by(owner=user).count()
+
+    if count > 0:
+        return already_own_a_device
+
+    performance: tuple = calculate_power(hardware["start_pc"])
+
+    device: Device = Device.create(user, True)
+
+    Workload.create(device.uuid, performance)
+
+    create_hardware(hardware["start_pc"], device.uuid)
 
     return device.serialize
 

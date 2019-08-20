@@ -3,6 +3,13 @@ resolve_ram_type: dict = {"DDR1": 1, "DDR2": 2, "DDR3": 3, "DDR4": 4, "DDR5": 5}
 resolve_gpu_type: dict = {"PCI": 1, "AGP": 2, "PCI_Express": 3}
 
 hardware = {
+    "start_pc": {
+        "motherboard": "Zero MX One",
+        "cpu": "CoreOne A100",
+        "gpu": "Forcevid MX1000",
+        "ram": ["Crossfire ZX100", "Crossfire ZX100"],
+        "disk": ["HDD Elements Zero"],
+    },
     "mainboards": {
         "Zero MX One": {
             "name": "Zero MX One",
