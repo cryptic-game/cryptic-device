@@ -54,6 +54,7 @@ class TestApp(TestCase):
             (["device", "ping"], requirement_device),
             (["device", "all"], {}),
             (["device", "create"], requirement_build),
+            (["device", "starter_device"], {}),
             (["device", "power"], requirement_device),
             (["device", "change_name"], requirement_change_name),
             (["device", "delete"], requirement_device),

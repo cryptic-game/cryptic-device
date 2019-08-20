@@ -6,7 +6,8 @@ from models.device import Device
 from models.hardware import Hardware
 
 from resources import device
-from schemes import device_not_found, permission_denied, success
+from schemes import device_not_found, permission_denied, success, already_own_a_device
+from vars import hardware
 
 
 class TestDevice(TestCase):
@@ -122,6 +123,36 @@ class TestDevice(TestCase):
         workload_patch.create.assert_called_with(mock_device.uuid, calculate_patch())
         create_patch.assert_called_with(data, mock_device.uuid)
         delete_patch.assert_called_with("user", data)
+
+    def test__user_endpoint__device_starter_device__already_own_a_device(self):
+        self.query_device.filter_by().count.return_value = 1
+
+        expected_result = already_own_a_device
+        actual_result = device.starter_device({}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_device.filter_by.assert_called_with(owner="user")
+
+    @patch("resources.device.create_hardware")
+    @patch("resources.device.calculate_power")
+    @patch("resources.device.Workload")
+    @patch("resources.device.Device.create")
+    def test__user_endpoint__device_starter_device__successful(
+        self, device_create_patch, workload_patch, calculate_patch, create_patch
+    ):
+        self.query_device.filter_by().count.return_value = 0
+
+        mock_device = device_create_patch()
+
+        expected_result = mock_device.serialize
+        actual_result = device.starter_device({}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_device.filter_by.assert_called_with(owner="user")
+        calculate_patch.assert_called_with(hardware["start_pc"])
+        device_create_patch.assert_called_with("user", True)
+        workload_patch.create.assert_called_with(mock_device.uuid, calculate_patch())
+        create_patch.assert_called_with(hardware["start_pc"], mock_device.uuid)
 
     def test__user_endpoint__device_power__device_not_found(self):
         self.query_device.get.return_value = None
