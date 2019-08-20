@@ -109,9 +109,9 @@ def starter_device(data: dict, user: str) -> dict:
     :return: the response
     """
 
-    count: Union[int, None] = wrapper.session.query(Device).filter_by(owner=user).count()
+    count: int = wrapper.session.query(Device).filter_by(owner=user).count()
 
-    if count != None or count != 0:
+    if count > 0:
         return already_own_a_device
 
     performance: tuple = calculate_power(hardware["start_pc"])
