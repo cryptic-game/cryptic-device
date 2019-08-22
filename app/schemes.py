@@ -19,6 +19,10 @@ file_already_exists: dict = make_error("file_already_exists", origin="user")
 
 service_not_found: dict = make_error("service_not_found", origin="service")
 
+service_already_running: dict = make_error("service_already_running", origin="service")
+
+service_not_running: dict = make_error("service_not_running", origin="service")
+
 success: dict = {"ok": True}
 
 requirement_device: dict = {"device_uuid": UUID()}
