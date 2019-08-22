@@ -1,8 +1,5 @@
 from typing import List, Optional
 
-from scheme import UUID, Text, Union
-from sqlalchemy import func
-
 from app import m, wrapper
 from models.device import Device
 from models.hardware import Hardware
@@ -17,12 +14,20 @@ from resources.game_content import (
     stop_services,
     delete_services,
 )
-from schemes import success, device_not_found, permission_denied, requirement_build, already_own_a_device
+from schemes import (
+    success,
+    device_not_found,
+    permission_denied,
+    requirement_build,
+    requirement_device,
+    requirement_change_name,
+    already_own_a_device,
+)
 from vars import hardware
 
 
-@m.user_endpoint(path=["device", "info"], requires={"device_uuid": UUID()})
-def info(data: dict, user: str) -> dict:
+@m.user_endpoint(path=["device", "info"], requires=requirement_device)
+def device_info(data: dict, user: str) -> dict:
     """
     Get public information about a device.
     :param data: The given data.
@@ -42,7 +47,7 @@ def info(data: dict, user: str) -> dict:
     }
 
 
-@m.user_endpoint(path=["device", "ping"], requires={"device_uuid": UUID()})
+@m.user_endpoint(path=["device", "ping"], requires=requirement_device)
 def ping(data: dict, user: str) -> dict:
     """
     Ping a device.
@@ -59,7 +64,7 @@ def ping(data: dict, user: str) -> dict:
 
 
 @m.user_endpoint(path=["device", "all"], requires={})
-def get_all(data: dict, user: str) -> dict:
+def list_devices(data: dict, user: str) -> dict:
     """
     Get all devices
     :param data: The given data.
@@ -72,7 +77,7 @@ def get_all(data: dict, user: str) -> dict:
 
 
 @m.user_endpoint(path=["device", "create"], requires=requirement_build)
-def create(data: dict, user: str) -> dict:
+def create_device(data: dict, user: str) -> dict:
     """
     Create a device.
     :param data: The given data.
@@ -125,7 +130,7 @@ def starter_device(data: dict, user: str) -> dict:
     return device.serialize
 
 
-@m.user_endpoint(path=["device", "power"], requires={"device_uuid": UUID()})
+@m.user_endpoint(path=["device", "power"], requires=requirement_device)
 def power(data: dict, user: str) -> dict:
     """
     Turn a device on/off.
@@ -151,9 +156,7 @@ def power(data: dict, user: str) -> dict:
     return device.serialize
 
 
-@m.user_endpoint(
-    path=["device", "change_name"], requires={"device_uuid": UUID(), "name": Text(min_length=1, max_length=15)}
-)
+@m.user_endpoint(path=["device", "change_name"], requires=requirement_change_name)
 def change_name(data: dict, user: str) -> dict:
     """
     Change the name of the device.
@@ -178,8 +181,8 @@ def change_name(data: dict, user: str) -> dict:
     return device.serialize
 
 
-@m.user_endpoint(path=["device", "delete"], requires={"device_uuid": UUID()})
-def delete(data: dict, user: str) -> dict:
+@m.user_endpoint(path=["device", "delete"], requires=requirement_device)
+def delete_device(data: dict, user: str) -> dict:
     """
     Delete a device.
     :param data: The given data.

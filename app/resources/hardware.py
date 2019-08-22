@@ -1,12 +1,18 @@
 from typing import List, Tuple
 
-from scheme import UUID
-
 from app import wrapper, m
 from models.service import Service
 from models.workload import Workload
 from resources.game_content import check_compatible, calculate_power, scale_resources, generate_scale, dict2tuple, turn
-from schemes import requirement_build, device_not_found, service_not_found
+from schemes import (
+    requirement_build,
+    device_not_found,
+    service_not_found,
+    requirement_device,
+    service_already_running,
+    service_not_running,
+    success,
+)
 
 
 @m.user_endpoint(path=["hardware", "build"], requires=requirement_build)
@@ -25,7 +31,7 @@ def build(data: dict, user: str):
     return return_message
 
 
-@m.user_endpoint(path=["hardware", "resources"], requires={"device_uuid": UUID()})
+@m.user_endpoint(path=["hardware", "resources"], requires=requirement_device)
 def hardware_resources(data: dict, user: str):
     wl: Workload = wrapper.session.query(Workload).get(data["device_uuid"])
 
@@ -47,7 +53,7 @@ def hardware_register(data: dict, microservice: str):
     ser: Service = wrapper.session.query(Service).get(data["service_uuid"])
 
     if ser is not None:
-        return {"error": "Service already running"}
+        return service_already_running
 
     other: List[Service] = wrapper.session.query(Service).filter_by(device_uuid=data["device_uuid"]).all()
 
@@ -79,7 +85,7 @@ def hardware_register(data: dict, microservice: str):
 def hardware_stop(data: dict, microservice: str):
     ser: Service = wrapper.session.query(Service).get(data["service_uuid"])
     if ser is None:
-        return {"error": "service_is_not_running"}
+        return service_not_running
 
     wl: Workload = wrapper.session.query(Workload).get(data["device_uuid"])
     if wl is None:
@@ -98,12 +104,11 @@ def hardware_stop(data: dict, microservice: str):
 
     m.contact_user(data["user"], wl.display())
 
-    return {"ok": True}
+    return success
 
 
 @m.microservice_endpoint(path=["hardware", "scale"])
 def hardware_scale(data: dict, user: str):
-
     ser: Service = wrapper.session.query(Service).get(data["service_uuid"])
     if ser is None:
         return service_not_found

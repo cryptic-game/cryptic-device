@@ -16,7 +16,7 @@ class Hardware(wrapper.Base):
     uuid: Union[str, Column] = Column(String(36), primary_key=True, unique=True)
     device_uuid: Union[str, Column] = Column(String(36), nullable=False)
     hardware_element: Union[str, Column] = Column(String(40), nullable=False)
-    hardware_typ: Union[str, Column] = Column(String(36), nullable=False)
+    hardware_type: Union[str, Column] = Column(String(36), nullable=False)
 
     @property
     def serialize(self) -> Dict[str, Any]:
@@ -28,9 +28,9 @@ class Hardware(wrapper.Base):
         return d
 
     @staticmethod
-    def create(device: str, hardware: str, hardware_typ: str) -> "Hardware":
+    def create(device: str, hardware: str, hardware_type: str) -> "Hardware":
         hardware_element: Hardware = Hardware(
-            uuid=str(uuid4()), device_uuid=device, hardware_element=hardware, hardware_typ=hardware_typ
+            uuid=str(uuid4()), device_uuid=device, hardware_element=hardware, hardware_type=hardware_type
         )
 
         wrapper.session.add(hardware_element)
