@@ -44,7 +44,10 @@ def file_info(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
+    device_uuid: str = data["device_uuid"]
+    file_uuid: str = data["file_uuid"]
+
+    device: Optional[Device] = wrapper.session.query(Device).get(device_uuid)
 
     if device is None:
         return device_not_found
@@ -52,7 +55,7 @@ def file_info(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
-    file: Optional[File] = wrapper.session.query(File).get(data["file_uuid"])
+    file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
 
     if file is None:
         return file_not_found
@@ -81,7 +84,7 @@ def move(data: dict, user: str) -> dict:
     if wrapper.session.query(File).filter_by(device=device_uuid, filename=filename).first() is not None:
         return file_already_exists
 
-    file.filename: str = filename
+    file.filename = filename
     wrapper.session.commit()
 
     return file.serialize
@@ -113,7 +116,7 @@ def update(data: dict, user: str) -> dict:
     if file is None:
         return file_not_found
 
-    file.content: str = content
+    file.content = content
     wrapper.session.commit()
 
     return file.serialize
@@ -127,7 +130,11 @@ def delete_file(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
+
+    device_uuid: str = data["device_uuid"]
+    file_uuid: str = data["file_uuid"]
+
+    device: Optional[Device] = wrapper.session.query(Device).get(device_uuid)
 
     if device is None:
         return device_not_found
@@ -135,7 +142,7 @@ def delete_file(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
-    file: Optional[File] = wrapper.session.query(File).get(data["file_uuid"])
+    file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
 
     if file is None:
         return file_not_found
@@ -170,6 +177,6 @@ def create_file(data: dict, user: str) -> dict:
     if file_count > 0:
         return file_already_exists
 
-    file: Optional[File] = File.create(device.uuid, filename, content)
+    file: File = File.create(device.uuid, filename, content)
 
     return file.serialize
