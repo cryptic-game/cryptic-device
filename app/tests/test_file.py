@@ -15,7 +15,13 @@ class TestFile(TestCase):
 
         self.query_device = mock.MagicMock()
         self.query_file = mock.MagicMock()
-        mock.wrapper.session.query.side_effect = {Device: self.query_device, File: self.query_file}.__getitem__
+        file.func = self.sqlalchemy_func = mock.MagicMock()
+        self.query_func_count = mock.MagicMock()
+        mock.wrapper.session.query.side_effect = {
+            Device: self.query_device,
+            File: self.query_file,
+            self.sqlalchemy_func.count(): self.query_func_count,
+        }.__getitem__
 
     def test__user_endpoint__file_all__device_not_found(self):
         self.query_device.get.return_value = None
@@ -346,7 +352,7 @@ class TestFile(TestCase):
         mock_device.check_access.return_value = True
 
         self.query_device.get.return_value = mock_device
-        self.query_file.filter_by().count.return_value = 1
+        self.query_func_count.filter_by().scalar.return_value = 1
 
         expected_result = file_already_exists
         actual_result = file.create_file(
@@ -356,7 +362,8 @@ class TestFile(TestCase):
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with(mock_device.uuid)
         mock_device.check_access.assert_called_with("user")
-        self.query_file.filter_by.assert_called_with(device=mock_device.uuid, filename="test-file")
+        self.sqlalchemy_func.count.assert_called_with(File.uuid)
+        self.query_func_count.filter_by.assert_called_with(device=mock_device.uuid, filename="test-file")
 
     @patch("resources.file.File.create")
     def test__user_endpoint__file_create__successful(self, file_create_patch):
@@ -364,7 +371,7 @@ class TestFile(TestCase):
         mock_device.check_access.return_value = True
 
         self.query_device.get.return_value = mock_device
-        self.query_file.filter_by().count.return_value = 0
+        self.query_func_count.filter_by().scalar.return_value = 0
 
         expected_result = file_create_patch().serialize
         actual_result = file.create_file(
@@ -374,5 +381,6 @@ class TestFile(TestCase):
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with(mock_device.uuid)
         mock_device.check_access.assert_called_with("user")
-        self.query_file.filter_by.assert_called_with(device=mock_device.uuid, filename="test-file")
+        self.sqlalchemy_func.count.assert_called_with(File.uuid)
+        self.query_func_count.filter_by.assert_called_with(device=mock_device.uuid, filename="test-file")
         file_create_patch.assert_called_with(mock_device.uuid, "test-file", "some random content here")

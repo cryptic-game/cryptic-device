@@ -1,5 +1,7 @@
 from typing import Optional
 
+from sqlalchemy import func
+
 from app import m, wrapper
 from models.device import Device
 from models.file import File
@@ -172,7 +174,9 @@ def create_file(data: dict, user: str) -> dict:
     filename: str = data["filename"]
     content: str = data["content"]
 
-    file_count: int = wrapper.session.query(File).filter_by(device=device.uuid, filename=filename).count()
+    file_count: int = wrapper.session.query(func.count(File.uuid)).filter_by(
+        device=device.uuid, filename=filename
+    ).scalar()
 
     if file_count > 0:
         return file_already_exists

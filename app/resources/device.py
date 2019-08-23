@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from sqlalchemy import func
+
 from app import m, wrapper
 from models.device import Device
 from models.hardware import Hardware
@@ -114,7 +116,7 @@ def starter_device(data: dict, user: str) -> dict:
     :return: the response
     """
 
-    count: int = wrapper.session.query(Device).filter_by(owner=user).count()
+    count: int = wrapper.session.query(func.count(Device.uuid)).filter_by(owner=user).scalar()
 
     if count > 0:
         return already_own_a_device
