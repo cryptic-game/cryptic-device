@@ -16,7 +16,13 @@ class TestDevice(TestCase):
 
         self.query_device = mock.MagicMock()
         self.query_hardware = mock.MagicMock()
-        mock.wrapper.session.query.side_effect = {Device: self.query_device, Hardware: self.query_hardware}.__getitem__
+        device.func = self.sqlalchemy_func = mock.MagicMock()
+        self.query_func_count = mock.MagicMock()
+        mock.wrapper.session.query.side_effect = {
+            Device: self.query_device,
+            Hardware: self.query_hardware,
+            self.sqlalchemy_func.count(): self.query_func_count,
+        }.__getitem__
 
     def test__user_endpoint__device_info__device_not_found(self):
         self.query_device.get.return_value = None
@@ -125,13 +131,14 @@ class TestDevice(TestCase):
         delete_patch.assert_called_with("user", data)
 
     def test__user_endpoint__device_starter_device__already_own_a_device(self):
-        self.query_device.filter_by().count.return_value = 1
+        self.query_func_count.filter_by().scalar.return_value = 1
 
         expected_result = already_own_a_device
         actual_result = device.starter_device({}, "user")
 
         self.assertEqual(expected_result, actual_result)
-        self.query_device.filter_by.assert_called_with(owner="user")
+        self.sqlalchemy_func.count.assert_called_with(Device.uuid)
+        self.query_func_count.filter_by.assert_called_with(owner="user")
 
     @patch("resources.device.create_hardware")
     @patch("resources.device.calculate_power")
@@ -140,7 +147,7 @@ class TestDevice(TestCase):
     def test__user_endpoint__device_starter_device__successful(
         self, device_create_patch, workload_patch, calculate_patch, create_patch
     ):
-        self.query_device.filter_by().count.return_value = 0
+        self.query_func_count.filter_by().scalar.return_value = 0
 
         mock_device = device_create_patch()
 
@@ -148,7 +155,8 @@ class TestDevice(TestCase):
         actual_result = device.starter_device({}, "user")
 
         self.assertEqual(expected_result, actual_result)
-        self.query_device.filter_by.assert_called_with(owner="user")
+        self.sqlalchemy_func.count.assert_called_with(Device.uuid)
+        self.query_func_count.filter_by.assert_called_with(owner="user")
         calculate_patch.assert_called_with(hardware["start_pc"])
         device_create_patch.assert_called_with("user", True)
         workload_patch.create.assert_called_with(mock_device.uuid, calculate_patch())
