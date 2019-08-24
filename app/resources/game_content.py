@@ -158,11 +158,13 @@ def generate_scale(
     data: Tuple[float, float, float, float, float], wl: Workload
 ) -> Tuple[float, float, float, float, float]:
     return (
-        min(wl.performance_cpu / (wl.usage_cpu + data[0]), 1),
-        min(wl.performance_ram / (wl.usage_ram + data[1]), 1),
-        min(wl.performance_gpu / (wl.usage_gpu + data[2]), 1),
-        min(wl.performance_disk / (wl.usage_disk + data[3]), 1),
-        min(wl.performance_network / (wl.usage_network + data[4]), 1),
+        wl.performance_cpu / (wl.usage_cpu + data[0]) if wl.usage_cpu + data[0] > wl.performance_cpu else 1.0,
+        wl.performance_ram / (wl.usage_ram + data[1]) if wl.usage_ram + data[1] > wl.performance_ram else 1.0,
+        wl.performance_gpu / (wl.usage_gpu + data[2]) if wl.usage_gpu + data[2] > wl.performance_gpu else 1.0,
+        wl.performance_disk / (wl.usage_disk + data[3]) if wl.usage_disk + data[3] > wl.performance_disk else 1.0,
+        wl.performance_network / (wl.usage_network + data[4])
+        if wl.usage_network + data[4] > wl.performance_network
+        else 1.0,
     )
 
 
