@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c8267aae43a3cdc6ece19f978b4e6cbefd20e1a55157f7a1ccbeecffd07f6d18"
+            "sha256": "24107547ff411cb6010912e4fb2d3093b73eefff8d31fba9f5c9f503d8fabbd5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -25,11 +25,11 @@
         },
         "cryptic-game": {
             "hashes": [
-                "sha256:2e6acfbefbfa0b6fae56a06116d699dc8af4ddf64dd2a399cf0892fa27b27eda",
-                "sha256:3d378ceeeebc453ff4390243fd8a96538d003d8b4609e15695d11de4dfc4c2fb"
+                "sha256:9823e740d6864ca31f6c886e35dec8b18b7c8b6356d657c0f75343a64430a8a6",
+                "sha256:da37cb9f81d6f7be42c3adf676bd9fa46d6b02738c93b3e9a8a5d4fa8e1283c3"
             ],
             "index": "pypi",
-            "version": "==0.4.2.dev0"
+            "version": "==0.4.3.dev0"
         },
         "jinja2": {
             "hashes": [
@@ -107,11 +107,11 @@
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:d491aa6399eaa3eded433972751a9770180730fd8b4c225b0b7f49c4fa2af70b",
-                "sha256:d68003cdffbbfcadaa2c445b72e1050b0a44406f94199866f192986c016b23f5"
+                "sha256:79e8352b5097aa06014871c6daad0933f59d1fcccc586339464ea86e4877b2ab",
+                "sha256:aeaaf6ae7cc4030d390e5c95797ac1a2a79ac2c8b687709293975ee808c68784"
             ],
             "index": "pypi",
-            "version": "==0.10.2"
+            "version": "==0.11.1"
         },
         "sqlalchemy": {
             "hashes": [
