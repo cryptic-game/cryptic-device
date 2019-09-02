@@ -66,7 +66,7 @@ class Workload(wrapper.Base):
 
     def display(self) -> dict:
         return_value: dict = {
-            "data":{
+            "data": {
                 "cpu": min(self.usage_cpu / self.performance_cpu, 1),
                 "ram": min(self.usage_ram / self.performance_ram, 1),
                 "gpu": min(self.usage_gpu / self.performance_gpu, 1),
