@@ -59,6 +59,7 @@ class TestHardware(TestCase):
 
         expected_result = mock_workload.display()
         actual_result = hardware.hardware_resources({"device_uuid": "some-device"}, "user")
+
         self.assertEqual(expected_result, actual_result)
         self.query_workload.get.assert_called_with("some-device")
         mock_workload.display.assert_called_with("cryptic-device-hardware-resources")
@@ -126,6 +127,7 @@ class TestHardware(TestCase):
         scale_patch.assert_called_with(other_services, generate_scale_patch())
         mock_workload.service.assert_called_with(dict_patch())
         service_create_patch.assert_called_with("the-device", "my-service", dict_patch())
+        mock_workload.display.assert_called_with("cryptic-device-hardware-register")
         mock.m.contact_user.assert_called_with("user", mock_workload.display())
 
     def test__ms_endpoint__hardware_stop__service_not_running(self):
@@ -179,6 +181,7 @@ class TestHardware(TestCase):
         generate_patch.assert_called_with(turn_patch(), mock_workload)
         self.query_service.filter_by.assert_called_with(device_uuid="the-device")
         scale_patch.assert_called_with(other_services, generate_patch())
+        mock_workload.display.assert_called_with("cryptic-device-hardware-stop")
         mock.m.contact_user.assert_called_with("user", mock_workload.display())
 
     def test__ms_endpoint__hardware_scale__service_not_found(self):
@@ -235,4 +238,5 @@ class TestHardware(TestCase):
         generate_patch.assert_called_with(dict_patch(), mock_workload)
         mock_service.overwrite.assert_called_with(dict_patch())
         scale_patch.assert_called_with(other_services, generate_patch())
+        mock_workload.display.assert_called_with("cryptic-device-hardware-scale")
         mock.m.contact_user.assert_called_with("user", mock_workload.display())
