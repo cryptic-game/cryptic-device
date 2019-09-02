@@ -38,7 +38,7 @@ def hardware_resources(data: dict, user: str):
     if wl is None:
         return device_not_found
 
-    return wl.display()
+    return wl.display("cryptic-device-hardware-resources")
 
 
 @m.microservice_endpoint(path=["hardware", "register"])
@@ -76,7 +76,7 @@ def hardware_register(data: dict, microservice: str):
         "network": ser.allocated_network * scales[4],
     }
 
-    m.contact_user(data["user"], wl.display())
+    m.contact_user(data["user"], wl.display("cryptic-device-hardware-register"))
 
     return return_value
 
@@ -102,7 +102,7 @@ def hardware_stop(data: dict, microservice: str):
     other: List[Service] = wrapper.session.query(Service).filter_by(device_uuid=data["device_uuid"]).all()
     scale_resources(other, new_scales)
 
-    m.contact_user(data["user"], wl.display())
+    m.contact_user(data["user"], wl.display("cryptic-device-hardware-stop"))
 
     return success
 
@@ -136,6 +136,6 @@ def hardware_scale(data: dict, user: str):
         "network": ser.allocated_network * scales[4],
     }
 
-    m.contact_user(data["user"], wl.display())
+    m.contact_user(data["user"], wl.display("cryptic-device-hardware-scale"))
 
     return return_value
