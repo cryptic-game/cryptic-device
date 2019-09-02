@@ -64,7 +64,7 @@ class Workload(wrapper.Base):
         self.usage_network += new_service[4]
         wrapper.session.commit()
 
-    def display(self) -> dict:
+    def display(self, origin: str = "cryptic-device-display") -> dict:
         return_value: dict = {
             "data": {
                 "cpu": min(self.usage_cpu / self.performance_cpu, 1),
@@ -73,7 +73,7 @@ class Workload(wrapper.Base):
                 "disk": min(self.usage_disk / self.performance_disk, 1),
                 "network": min(self.usage_network / self.performance_network, 1),
             },
-            "origin": "server",
+            "origin": origin,
             "notify-id": "resource-usage",
         }
         return return_value
