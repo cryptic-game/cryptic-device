@@ -59,10 +59,9 @@ class TestHardware(TestCase):
 
         expected_result = mock_workload.display()
         actual_result = hardware.hardware_resources({"device_uuid": "some-device"}, "user")
-
         self.assertEqual(expected_result, actual_result)
         self.query_workload.get.assert_called_with("some-device")
-        mock_workload.display.assert_called_with()
+        mock_workload.display.assert_called_with("cryptic-device-hardware-resources")
 
     def test__ms_endpoint__hardware_register__device_not_found(self):
         self.query_workload.get.return_value = None

@@ -100,7 +100,7 @@ class TestWorkloadModel(TestCase):
 
         expected_result = {
             "data": {"cpu": 1.4 / 3.1, "ram": 3 / 3.2, "gpu": 0.0, "disk": 1, "network": 2.7 / 3.5},
-            "origin": "server",
+            "origin": "cryptic-device-display",
             "notify-id": "resource-usage",
         }
         actual_result = workload.display()

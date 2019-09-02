@@ -38,7 +38,7 @@ def hardware_resources(data: dict, user: str):
     if wl is None:
         return device_not_found
 
-    return wl.display("cryptic-device-hardware-ressources")
+    return wl.display("cryptic-device-hardware-resources")
 
 
 @m.microservice_endpoint(path=["hardware", "register"])
