@@ -24,12 +24,12 @@ class TestGameContent(TestCase):
     def test__check_exists(self):
         elements = ["cpu", "gpu", "motherboard", "ram1", "ram2", "disk1", None]
         expected_results = [
-            {"error": "you_dont_own_such_cpu"},
-            {"error": "you_dont_own_such_gpu"},
-            {"error": "you_dont_own_such_motherboard"},
-            {"error": "you_dont_own_such_ram"},
-            {"error": "you_dont_own_such_ram"},
-            {"error": "you_dont_own_such_disk"},
+            {"error": "cpu_not_in_inventory"},
+            {"error": "gpu_not_in_inventory"},
+            {"error": "motherboard_not_in_inventory"},
+            {"error": "ram_not_in_inventory"},
+            {"error": "ram_not_in_inventory"},
+            {"error": "disk_not_in_inventory"},
             {},
         ]
 
@@ -107,11 +107,11 @@ class TestGameContent(TestCase):
         {"cpu": {"cpu": {"sockel": "foo"}}, "mainboards": {"motherboard": {"sockel": "bar"}}},
     )
     @patch("resources.game_content.check_element_existence")
-    def test__check_compatible__sockel_does_not_fit(self, cee_patch):
+    def test__check_compatible__incompatible_cpu_socket(self, cee_patch):
         cee_patch.return_value = True, {}
         elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": None, "disk": None}
 
-        expected_result = False, {"error": "cpu_and_mainboard_sockel_do_not_fit"}
+        expected_result = False, {"error": "incompatible_cpu_socket"}
         actual_result = game_content.check_compatible(elements)
 
         self.assertEqual(expected_result, actual_result)
@@ -125,7 +125,7 @@ class TestGameContent(TestCase):
         cee_patch.return_value = True, {}
         elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": ["ram1", "ram2", "ram3", "ram4"], "disk": None}
 
-        expected_result = False, {"error": "mainboard_has_not_this_many_ram_slots"}
+        expected_result = False, {"error": "not_enough_ram_slots"}
         actual_result = game_content.check_compatible(elements)
 
         self.assertEqual(expected_result, actual_result)
@@ -139,11 +139,11 @@ class TestGameContent(TestCase):
         },
     )
     @patch("resources.game_content.check_element_existence")
-    def test__check_compatible__ram_does_not_fit(self, cee_patch):
+    def test__check_compatible__incompatible_ram_types(self, cee_patch):
         cee_patch.return_value = True, {}
         elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": ["ram"], "disk": None}
 
-        expected_result = False, {"error": "ram_type_does_not_fit_what_you_have_on_your_mainboard"}
+        expected_result = False, {"error": "incompatible_ram_types"}
         actual_result = game_content.check_compatible(elements)
 
         self.assertEqual(expected_result, actual_result)
@@ -164,11 +164,11 @@ class TestGameContent(TestCase):
         },
     )
     @patch("resources.game_content.check_element_existence")
-    def test__check_compatible__disk_does_not_fit(self, cee_patch):
+    def test__check_compatible__incompatible_drive_interface(self, cee_patch):
         cee_patch.return_value = True, {}
         elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": ["ram"], "disk": ["disk"]}
 
-        expected_result = False, {"error": "your_hard_drive_interface_does_not_fit_with_the_motherboards_one"}
+        expected_result = False, {"error": "incompatible_drive_interface"}
         actual_result = game_content.check_compatible(elements)
 
         self.assertEqual(expected_result, actual_result)
@@ -189,11 +189,11 @@ class TestGameContent(TestCase):
         },
     )
     @patch("resources.game_content.check_element_existence")
-    def test__check_compatible__no_ram(self, cee_patch):
+    def test__check_compatible__missing_ram(self, cee_patch):
         cee_patch.return_value = True, {}
         elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": [], "disk": ["disk"]}
 
-        expected_result = False, {"error": "you_need_at_least_one_ramstick"}
+        expected_result = False, {"error": "missing_ram"}
         actual_result = game_content.check_compatible(elements)
 
         self.assertEqual(expected_result, actual_result)
@@ -214,11 +214,11 @@ class TestGameContent(TestCase):
         },
     )
     @patch("resources.game_content.check_element_existence")
-    def test__check_compatible__no_disk(self, cee_patch):
+    def test__check_compatible__missing_hard_drive(self, cee_patch):
         cee_patch.return_value = True, {}
         elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": ["ram"], "disk": []}
 
-        expected_result = False, {"error": "you_need_at_least_one_harddrive"}
+        expected_result = False, {"error": "missing_hard_drive"}
         actual_result = game_content.check_compatible(elements)
 
         self.assertEqual(expected_result, actual_result)
