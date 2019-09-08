@@ -181,7 +181,7 @@ class TestHardware(TestCase):
         generate_patch.assert_called_with(turn_patch(), mock_workload)
         self.query_service.filter_by.assert_called_with(device_uuid="the-device")
         scale_patch.assert_called_with(other_services, generate_patch())
-        mock_workload.workload_notification.assert_called_with("device_hardware_stop")
+        mock_workload.workload_notification.assert_called_with("device-hardware-stop")
         mock.m.contact_user.assert_called_with("user", mock_workload.workload_notification())
 
     def test__ms_endpoint__hardware_scale__service_not_found(self):
@@ -238,5 +238,5 @@ class TestHardware(TestCase):
         generate_patch.assert_called_with(dict_patch(), mock_workload)
         mock_service.overwrite.assert_called_with(dict_patch())
         scale_patch.assert_called_with(other_services, generate_patch())
-        mock_workload.workload_notification.assert_called_with("device_hardware_scale")
+        mock_workload.workload_notification.assert_called_with("device-hardware-scale")
         mock.m.contact_user.assert_called_with("user", mock_workload.workload_notification())
