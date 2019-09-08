@@ -64,16 +64,19 @@ class Workload(wrapper.Base):
         self.usage_network += new_service[4]
         wrapper.session.commit()
 
-    def display(self, origin: str = "cryptic-device-display") -> dict:
-        return_value: dict = {
-            "data": {
-                "cpu": min(self.usage_cpu / self.performance_cpu, 1),
-                "ram": min(self.usage_ram / self.performance_ram, 1),
-                "gpu": min(self.usage_gpu / self.performance_gpu, 1),
-                "disk": min(self.usage_disk / self.performance_disk, 1),
-                "network": min(self.usage_network / self.performance_network, 1),
-            },
-            "origin": origin,
+    def workload_notification(self, origin: str) -> dict:
+        return {
             "notify-id": "resource-usage",
+            "origin": origin,
+            "device_uuid": self.uuid,
+            "data": self.display()
         }
-        return return_value
+
+    def display(self) -> dict:
+        return {
+            "cpu": min(self.usage_cpu / self.performance_cpu, 1),
+            "ram": min(self.usage_ram / self.performance_ram, 1),
+            "gpu": min(self.usage_gpu / self.performance_gpu, 1),
+            "disk": min(self.usage_disk / self.performance_disk, 1),
+            "network": min(self.usage_network / self.performance_network, 1),
+        }
