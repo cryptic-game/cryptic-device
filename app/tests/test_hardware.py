@@ -64,6 +64,17 @@ class TestHardware(TestCase):
         self.query_workload.get.assert_called_with("some-device")
         mock_workload.display.assert_called_with("cryptic-device-hardware-resources")
 
+    @patch("resources.hardware.calculate_real_use")
+    @patch("resources.game_content.generate_scale_with_no_new")
+    def test__user_enpoint__hardware_proccess_successful(self, generate_scale, calculate_real_use):
+
+        expected_result = {"data": {"cpu": 12, "ram": 13, "gpu": 14, "disk": 16, "network": 17}}
+        calculate_real_use.return_value = expected_result
+
+        actual_result = hardware.hardware_process({"service_uuid": "my-service", "user": "user"}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+
     def test__ms_endpoint__hardware_register__device_not_found(self):
         self.query_workload.get.return_value = None
 

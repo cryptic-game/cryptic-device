@@ -3,7 +3,15 @@ from typing import List, Tuple
 from app import wrapper, m
 from models.service import Service
 from models.workload import Workload
-from resources.game_content import check_compatible, calculate_power, scale_resources, generate_scale, dict2tuple, turn
+from resources.game_content import (
+    check_compatible,
+    calculate_power,
+    scale_resources,
+    generate_scale,
+    dict2tuple,
+    turn,
+    calculate_real_use,
+)
 from schemes import (
     requirement_build,
     device_not_found,
@@ -12,6 +20,7 @@ from schemes import (
     service_already_running,
     service_not_running,
     success,
+    requirement_service,
 )
 
 
@@ -39,6 +48,14 @@ def hardware_resources(data: dict, user: str):
         return device_not_found
 
     return wl.display("cryptic-device-hardware-resources")
+
+
+@m.user_endpoint(path=["hardware", "process"], requires=requirement_service)
+def hardware_process(data: dict, user: str):
+
+    return_value: dict = calculate_real_use(data["service_uuid"], user)
+
+    return return_value
 
 
 @m.microservice_endpoint(path=["hardware", "register"])

@@ -91,6 +91,24 @@ class TestGameContent(TestCase):
 
         self.assertEqual(expected_result, actual_result)
 
+    def test__generate_scale_with_no_new(self):
+        workload = mock.MagicMock()
+        workload.performance_cpu = 29
+        workload.performance_ram = 23
+        workload.performance_gpu = 19
+        workload.performance_disk = 17
+        workload.performance_network = 13
+        workload.usage_cpu = 20
+        workload.usage_ram = 30
+        workload.usage_gpu = 40
+        workload.usage_disk = 0
+        workload.usage_network = 50
+
+        expected_result = 1.0, 23 / 30, 19 / 40, 1, 0.26
+        actual_result = game_content.generate_scale_with_no_new(workload)
+
+        self.assertEqual(expected_result, actual_result)
+
     @patch("resources.game_content.check_element_existence")
     def test__check_compatible__not_existing(self, cee_patch):
         elements = mock.MagicMock()

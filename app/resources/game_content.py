@@ -196,3 +196,32 @@ def stop_services(device_uuid: str) -> None:
 
 def delete_services(device_uuid: str) -> None:
     m.contact_microservice("service", ["hardware", "delete"], {"device_uuid": device_uuid})
+
+
+def generate_scale_with_no_new(wl: Workload) -> Tuple[float, float, float, float, float]:
+    return (
+        wl.performance_cpu / wl.usage_cpu if wl.usage_cpu > wl.performance_cpu else 1.0,
+        wl.performance_ram / wl.usage_ram if wl.usage_ram > wl.performance_ram else 1.0,
+        wl.performance_gpu / wl.usage_gpu if wl.usage_gpu > wl.performance_gpu else 1.0,
+        wl.performance_disk / wl.usage_disk if wl.usage_disk > wl.performance_disk else 1.0,
+        wl.performance_network / wl.usage_network if wl.usage_network > wl.performance_network else 1.0,
+    )
+
+
+def calculate_real_use(service_uuid: str, user_uuid: str) -> dict:
+
+    service: Service = wrapper.session.query(Service).filter_by(service_uuid=service_uuid).first()
+
+    wl: Workload = wrapper.session.query(Workload).filter_by(device_uuid=service.device_uuid).first()
+
+    scales: Tuple[float, float, float, float, float] = generate_scale_with_no_new(wl)
+
+    return {
+        "data": {
+            "cpu": scales[0] * service.allocated_cpu,
+            "gpu": scales[1] * service.allocated_ram,
+            "ram": scales[2] * service.allocated_gpu,
+            "disk": scales[3] * service.allocated_disk,
+            "network": scales[4] * service.allocated_network,
+        }
+    }
