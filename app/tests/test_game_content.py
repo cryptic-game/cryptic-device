@@ -109,6 +109,28 @@ class TestGameContent(TestCase):
 
         self.assertEqual(expected_result, actual_result)
 
+    @patch("resources.game_content.generate_scale_with_no_new")
+    def test__calculate_real_use(self, gen_scal):
+
+        workload = mock.MagicMock()
+        service = mock.MagicMock()
+        service.allocated_cpu = 1
+        service.allocated_ram = 1
+        service.allocated_gpu = 1
+        service.allocated_disk = 1
+        service.allocated_network = 1
+
+        self.query_workload.get.return_value = workload
+        self.query_service.get.return_value = service
+
+        gen_scal.return_value = 1, 2, 3, 4, 5
+
+        expected_result = {"data": {"cpu": 1, "ram": 2, "gpu": 3, "disk": 4, "network": 5}}
+        result = game_content.calculate_real_use("service-uuid")
+
+        self.assertEqual(expected_result, result)
+        gen_scal.assert_called_with(workload)
+
     @patch("resources.game_content.check_element_existence")
     def test__check_compatible__not_existing(self, cee_patch):
         elements = mock.MagicMock()

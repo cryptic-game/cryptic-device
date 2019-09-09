@@ -208,19 +208,19 @@ def generate_scale_with_no_new(wl: Workload) -> Tuple[float, float, float, float
     )
 
 
-def calculate_real_use(service_uuid: str, user_uuid: str) -> dict:
+def calculate_real_use(service_uuid: str) -> dict:
 
-    service: Service = wrapper.session.query(Service).filter_by(service_uuid=service_uuid).first()
+    service: Service = wrapper.session.query(Service).get(service_uuid)
 
-    wl: Workload = wrapper.session.query(Workload).filter_by(device_uuid=service.device_uuid).first()
+    wl: Workload = wrapper.session.query(Workload).get(service.device_uuid)
 
     scales: Tuple[float, float, float, float, float] = generate_scale_with_no_new(wl)
 
     return {
         "data": {
             "cpu": scales[0] * service.allocated_cpu,
-            "gpu": scales[1] * service.allocated_ram,
-            "ram": scales[2] * service.allocated_gpu,
+            "ram": scales[1] * service.allocated_gpu,
+            "gpu": scales[2] * service.allocated_ram,
             "disk": scales[3] * service.allocated_disk,
             "network": scales[4] * service.allocated_network,
         }

@@ -53,7 +53,7 @@ def hardware_resources(data: dict, user: str):
 @m.user_endpoint(path=["hardware", "process"], requires=requirement_service)
 def hardware_process(data: dict, user: str):
 
-    return_value: dict = calculate_real_use(data["service_uuid"], user)
+    return_value: dict = calculate_real_use(data["service_uuid"])
 
     return return_value
 
