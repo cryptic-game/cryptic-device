@@ -65,15 +65,12 @@ class TestHardware(TestCase):
         mock_workload.display.assert_called()
 
     @patch("resources.hardware.calculate_real_use")
-    @patch("resources.game_content.generate_scale_with_no_new")
-    def test__user_enpoint__hardware_proccess_successful(self, generate_scale, calculate_real_use):
-
-        expected_result = {"data": {"cpu": 12, "ram": 13, "gpu": 14, "disk": 16, "network": 17}}
-        calculate_real_use.return_value = expected_result
-
-        actual_result = hardware.hardware_process({"service_uuid": "my-service", "user": "user"}, "user")
+    def test__user_enpoint__hardware_proccess(self, calculate_real_use):
+        expected_result = calculate_real_use()
+        actual_result = hardware.hardware_process({"service_uuid": "the-service-uuid"}, "user")
 
         self.assertEqual(expected_result, actual_result)
+        calculate_real_use.assert_called_with("the-service-uuid")
 
     def test__ms_endpoint__hardware_register__device_not_found(self):
         self.query_workload.get.return_value = None

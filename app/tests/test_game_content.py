@@ -111,7 +111,6 @@ class TestGameContent(TestCase):
 
     @patch("resources.game_content.generate_scale_with_no_new")
     def test__calculate_real_use(self, gen_scal):
-
         workload = mock.MagicMock()
         service = mock.MagicMock()
         service.allocated_cpu = 1
@@ -125,10 +124,12 @@ class TestGameContent(TestCase):
 
         gen_scal.return_value = 1, 2, 3, 4, 5
 
-        expected_result = {"data": {"cpu": 1, "ram": 2, "gpu": 3, "disk": 4, "network": 5}}
+        expected_result = {"cpu": 1, "ram": 2, "gpu": 3, "disk": 4, "network": 5}
         result = game_content.calculate_real_use("service-uuid")
 
         self.assertEqual(expected_result, result)
+        self.query_service.get.assert_called_with("service-uuid")
+        self.query_workload.get.assert_called_with(service.device_uuid)
         gen_scal.assert_called_with(workload)
 
     @patch("resources.game_content.check_element_existence")
