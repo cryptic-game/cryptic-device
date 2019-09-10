@@ -64,6 +64,14 @@ class TestHardware(TestCase):
         self.query_workload.get.assert_called_with("some-device")
         mock_workload.display.assert_called()
 
+    @patch("resources.hardware.calculate_real_use")
+    def test__user_enpoint__hardware_proccess(self, calculate_real_use):
+        expected_result = calculate_real_use()
+        actual_result = hardware.hardware_process({"service_uuid": "the-service-uuid"}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        calculate_real_use.assert_called_with("the-service-uuid")
+
     def test__ms_endpoint__hardware_register__device_not_found(self):
         self.query_workload.get.return_value = None
 

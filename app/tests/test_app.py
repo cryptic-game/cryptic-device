@@ -10,6 +10,7 @@ from schemes import (
     requirement_file_move,
     requirement_file_update,
     requirement_file_create,
+    requirement_service,
 )
 
 
@@ -49,6 +50,9 @@ class TestApp(TestCase):
         app = import_app("__main__")
         elements = [getattr(app, element_name) for element_name in dir(app)]
 
+        registered_user_endpoints = mock.user_endpoints.copy()
+        registered_ms_endpoints = mock.ms_endpoints.copy()
+
         expected_user_endpoints = [
             (["device", "info"], requirement_device),
             (["device", "ping"], requirement_device),
@@ -67,6 +71,7 @@ class TestApp(TestCase):
             (["file", "create"], requirement_file_create),
             (["hardware", "build"], requirement_build),
             (["hardware", "resources"], requirement_device),
+            (["hardware", "process"], requirement_service),
         ]
 
         expected_ms_endpoints = [
@@ -78,9 +83,14 @@ class TestApp(TestCase):
         ]
 
         for path, requires in expected_user_endpoints:
-            self.assertIn((path, requires), mock.user_endpoints)
+            self.assertIn((path, requires), registered_user_endpoints)
+            registered_user_endpoints.remove((path, requires))
             self.assertIn(mock.user_endpoint_handlers[tuple(path)], elements)
 
         for path in expected_ms_endpoints:
-            self.assertIn(path, mock.ms_endpoints)
+            self.assertIn(path, registered_ms_endpoints)
+            registered_ms_endpoints.remove(path)
             self.assertIn(mock.ms_endpoint_handlers[tuple(path)], elements)
+
+        self.assertFalse(registered_user_endpoints)
+        self.assertFalse(registered_ms_endpoints)

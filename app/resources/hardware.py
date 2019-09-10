@@ -3,7 +3,15 @@ from typing import List, Tuple
 from app import wrapper, m
 from models.service import Service
 from models.workload import Workload
-from resources.game_content import check_compatible, calculate_power, scale_resources, generate_scale, dict2tuple, turn
+from resources.game_content import (
+    check_compatible,
+    calculate_power,
+    scale_resources,
+    generate_scale,
+    dict2tuple,
+    turn,
+    calculate_real_use,
+)
 from schemes import (
     requirement_build,
     device_not_found,
@@ -12,11 +20,12 @@ from schemes import (
     service_already_running,
     service_not_running,
     success,
+    requirement_service,
 )
 
 
 @m.user_endpoint(path=["hardware", "build"], requires=requirement_build)
-def build(data: dict, user: str):
+def build(data: dict, user: str) -> dict:
     """
     This endpoint you can test your build if the parts a compatible and what is required for a device
     """
@@ -32,7 +41,7 @@ def build(data: dict, user: str):
 
 
 @m.user_endpoint(path=["hardware", "resources"], requires=requirement_device)
-def hardware_resources(data: dict, user: str):
+def hardware_resources(data: dict, user: str) -> dict:
     wl: Workload = wrapper.session.query(Workload).get(data["device_uuid"])
 
     if wl is None:
@@ -41,8 +50,13 @@ def hardware_resources(data: dict, user: str):
     return wl.display()
 
 
+@m.user_endpoint(path=["hardware", "process"], requires=requirement_service)
+def hardware_process(data: dict, user: str) -> dict:
+    return calculate_real_use(data["service_uuid"])
+
+
 @m.microservice_endpoint(path=["hardware", "register"])
-def hardware_register(data: dict, microservice: str):
+def hardware_register(data: dict, microservice: str) -> dict:
     # cpu_requirements, ram_req, gpu_req, disk_req, network_req
 
     wl: Workload = wrapper.session.query(Workload).get(data["device_uuid"])
@@ -82,7 +96,7 @@ def hardware_register(data: dict, microservice: str):
 
 
 @m.microservice_endpoint(path=["hardware", "stop"])
-def hardware_stop(data: dict, microservice: str):
+def hardware_stop(data: dict, microservice: str) -> dict:
     ser: Service = wrapper.session.query(Service).get(data["service_uuid"])
     if ser is None:
         return service_not_running
@@ -108,7 +122,7 @@ def hardware_stop(data: dict, microservice: str):
 
 
 @m.microservice_endpoint(path=["hardware", "scale"])
-def hardware_scale(data: dict, user: str):
+def hardware_scale(data: dict, user: str) -> dict:
     ser: Service = wrapper.session.query(Service).get(data["service_uuid"])
     if ser is None:
         return service_not_found

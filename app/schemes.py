@@ -52,3 +52,5 @@ requirement_file_create: dict = {
     "filename": Text(min_length=1, max_length=64),
     "content": Text(max_length=CONTENT_LENGTH),
 }
+
+requirement_service: dict = {"service_uuid": UUID()}

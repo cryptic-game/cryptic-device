@@ -65,12 +65,7 @@ class Workload(wrapper.Base):
         wrapper.session.commit()
 
     def workload_notification(self, origin: str) -> dict:
-        return {
-            "notify-id": "resource-usage",
-            "origin": origin,
-            "device_uuid": self.uuid,
-            "data": self.display()
-        }
+        return {"notify-id": "resource-usage", "origin": origin, "device_uuid": self.uuid, "data": self.display()}
 
     def display(self) -> dict:
         return {

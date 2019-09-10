@@ -115,13 +115,7 @@ class TestWorkloadModel(TestCase):
         workload.usage_disk = 1000
         workload.usage_network = 2.7
 
-        expected_result = {
-            "cpu": 1.4 / 3.1,
-            "ram": 3 / 3.2,
-            "gpu": 0.0,
-            "disk": 1,
-            "network": 2.7 / 3.5
-        }
+        expected_result = {"cpu": 1.4 / 3.1, "ram": 3 / 3.2, "gpu": 0.0, "disk": 1, "network": 2.7 / 3.5}
         actual_result = workload.display()
 
         self.assertEqual(expected_result, actual_result)
