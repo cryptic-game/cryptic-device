@@ -14,19 +14,19 @@ def check_exists(user: str, elements: dict) -> Tuple[bool, dict]:
     names: List[str] = [x["element_name"] for x in response["elements"]]
 
     if elements["cpu"] not in names:
-        return False, {"error": "you_dont_own_such_cpu"}
+        return False, {"error": "cpu_not_in_inventory"}
     if elements["motherboard"] not in names:
-        return False, {"error": "you_dont_own_such_motherboard"}
+        return False, {"error": "motherboard_not_in_inventory"}
     if elements["gpu"] not in names:
-        return False, {"error": "you_dont_own_such_gpu"}
+        return False, {"error": "gpu_not_in_inventory"}
     for ram in elements["ram"]:
         if ram not in names:
-            return False, {"error": "you_dont_own_such_ram"}
+            return False, {"error": "ram_not_in_inventory"}
         else:
             names.remove(ram)
     for disk in elements["disk"]:
         if disk not in names:
-            return False, {"error": "you_dont_own_such_disk"}
+            return False, {"error": "disk_not_in_inventory"}
         else:
             names.remove(disk)
 
@@ -74,23 +74,23 @@ def check_compatible(elements: dict) -> Tuple[bool, dict]:
     disk: List[str] = elements["disk"]
 
     if hardware["cpu"][cpu]["sockel"] != hardware["mainboards"][motherboard]["sockel"]:
-        return False, {"error": "cpu_and_mainboard_sockel_do_not_fit"}
+        return False, {"error": "incompatible_cpu_socket"}
 
     if hardware["mainboards"][motherboard]["ram"]["ramSlots"] < len(ram):
-        return False, {"error": "mainboard_has_not_this_many_ram_slots"}
+        return False, {"error": "not_enough_ram_slots"}
 
     for ram_stick in ram:
         if hardware["ram"][ram_stick]["ramTyp"] != hardware["mainboards"][motherboard]["ram"]["typ"]:
-            return False, {"error": "ram_type_does_not_fit_what_you_have_on_your_mainboard"}
+            return False, {"error": "incompatible_ram_types"}
 
     for i in disk:
         if hardware["disk"][i]["interface"] != hardware["mainboards"][motherboard]["diskStorage"]["interface"]:
-            return False, {"error": "your_hard_drive_interface_does_not_fit_with_the_motherboards_one"}
+            return False, {"error": "incompatible_drive_interface"}
 
     if len(ram) < 1:
-        return False, {"error": "you_need_at_least_one_ramstick"}
+        return False, {"error": "missing_ram"}
     if len(disk) < 1:
-        return False, {"error": "you_need_at_least_one_harddrive"}
+        return False, {"error": "missing_hard_drive"}
 
     return True, {}
 

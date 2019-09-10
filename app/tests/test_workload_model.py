@@ -91,7 +91,7 @@ class TestWorkloadModel(TestCase):
         self.assertEqual(1.05, workload.usage_network)
         mock.wrapper.session.commit.assert_called_with()
 
-    def test__model__workload__display(self):
+    def test__model__workload__workload_notification(self):
         workload = Workload.create("the-device", (3.1, 3.2, 3.3, 3.4, 3.5))
         workload.usage_cpu = 1.4
         workload.usage_ram = 3
@@ -99,10 +99,23 @@ class TestWorkloadModel(TestCase):
         workload.usage_network = 2.7
 
         expected_result = {
-            "data": {"cpu": 1.4 / 3.1, "ram": 3 / 3.2, "gpu": 0.0, "disk": 1, "network": 2.7 / 3.5},
-            "origin": "cryptic-device-display",
             "notify-id": "resource-usage",
+            "origin": "test",
+            "device_uuid": "the-device",
+            "data": {"cpu": 1.4 / 3.1, "ram": 3 / 3.2, "gpu": 0.0, "disk": 1, "network": 2.7 / 3.5},
         }
+        actual_result = workload.workload_notification("test")
+
+        self.assertEqual(expected_result, actual_result)
+
+    def test__model__workload__display(self):
+        workload = Workload.create("the-device", (3.1, 3.2, 3.3, 3.4, 3.5))
+        workload.usage_cpu = 1.4
+        workload.usage_ram = 3
+        workload.usage_disk = 1000
+        workload.usage_network = 2.7
+
+        expected_result = {"cpu": 1.4 / 3.1, "ram": 3 / 3.2, "gpu": 0.0, "disk": 1, "network": 2.7 / 3.5}
         actual_result = workload.display()
 
         self.assertEqual(expected_result, actual_result)
