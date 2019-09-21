@@ -1,4 +1,4 @@
-cryptic-device [![Build Status](https://travis-ci.org/cryptic-game/cryptic-device.svg?branch=master)](https://travis-ci.org/cryptic-game/cryptic-device) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=cryptic-game_cryptic-device&metric=coverage)](https://sonarcloud.io/dashboard?id=cryptic-game_cryptic-device)
+cryptic-device [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=cryptic-game_cryptic-device&metric=coverage)](https://sonarcloud.io/dashboard?id=cryptic-game_cryptic-device)
 ============
 
 The official device microservice of Cryptic (https://cryptic-game.net/).
