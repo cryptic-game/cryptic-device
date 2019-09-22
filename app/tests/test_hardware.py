@@ -72,6 +72,10 @@ class TestHardware(TestCase):
         self.assertEqual(expected_result, actual_result)
         calculate_real_use.assert_called_with("the-service-uuid")
 
+    @patch("resources.hardware.hardware")
+    def test__user_endpoint__hardware_list(self, hardware_patch):
+        self.assertEqual(hardware_patch, hardware.hardware_list({}, ""))
+
     def test__ms_endpoint__hardware_register__device_not_found(self):
         self.query_workload.get.return_value = None
 
