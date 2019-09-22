@@ -1,6 +1,6 @@
 name: Cryptic Device Microservice
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -22,6 +22,7 @@ jobs:
         cd app/
         pipenv run coverage
     - name: SonarCloud scan
+      if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'opened')
       uses: sonarsource/sonarcloud-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

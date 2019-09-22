@@ -22,6 +22,7 @@ from schemes import (
     success,
     requirement_service,
 )
+from vars import hardware
 
 
 @m.user_endpoint(path=["hardware", "build"], requires=requirement_build)
@@ -53,6 +54,11 @@ def hardware_resources(data: dict, user: str) -> dict:
 @m.user_endpoint(path=["hardware", "process"], requires=requirement_service)
 def hardware_process(data: dict, user: str) -> dict:
     return calculate_real_use(data["service_uuid"])
+
+
+@m.user_endpoint(path=["hardware", "list"], requires={})
+def hardware_list(data: dict, user: str) -> dict:
+    return hardware
 
 
 @m.microservice_endpoint(path=["hardware", "register"])

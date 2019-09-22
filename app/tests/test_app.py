@@ -72,6 +72,7 @@ class TestApp(TestCase):
             (["hardware", "build"], requirement_build),
             (["hardware", "resources"], requirement_device),
             (["hardware", "process"], requirement_service),
+            (["hardware", "list"], {}),
         ]
 
         expected_ms_endpoints = [
