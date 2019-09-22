@@ -21,6 +21,13 @@ jobs:
       run: |
         cd app/
         pipenv run coverage
+    - name: DEBUG
+      run: |
+        pwd
+        ls -al
+        cd app/
+        pwd
+        ls -al
     - name: SonarCloud scan
       if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'opened')
       uses: sonarsource/sonarcloud-github-action@master
