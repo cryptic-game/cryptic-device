@@ -241,17 +241,20 @@ def owner(data: dict, microservice: str) -> dict:
 
 
 @m.microservice_endpoint(path=["delete_user"])
-def delete_user(user: str) -> dict:
+def delete_user(data: dict) -> dict:
     """
     Delete all devices of a user.
-    :param user: The user uuid.
+    :param data: The given data.
     :return: Success or not
     """
-    devices: list = wrapper.session.query(Device).filter_by(owner=user).all()
+
+    user_uuid = data.get("user_uuid")
+
+    devices: list = wrapper.session.query(Device).filter_by(owner=user_uuid).all()
 
     if devices is not None:
         for device in devices:
-            
+
             # delete all files stored on the device
             files: list = wrapper.session.query(File).filter_by(device=device.uuid).all()
             for file in files:
