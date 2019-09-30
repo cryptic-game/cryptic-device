@@ -6,6 +6,7 @@ from app import m, wrapper
 from models.device import Device
 from models.hardware import Hardware
 from models.workload import Workload
+from models.file import File
 from resources.game_content import (
     check_compatible,
     calculate_power,
@@ -237,3 +238,33 @@ def owner(data: dict, microservice: str) -> dict:
         return device_not_found
     else:
         return {"owner": device.owner}
+
+
+@m.microservice_endpoint(path=["delete_user"])
+def delete_user(user: str) -> dict:
+    """
+    Delete all devices of a user.
+    :param user: The user uuid.
+    :return: Success or not
+    """
+    devices: list = wrapper.session.query(Device).filter_by(owner=user).all()
+
+    if devices is not None:
+        for device in devices:
+            
+            # delete all files stored on the device
+            files: list = wrapper.session.query(File).filter_by(device=device.uuid).all()
+            for file in files:
+                wrapper.session.delete(file)
+
+            # delete all hardware used in the device
+            hardware_list: list = wrapper.session.query(Hardware).filter_by(device_uuid=device.uuid).all()
+            for hardware_element in hardware_list:
+                wrapper.session.delete(hardware_element)
+
+            # delete the device itself
+            wrapper.session.delete(device)
+
+        wrapper.session.commit()
+
+    return success
