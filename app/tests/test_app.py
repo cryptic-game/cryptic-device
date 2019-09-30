@@ -81,6 +81,7 @@ class TestApp(TestCase):
             ["hardware", "register"],
             ["hardware", "stop"],
             ["hardware", "scale"],
+            (["delete_user"]),
         ]
 
         for path, requires in expected_user_endpoints:
