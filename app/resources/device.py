@@ -4,9 +4,9 @@ from sqlalchemy import func
 
 from app import m, wrapper
 from models.device import Device
+from models.file import File
 from models.hardware import Hardware
 from models.workload import Workload
-from models.file import File
 from resources.game_content import (
     check_compatible,
     calculate_power,
@@ -244,30 +244,26 @@ def owner(data: dict, microservice: str) -> dict:
 def delete_user(data: dict) -> dict:
     """
     Delete all devices of a user.
+
     :param data: The given data.
     :return: Success or not
     """
 
-    user_uuid = data.get("user_uuid")
+    user_uuid: str = data["user_uuid"]
 
-    devices: list = wrapper.session.query(Device).filter_by(owner=user_uuid).all()
+    for device in wrapper.session.query(Device).filter_by(owner=user_uuid):
 
-    if devices is not None:
-        for device in devices:
+        # delete all files stored on the device
+        for file in wrapper.session.query(File).filter_by(device=device.uuid):
+            wrapper.session.delete(file)
 
-            # delete all files stored on the device
-            files: list = wrapper.session.query(File).filter_by(device=device.uuid).all()
-            for file in files:
-                wrapper.session.delete(file)
+        # delete all hardware used in the device
+        for hardware_element in wrapper.session.query(Hardware).filter_by(device_uuid=device.uuid):
+            wrapper.session.delete(hardware_element)
 
-            # delete all hardware used in the device
-            hardware_list: list = wrapper.session.query(Hardware).filter_by(device_uuid=device.uuid).all()
-            for hardware_element in hardware_list:
-                wrapper.session.delete(hardware_element)
+        # delete the device itself
+        wrapper.session.delete(device)
 
-            # delete the device itself
-            wrapper.session.delete(device)
-
-        wrapper.session.commit()
+    wrapper.session.commit()
 
     return success
