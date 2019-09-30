@@ -7,6 +7,7 @@ from models.device import Device
 from models.file import File
 from models.hardware import Hardware
 from models.workload import Workload
+from models.service import Service
 from resources.game_content import (
     check_compatible,
     calculate_power,
@@ -260,6 +261,14 @@ def delete_user(data: dict) -> dict:
         # delete all hardware used in the device
         for hardware_element in wrapper.session.query(Hardware).filter_by(device_uuid=device.uuid):
             wrapper.session.delete(hardware_element)
+
+        # delete all workload entries used for the device
+        for workload_entry in wrapper.session.query(Workload).filter_by(device_uuid=device.uuid):
+            wrapper.session.delete(workload_entry)
+
+        # delete all serivces running on the device
+        for service in wrapper.session.query(Service).filter_by(device_uuid=device.uuid):
+            wrapper.session.delete(service)
 
         # delete the device itself
         wrapper.session.delete(device)
