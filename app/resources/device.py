@@ -242,7 +242,7 @@ def owner(data: dict, microservice: str) -> dict:
 
 
 @m.microservice_endpoint(path=["delete_user"])
-def delete_user(data: dict) -> dict:
+def delete_user(data: dict, microservice: str) -> dict:
     """
     Delete all devices of a user.
 
