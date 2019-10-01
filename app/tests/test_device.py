@@ -3,8 +3,10 @@ from unittest.mock import patch
 
 from mock.mock_loader import mock
 from models.device import Device
+from models.file import File
 from models.hardware import Hardware
-
+from models.service import Service
+from models.workload import Workload
 from resources import device
 from schemes import device_not_found, permission_denied, success, already_own_a_device
 from vars import hardware
@@ -16,11 +18,17 @@ class TestDevice(TestCase):
 
         self.query_device = mock.MagicMock()
         self.query_hardware = mock.MagicMock()
+        self.query_file = mock.MagicMock()
+        self.query_workload = mock.MagicMock()
+        self.query_service = mock.MagicMock()
         device.func = self.sqlalchemy_func = mock.MagicMock()
         self.query_func_count = mock.MagicMock()
         mock.wrapper.session.query.side_effect = {
             Device: self.query_device,
             Hardware: self.query_hardware,
+            File: self.query_file,
+            Workload: self.query_workload,
+            Service: self.query_service,
             self.sqlalchemy_func.count(): self.query_func_count,
         }.__getitem__
 
@@ -329,3 +337,30 @@ class TestDevice(TestCase):
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with("my device")
+
+    def test__ms_endpoint__delete_user(self):
+        devices = [mock.MagicMock() for _ in range(5)]
+        files = {}
+        hardware_elements = {}
+        workloads = {}
+        services = {}
+        to_delete = devices.copy()
+        for i in range(5):
+            uuid = devices[i].uuid
+            files[uuid] = [mock.MagicMock() for _ in range(5)]
+            hardware_elements[uuid] = [mock.MagicMock() for _ in range(5)]
+            workloads[uuid] = [mock.MagicMock() for _ in range(5)]
+            services[uuid] = [mock.MagicMock() for _ in range(5)]
+            to_delete += files[uuid] + hardware_elements[uuid] + workloads[uuid] + services[uuid]
+
+        self.query_device.filter_by.return_value = devices.copy()
+        mock.wrapper.session.delete.side_effect = to_delete.remove
+        self.query_file.filter_by.side_effect = lambda device: files[device]
+        self.query_hardware.filter_by.side_effect = lambda device_uuid: hardware_elements[device_uuid]
+        self.query_workload.filter_by.side_effect = lambda uuid: workloads[uuid]
+        self.query_service.filter_by.side_effect = lambda device_uuid: services[device_uuid]
+
+        self.assertEqual(success, device.delete_user({"user_uuid": "the-user"}, "server"))
+        self.assertFalse(to_delete)
+        self.query_device.filter_by.assert_called_with(owner="the-user")
+        mock.wrapper.session.commit.assert_called_with()

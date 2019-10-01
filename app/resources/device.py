@@ -4,8 +4,10 @@ from sqlalchemy import func
 
 from app import m, wrapper
 from models.device import Device
+from models.file import File
 from models.hardware import Hardware
 from models.workload import Workload
+from models.service import Service
 from resources.game_content import (
     check_compatible,
     calculate_power,
@@ -237,3 +239,40 @@ def owner(data: dict, microservice: str) -> dict:
         return device_not_found
     else:
         return {"owner": device.owner}
+
+
+@m.microservice_endpoint(path=["delete_user"])
+def delete_user(data: dict, microservice: str) -> dict:
+    """
+    Delete all devices of a user.
+
+    :param data: The given data.
+    :return: Success or not
+    """
+
+    user_uuid: str = data["user_uuid"]
+
+    for device in wrapper.session.query(Device).filter_by(owner=user_uuid):
+
+        # delete all files stored on the device
+        for file in wrapper.session.query(File).filter_by(device=device.uuid):
+            wrapper.session.delete(file)
+
+        # delete all hardware used in the device
+        for hardware_element in wrapper.session.query(Hardware).filter_by(device_uuid=device.uuid):
+            wrapper.session.delete(hardware_element)
+
+        # delete all workload entries used for the device
+        for workload_entry in wrapper.session.query(Workload).filter_by(uuid=device.uuid):
+            wrapper.session.delete(workload_entry)
+
+        # delete all services running on the device
+        for service in wrapper.session.query(Service).filter_by(device_uuid=device.uuid):
+            wrapper.session.delete(service)
+
+        # delete the device itself
+        wrapper.session.delete(device)
+
+    wrapper.session.commit()
+
+    return success
