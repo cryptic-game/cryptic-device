@@ -8,6 +8,7 @@ from models.file import File
 from models.hardware import Hardware
 from models.workload import Workload
 from models.service import Service
+from models.file import File
 from resources.game_content import (
     check_compatible,
     calculate_power,
@@ -105,6 +106,8 @@ def create_device(data: dict, user: str) -> dict:
     create_hardware(data, device.uuid)
 
     delete_items(user, data)
+
+    File(device.uuid, "/", None, "", True, False)
 
     return device.serialize
 

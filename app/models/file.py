@@ -1,7 +1,7 @@
 from typing import Union
 from uuid import uuid4
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Boolean
 
 from app import wrapper
 
@@ -19,6 +19,9 @@ class File(wrapper.Base):
     device: Union[Column, str] = Column(String(36), nullable=False)
     filename: Union[Column, str] = Column(String(255), nullable=False)
     content: Union[Column, str] = Column(String(CONTENT_LENGTH), nullable=False)
+    is_directory: Union[Column, bool] = Column(Boolean, nullable=False, default=False)
+    parent_dir_uuid: Union[Column, str] = Column(String(36))
+    is_changeable: [Union, bool] = Column(Boolean, nullable=False, default=True)
 
     @property
     def serialize(self) -> dict:
@@ -30,19 +33,24 @@ class File(wrapper.Base):
         return d
 
     @staticmethod
-    def create(device: str, filename: str, content: str) -> "File":
+    def create(device: str, filename: str, parent_dir_uuid: str, content: str = "",
+               is_directory: bool = False, is_changeable: bool = False) -> "File":
         """
         Creates a new file
         :param device: The device's uuid
         :param filename: The name of the new file
+        :param parent_dir_uuid: The parent directory (uuid) of the new file
         :param content: The content of the new file
+        :param is_directory: If the new file is a directory
+        :param is_changeable: If the new file is changeable by the user (move, filename, content)
         :return: New File
         """
 
         uuid = str(uuid4())
 
         # Return a new file
-        file: File = File(uuid=uuid, device=device, filename=filename, content=content)
+        file: File = File(uuid=uuid, device=device, filename=filename, content=content, parent_dir_uuid=parent_dir_uuid,
+                          is_directory=is_directory, is_changeable=is_changeable)
 
         wrapper.session.add(file)
         wrapper.session.commit()

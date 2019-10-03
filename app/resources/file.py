@@ -1,3 +1,4 @@
+from queue import LifoQueue
 from typing import Optional
 
 from sqlalchemy import func
@@ -13,9 +14,16 @@ from schemes import (
     success,
     requirement_device,
     requirement_file,
+    requirement_file_delete,
     requirement_file_move,
     requirement_file_update,
     requirement_file_create,
+    directories_can_not_be_updated,
+    directory_can_not_have_textcontent,
+    directories_must_be_deleted_recursively,
+    parent_directory_not_found,
+    file_not_changeable,
+    can_not_move_dir_into_itself,
 )
 
 
@@ -70,6 +78,7 @@ def move(data: dict, user: str) -> dict:
     device_uuid: str = data["device_uuid"]
     file_uuid = data["file_uuid"]
     filename = data["filename"]
+    parent_dir_uuid = data["parent_dir_uuid"]
 
     device: Optional[Device] = wrapper.session.query(Device).get(device_uuid)
 
@@ -83,10 +92,29 @@ def move(data: dict, user: str) -> dict:
     if file is None:
         return file_not_found
 
-    if wrapper.session.query(File).filter_by(device=device_uuid, filename=filename).first() is not None:
+    if not file.is_changeable:
+        return file_not_changeable
+
+    if wrapper.session.query(File).filter_by(device=device_uuid, filename=filename,
+                                             parent_dir_uuid=parent_dir_uuid).first() is not None:
         return file_already_exists
 
+    if wrapper.session.query(File).filter_by(device=device_uuid, uuid=parent_dir_uuid).first() is None:
+        return parent_directory_not_found
+
+    if file.is_directory:
+        parent_to_check: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid,
+                                                                                uuid=parent_dir_uuid).first()
+        while parent_to_check.uuid is not None:
+            if parent_to_check.uuid == file.uuid:
+                return can_not_move_dir_into_itself
+            parent_to_check: Optional[File] = wrapper.session.query(File).filter_by(
+                device=device_uuid,
+                uuid=parent_to_check.parent_dir_uuid
+            ).first()
+
     file.filename = filename
+    file.parent_dir_uuid = parent_dir_uuid
     wrapper.session.commit()
 
     return file.serialize
@@ -118,13 +146,19 @@ def update(data: dict, user: str) -> dict:
     if file is None:
         return file_not_found
 
+    if file.is_directory:
+        return directories_can_not_be_updated
+
+    if not file.is_changeable:
+        return file_not_changeable
+
     file.content = content
     wrapper.session.commit()
 
     return file.serialize
 
 
-@m.user_endpoint(path=["file", "delete"], requires=requirement_file)
+@m.user_endpoint(path=["file", "delete"], requires=requirement_file_delete)
 def delete_file(data: dict, user: str) -> dict:
     """
     Delete a file.
@@ -135,6 +169,7 @@ def delete_file(data: dict, user: str) -> dict:
 
     device_uuid: str = data["device_uuid"]
     file_uuid: str = data["file_uuid"]
+    recursive: str = data["recursive"]
 
     device: Optional[Device] = wrapper.session.query(Device).get(device_uuid)
 
@@ -149,7 +184,23 @@ def delete_file(data: dict, user: str) -> dict:
     if file is None:
         return file_not_found
 
-    wrapper.session.delete(file)
+    if not file.is_changeable:
+        return file_not_changeable
+
+    if file.is_directory and not recursive:
+        return directories_must_be_deleted_recursively
+
+    q = LifoQueue()
+    q.put(file)
+
+    while not q.empty():
+        file = q.get()
+        if file.is_directory:
+            files: list = wrapper.session.query(File).filter_py(device=device_uuid, parent_dir_uuid=file.uuid)
+            for i in files:
+                q.put(i)
+        wrapper.session.delete(file)
+
     wrapper.session.commit()
 
     return success
@@ -173,14 +224,20 @@ def create_file(data: dict, user: str) -> dict:
 
     filename: str = data["filename"]
     content: str = data["content"]
+    is_directory: bool = data["is_directory"]
+    parent_dir_uuid: str = data["parent_dir_uuid"]
+    is_changeable: bool = data["is_changeable"]
 
     file_count: int = wrapper.session.query(func.count(File.uuid)).filter_by(
-        device=device.uuid, filename=filename
+        device=device.uuid, filename=filename, parent_dir_uuid=parent_dir_uuid
     ).scalar()
 
     if file_count > 0:
         return file_already_exists
 
-    file: File = File.create(device.uuid, filename, content)
+    if is_directory and content != "":
+        return directory_can_not_have_textcontent
+
+    file: File = File.create(device.uuid, filename, parent_dir_uuid, content, is_directory, is_changeable)
 
     return file.serialize
