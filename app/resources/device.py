@@ -245,7 +245,7 @@ def owner(data: dict, microservice: str) -> dict:
 
 
 @m.microservice_endpoint(path=["delete_user"])
-def delete_user(data: dict) -> dict:
+def delete_user(data: dict, microservice: str) -> dict:
     """
     Delete all devices of a user.
 
@@ -266,10 +266,10 @@ def delete_user(data: dict) -> dict:
             wrapper.session.delete(hardware_element)
 
         # delete all workload entries used for the device
-        for workload_entry in wrapper.session.query(Workload).filter_by(device_uuid=device.uuid):
+        for workload_entry in wrapper.session.query(Workload).filter_by(uuid=device.uuid):
             wrapper.session.delete(workload_entry)
 
-        # delete all serivces running on the device
+        # delete all services running on the device
         for service in wrapper.session.query(Service).filter_by(device_uuid=device.uuid):
             wrapper.session.delete(service)
 
