@@ -110,6 +110,7 @@ class TestDevice(TestCase):
         compatible_patch.assert_called_with(data)
         exists_patch.assert_called_with("user", data)
 
+    @patch("resources.file.File")
     @patch("resources.device.delete_items")
     @patch("resources.device.create_hardware")
     @patch("resources.device.calculate_power")
@@ -118,7 +119,8 @@ class TestDevice(TestCase):
     @patch("resources.device.check_exists")
     @patch("resources.device.check_compatible")
     def test__user_endpoint__device_create__successful(
-        self, compatible_patch, exists_patch, device_patch, workload_patch, calculate_patch, create_patch, delete_patch
+        self, compatible_patch, exists_patch, device_patch, workload_patch, calculate_patch, create_patch, delete_patch,
+            file_patch
     ):
         compatible_patch.return_value = True, {}
         exists_patch.return_value = True, {}
@@ -137,6 +139,7 @@ class TestDevice(TestCase):
         workload_patch.create.assert_called_with(mock_device.uuid, calculate_patch())
         create_patch.assert_called_with(data, mock_device.uuid)
         delete_patch.assert_called_with("user", data)
+        file_patch.create.assert_called_with(mock_device.device_uuid, "/", None, "", True, False)
 
     def test__user_endpoint__device_starter_device__already_own_a_device(self):
         self.query_func_count.filter_by().scalar.return_value = 1

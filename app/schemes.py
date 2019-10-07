@@ -21,8 +21,6 @@ directory_can_not_have_textcontent: dict = make_error("directory_can_not_have_te
 
 directories_can_not_be_updated: dict = make_error("directories_can_not_be_updated", origin="user")
 
-directories_must_be_deleted_recursively: dict = make_error("directories_must_be_deleted_recursively", origin="user")
-
 parent_directory_not_found: dict = make_error("parent_directory_not_found", origin="user")
 
 file_not_changeable: dict = make_error("file_not_changeable", origin="user")

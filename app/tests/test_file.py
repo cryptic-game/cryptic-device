@@ -118,7 +118,12 @@ class TestFile(TestCase):
         self.query_device.get.return_value = None
 
         expected_result = device_not_found
-        actual_result = file.move({"device_uuid": "my-device", "file_uuid": "my-file", "filename": "new-name"}, "user")
+        actual_result = file.move({
+            "device_uuid": "my-device",
+            "file_uuid": "my-file",
+            "filename": "new-name",
+            "parent_dir_uuid": "0"
+        }, "user")
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with("my-device")
@@ -130,7 +135,12 @@ class TestFile(TestCase):
         self.query_device.get.return_value = mock_device
 
         expected_result = permission_denied
-        actual_result = file.move({"device_uuid": "my-device", "file_uuid": "my-file", "filename": "new-name"}, "user")
+        actual_result = file.move({
+            "device_uuid": "my-device",
+            "file_uuid": "my-file",
+            "filename": "new-name",
+            "parent_dir_uuid": "0"
+        }, "user")
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with("my-device")
@@ -144,8 +154,12 @@ class TestFile(TestCase):
         self.query_file.filter_by().first.return_value = None
 
         expected_result = file_not_found
-        actual_result = file.move(
-            {"device_uuid": mock_device.uuid, "file_uuid": "my-file", "filename": "new-name"}, "user"
+        actual_result = file.move({
+            "device_uuid": mock_device.uuid,
+            "file_uuid": "my-file",
+            "filename": "new-name",
+            "parent_dir_uuid": "0"
+        }, "user"
         )
 
         self.assertEqual(expected_result, actual_result)
@@ -163,7 +177,10 @@ class TestFile(TestCase):
         def handle_file_query(**kwargs):
             out = mock.MagicMock()
             if "filename" in kwargs:
-                self.assertEqual({"device": mock_device.uuid, "filename": "new-name"}, kwargs)
+                self.assertEqual({
+                    "device": mock_device.uuid,
+                    "filename": "new-name"
+                }, kwargs)
                 out.first.return_value = mock.MagicMock()
             else:
                 self.assertEqual({"device": mock_device.uuid, "uuid": "my-file"}, kwargs)

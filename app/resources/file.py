@@ -1,4 +1,3 @@
-from queue import LifoQueue
 from typing import Optional
 
 from sqlalchemy import func
@@ -20,7 +19,7 @@ from schemes import (
     requirement_file_create,
     directories_can_not_be_updated,
     directory_can_not_have_textcontent,
-    directories_must_be_deleted_recursively,
+
     parent_directory_not_found,
     file_not_changeable,
     can_not_move_dir_into_itself,
@@ -169,7 +168,6 @@ def delete_file(data: dict, user: str) -> dict:
 
     device_uuid: str = data["device_uuid"]
     file_uuid: str = data["file_uuid"]
-    recursive: str = data["recursive"]
 
     device: Optional[Device] = wrapper.session.query(Device).get(device_uuid)
 
@@ -187,22 +185,32 @@ def delete_file(data: dict, user: str) -> dict:
     if not file.is_changeable:
         return file_not_changeable
 
-    if file.is_directory and not recursive:
-        return directories_must_be_deleted_recursively
+    stack_to_delete = []
+    dirs = [file]
+    error_while_deleting = None
+    while len(dirs) > 0:
+        dir_to_check = dirs.pop(-1)
+        stack_to_delete.append(dir_to_check)
+        files_in_dir: list = wrapper.session.query(File).filter_py(device=device_uuid, parent_dir_uuid=dir_to_check.uuid)
+        for child_file in files_in_dir:
+            if child_file.is_directory:
+                dirs.append(child_file)
+            else:
+                stack_to_delete.append(child_file)
 
-    q = LifoQueue()
-    q.put(file)
-
-    while not q.empty():
-        file = q.get()
-        if file.is_directory:
-            files: list = wrapper.session.query(File).filter_py(device=device_uuid, parent_dir_uuid=file.uuid)
-            for i in files:
-                q.put(i)
-        wrapper.session.delete(file)
+    while len(stack_to_delete) > 0:
+        file_to_delete = stack_to_delete.pop(-1)
+        if file_to_delete.is_changeable:
+            del stack_to_delete[-1]
+            wrapper.session.delete(file_to_delete)
+        else:
+            error_while_deleting = file_not_changeable
+            break
 
     wrapper.session.commit()
 
+    if error_while_deleting:
+        return error_while_deleting
     return success
 
 

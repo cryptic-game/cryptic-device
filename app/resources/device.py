@@ -4,7 +4,6 @@ from sqlalchemy import func
 
 from app import m, wrapper
 from models.device import Device
-from models.file import File
 from models.hardware import Hardware
 from models.workload import Workload
 from models.service import Service
@@ -107,7 +106,7 @@ def create_device(data: dict, user: str) -> dict:
 
     delete_items(user, data)
 
-    File(device.uuid, "/", None, "", True, False)
+    File.create(device.uuid, "/", None, "", True, False)
 
     return device.serialize
 

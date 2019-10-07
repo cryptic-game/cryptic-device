@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 from uuid import uuid4
 
 from sqlalchemy import Column, String, Boolean
@@ -33,8 +33,8 @@ class File(wrapper.Base):
         return d
 
     @staticmethod
-    def create(device: str, filename: str, parent_dir_uuid: str, content: str = "",
-               is_directory: bool = False, is_changeable: bool = False) -> "File":
+    def create(device: str, filename: str, content: str, parent_dir_uuid: Optional[str],
+               is_directory: bool, is_changeable: bool) -> "File":
         """
         Creates a new file
         :param device: The device's uuid
