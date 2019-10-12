@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b67f522bf86fdec517d5fdebafaa4361646551b7016d0c7467598f93ac31ca24"
+            "sha256": "29e511f48da98781a39d14d62f4f0fa01b4ee142a0c890d1b30f1550829c0465"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -25,11 +25,11 @@
         },
         "cryptic-game": {
             "hashes": [
-                "sha256:6d533eae7f5fb0335e0b0d79748c2ccc10145202490d89443474776bcb4bdebf",
-                "sha256:a6053fc3db9133de5abd0a2f3a91d337a593350e4bf30a04b8a256429577753b"
+                "sha256:4454ce63622670339e241ba46dff4292d53e56887a1deb74d1b01bb7ee3d5195",
+                "sha256:f79636a81cbba335e74db1eb77640d37234744be1c3d8f5ad69bdc2819f223ad"
             ],
             "index": "pypi",
-            "version": "==0.4.5.dev0"
+            "version": "==0.4.6.dev0"
         },
         "jinja2": {
             "hashes": [
