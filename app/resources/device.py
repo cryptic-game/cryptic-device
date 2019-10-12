@@ -106,7 +106,7 @@ def create_device(data: dict, user: str) -> dict:
 
     delete_items(user, data)
 
-    File.create(device.uuid, "/", None, "", True, False)
+    File.create(device.uuid, "/", "", None, True, False)
 
     return device.serialize
 

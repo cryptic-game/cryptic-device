@@ -37,7 +37,15 @@ success: dict = {"ok": True}
 
 requirement_device: dict = {"device_uuid": UUID()}
 
-requirement_change_name: dict = {"device_uuid": UUID(), "name": Text(min_length=1, max_length=15)}
+basic_file_requirement: dict = {
+    "device_uuid": UUID(),
+    "parent_dir_uuid": str
+}
+
+requirement_change_name: dict = {
+    "device_uuid": UUID(),
+    "name": Text(min_length=1, max_length=15)
+}
 
 requirement_build: dict = {
     "gpu": Text(),
@@ -49,24 +57,34 @@ requirement_build: dict = {
 
 requirement_file: dict = {"device_uuid": UUID(), "file_uuid": UUID()}
 
-requirement_file_delete: dict = {"device_uuid": UUID(), "file_uuid": UUID(), "recursive": Boolean}
+requirement_file_delete: dict = {
+    "device_uuid": UUID(),
+    "file_uuid": UUID(),
+    "recursive": Boolean
+}
 
 requirement_file_move: dict = {
     "device_uuid": UUID(),
     "file_uuid": UUID(),
-    "filename": Text(min_length=1, max_length=64),
-    "parent_dir": UUID(),
+    "new_filename": Text(min_length=1, max_length=64),
+    "new_parent_dir_uuid": UUID(),
 }
 
-requirement_file_update: dict = {"device_uuid": UUID(), "file_uuid": UUID(), "content": Text(max_length=CONTENT_LENGTH)}
+requirement_file_update: dict = {
+    "device_uuid": UUID(),
+    "file_uuid": UUID(),
+    "content": Text(max_length=CONTENT_LENGTH)
+}
 
 requirement_file_create: dict = {
     "device_uuid": UUID(),
     "filename": Text(min_length=1, max_length=64),
     "content": Text(max_length=CONTENT_LENGTH),
     "is_directory": Boolean,
-    "parent_dir": UUID(),
+    "parent_dir_uuid": UUID(),
     "is_changeable": Boolean,
 }
 
-requirement_service: dict = {"service_uuid": UUID()}
+requirement_service: dict = {
+    "service_uuid": UUID()
+}
