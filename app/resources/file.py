@@ -44,8 +44,12 @@ def list_files(data: dict, user: str) -> dict:
 
     parent_dir_uuid = data["parent_dir_uuid"]
 
-    return {"files": [f.serialize for f in
-                      wrapper.session.query(File).filter_by(device=device.uuid, parent_dir_uuid=parent_dir_uuid).all()]}
+    return {
+        "files": [
+            f.serialize
+            for f in wrapper.session.query(File).filter_by(device=device.uuid, parent_dir_uuid=parent_dir_uuid).all()
+        ]
+    }
 
 
 @m.user_endpoint(path=["file", "info"], requires=requirement_file)
@@ -97,22 +101,26 @@ def move(data: dict, user: str) -> dict:
     if not file.is_changeable:
         return file_not_changeable
 
-    if wrapper.session.query(File).filter_by(device=device_uuid, new_filename=new_filename,
-                                             new_parent_dir_uuid=new_parent_dir_uuid).first() is not None:
+    if (
+        wrapper.session.query(File)
+        .filter_by(device=device_uuid, new_filename=new_filename, new_parent_dir_uuid=new_parent_dir_uuid)
+        .first()
+        is not None
+    ):
         return file_already_exists
 
     if wrapper.session.query(File).filter_by(device=device_uuid, uuid=new_parent_dir_uuid).first() is None:
         return parent_directory_not_found
 
     if file.is_directory:
-        parent_to_check: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid,
-                                                                                uuid=new_parent_dir_uuid).first()
+        parent_to_check: Optional[File] = wrapper.session.query(File).filter_by(
+            device=device_uuid, uuid=new_parent_dir_uuid
+        ).first()
         while parent_to_check.parent_dir_uuid is not None:
             if parent_to_check.uuid == file.uuid:
                 return can_not_move_dir_into_itself
             parent_to_check: Optional[File] = wrapper.session.query(File).filter_by(
-                device=device_uuid,
-                uuid=parent_to_check.parent_dir_uuid
+                device=device_uuid, uuid=parent_to_check.parent_dir_uuid
             ).first()
 
     file.filename = new_filename
@@ -194,8 +202,9 @@ def delete_file(data: dict, user: str) -> dict:
         while len(dirs) > 0:
             dir_to_check = dirs.pop(-1)
             stack_to_delete.append(dir_to_check)
-            files_in_dir: list = wrapper.session.query(File).filter_by(device=device_uuid,
-                                                                       parent_dir_uuid=dir_to_check.uuid).all()
+            files_in_dir: list = wrapper.session.query(File).filter_by(
+                device=device_uuid, parent_dir_uuid=dir_to_check.uuid
+            ).all()
             for child_file in files_in_dir:
                 if child_file.is_directory:
                     dirs.append(child_file)

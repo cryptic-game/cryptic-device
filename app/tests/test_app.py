@@ -12,7 +12,7 @@ from schemes import (
     requirement_file_update,
     requirement_file_create,
     requirement_service,
-    requirement_file_delete
+    requirement_file_delete,
 )
 
 

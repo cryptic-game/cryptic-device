@@ -22,7 +22,7 @@ class TestFileModel(TestCase):
             content="hello world",
             parent_dir_uuid="some_other_identifier",
             is_directory=False,
-            is_changeable=False
+            is_changeable=False,
         )
 
         expected_result = {
@@ -32,7 +32,7 @@ class TestFileModel(TestCase):
             "content": "hello world",
             "parent_dir_uuid": "some_other_identifier",
             "is_directory": False,
-            "is_changeable": False
+            "is_changeable": False,
         }
         serialized = file.serialize
 

@@ -119,8 +119,15 @@ class TestDevice(TestCase):
     @patch("resources.device.check_exists")
     @patch("resources.device.check_compatible")
     def test__user_endpoint__device_create__successful(
-        self, compatible_patch, exists_patch, device_patch, workload_patch, calculate_patch, create_patch, delete_patch,
-            file_patch
+        self,
+        compatible_patch,
+        exists_patch,
+        device_patch,
+        workload_patch,
+        calculate_patch,
+        create_patch,
+        delete_patch,
+        file_patch,
     ):
         compatible_patch.return_value = True, {}
         exists_patch.return_value = True, {}

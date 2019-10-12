@@ -33,8 +33,14 @@ class File(wrapper.Base):
         return d
 
     @staticmethod
-    def create(device: str, filename: str, content: str, parent_dir_uuid: Optional[str],
-               is_directory: bool, is_changeable: bool) -> "File":
+    def create(
+        device: str,
+        filename: str,
+        content: str,
+        parent_dir_uuid: Optional[str],
+        is_directory: bool,
+        is_changeable: bool,
+    ) -> "File":
         """
         Creates a new file
         :param device: The device's uuid
@@ -49,8 +55,15 @@ class File(wrapper.Base):
         uuid = str(uuid4())
 
         # Return a new file
-        file: File = File(uuid=uuid, device=device, filename=filename, content=content, parent_dir_uuid=parent_dir_uuid,
-                          is_directory=is_directory, is_changeable=is_changeable)
+        file: File = File(
+            uuid=uuid,
+            device=device,
+            filename=filename,
+            content=content,
+            parent_dir_uuid=parent_dir_uuid,
+            is_directory=is_directory,
+            is_changeable=is_changeable,
+        )
 
         wrapper.session.add(file)
         wrapper.session.commit()

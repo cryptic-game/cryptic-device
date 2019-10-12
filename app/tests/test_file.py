@@ -75,8 +75,7 @@ class TestFile(TestCase):
         self.query_device.get.return_value = None
 
         expected_result = device_not_found
-        actual_result = file.file_info({"device_uuid": "my-device", "file_uuid": "my-file"},
-                                       "user")
+        actual_result = file.file_info({"device_uuid": "my-device", "file_uuid": "my-file"}, "user")
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with("my-device")
@@ -88,11 +87,7 @@ class TestFile(TestCase):
         self.query_device.get.return_value = mock_device
 
         expected_result = permission_denied
-        actual_result = file.file_info({
-            "device_uuid": "my-device",
-            "file_uuid": "my-file"
-        },
-            "user")
+        actual_result = file.file_info({"device_uuid": "my-device", "file_uuid": "my-file"}, "user")
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with("my-device")
@@ -106,10 +101,7 @@ class TestFile(TestCase):
         self.query_file.filter_by().first.return_value = None
 
         expected_result = file_not_found
-        actual_result = file.file_info({
-            "device_uuid": mock_device.uuid,
-            "file_uuid": "my-file"
-        }, "user")
+        actual_result = file.file_info({"device_uuid": mock_device.uuid, "file_uuid": "my-file"}, "user")
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with(mock_device.uuid)
@@ -125,10 +117,7 @@ class TestFile(TestCase):
         self.query_file.filter_by().first.return_value = mock_file
 
         expected_result = mock_file.serialize
-        actual_result = file.file_info({
-            "device_uuid": mock_device.uuid,
-            "file_uuid": mock_file.uuid
-        }, "user")
+        actual_result = file.file_info({"device_uuid": mock_device.uuid, "file_uuid": mock_file.uuid}, "user")
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with(mock_device.uuid)
@@ -139,12 +128,15 @@ class TestFile(TestCase):
         self.query_device.get.return_value = None
 
         expected_result = device_not_found
-        actual_result = file.move({
-            "device_uuid": "my-device",
-            "file_uuid": "my-file",
-            "new_filename": "new-name",
-            "new_parent_dir_uuid": "0"
-        }, "user")
+        actual_result = file.move(
+            {
+                "device_uuid": "my-device",
+                "file_uuid": "my-file",
+                "new_filename": "new-name",
+                "new_parent_dir_uuid": "0",
+            },
+            "user",
+        )
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with("my-device")
@@ -156,12 +148,15 @@ class TestFile(TestCase):
         self.query_device.get.return_value = mock_device
 
         expected_result = permission_denied
-        actual_result = file.move({
-            "device_uuid": "my-device",
-            "file_uuid": "my-file",
-            "new_filename": "new-name",
-            "new_parent_dir_uuid": "0"
-        }, "user")
+        actual_result = file.move(
+            {
+                "device_uuid": "my-device",
+                "file_uuid": "my-file",
+                "new_filename": "new-name",
+                "new_parent_dir_uuid": "0",
+            },
+            "user",
+        )
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with("my-device")
@@ -175,12 +170,14 @@ class TestFile(TestCase):
         self.query_file.filter_by().first.return_value = None
 
         expected_result = file_not_found
-        actual_result = file.move({
-            "device_uuid": mock_device.uuid,
-            "file_uuid": "my-file",
-            "new_filename": "new-name",
-            "new_parent_dir_uuid": "0"
-        }, "user"
+        actual_result = file.move(
+            {
+                "device_uuid": mock_device.uuid,
+                "file_uuid": "my-file",
+                "new_filename": "new-name",
+                "new_parent_dir_uuid": "0",
+            },
+            "user",
         )
 
         self.assertEqual(expected_result, actual_result)
@@ -198,11 +195,9 @@ class TestFile(TestCase):
         def handle_file_query(**kwargs):
             out = mock.MagicMock()
             if "new_filename" in kwargs:
-                self.assertEqual({
-                    "device": mock_device.uuid,
-                    "new_filename": "new-name",
-                    "new_parent_dir_uuid": "0"
-                }, kwargs)
+                self.assertEqual(
+                    {"device": mock_device.uuid, "new_filename": "new-name", "new_parent_dir_uuid": "0"}, kwargs
+                )
                 out.first.return_value = mock.MagicMock()
             else:
                 self.assertEqual({"device": mock_device.uuid, "uuid": "my-file"}, kwargs)
@@ -213,11 +208,13 @@ class TestFile(TestCase):
 
         expected_result = file_already_exists
         actual_result = file.move(
-            {"device_uuid": mock_device.uuid,
-             "file_uuid": "my-file",
-             "new_filename": "new-name",
-             "new_parent_dir_uuid": "0"
-             }, "user"
+            {
+                "device_uuid": mock_device.uuid,
+                "file_uuid": "my-file",
+                "new_filename": "new-name",
+                "new_parent_dir_uuid": "0",
+            },
+            "user",
         )
 
         self.assertEqual(expected_result, actual_result)
@@ -246,11 +243,13 @@ class TestFile(TestCase):
 
         expected_result = file_not_changeable
         actual_result = file.move(
-            {"device_uuid": mock_device.uuid,
-             "file_uuid": "my-file",
-             "new_filename": "new-name",
-             "new_parent_dir_uuid": "0"
-             }, "user"
+            {
+                "device_uuid": mock_device.uuid,
+                "file_uuid": "my-file",
+                "new_filename": "new-name",
+                "new_parent_dir_uuid": "0",
+            },
+            "user",
         )
 
         self.assertEqual(expected_result, actual_result)
@@ -268,11 +267,9 @@ class TestFile(TestCase):
         def handle_file_query(**kwargs):
             out = mock.MagicMock()
             if "new_filename" in kwargs:
-                self.assertEqual({
-                    "device": mock_device.uuid,
-                    "new_filename": "new-name",
-                    "new_parent_dir_uuid": "0"
-                }, kwargs)
+                self.assertEqual(
+                    {"device": mock_device.uuid, "new_filename": "new-name", "new_parent_dir_uuid": "0"}, kwargs
+                )
                 out.first.return_value = None
             elif "uuid" in kwargs and kwargs["uuid"] == "0":
                 self.assertEqual({"device": mock_device.uuid, "uuid": "0"}, kwargs)
@@ -286,11 +283,13 @@ class TestFile(TestCase):
 
         expected_result = parent_directory_not_found
         actual_result = file.move(
-            {"device_uuid": mock_device.uuid,
-             "file_uuid": "my-file",
-             "new_filename": "new-name",
-             "new_parent_dir_uuid": "0"
-             }, "user"
+            {
+                "device_uuid": mock_device.uuid,
+                "file_uuid": "my-file",
+                "new_filename": "new-name",
+                "new_parent_dir_uuid": "0",
+            },
+            "user",
         )
 
         self.assertEqual(expected_result, actual_result)
@@ -317,11 +316,9 @@ class TestFile(TestCase):
         def handle_file_query(**kwargs):
             out = mock.MagicMock()
             if "new_filename" in kwargs:
-                self.assertEqual({
-                    "device": mock_device.uuid,
-                    "new_filename": "new-name",
-                    "new_parent_dir_uuid": "10"
-                }, kwargs)
+                self.assertEqual(
+                    {"device": mock_device.uuid, "new_filename": "new-name", "new_parent_dir_uuid": "10"}, kwargs
+                )
                 out.first.return_value = None
             elif "uuid" in kwargs and kwargs["uuid"] == "my-file":
                 self.assertEqual({"device": mock_device.uuid, "uuid": "my-file"}, kwargs)
@@ -336,11 +333,13 @@ class TestFile(TestCase):
 
         expected_result = can_not_move_dir_into_itself
         actual_result = file.move(
-            {"device_uuid": mock_device.uuid,
-             "file_uuid": "my-file",
-             "new_filename": "new-name",
-             "new_parent_dir_uuid": "10"
-             }, "user"
+            {
+                "device_uuid": mock_device.uuid,
+                "file_uuid": "my-file",
+                "new_filename": "new-name",
+                "new_parent_dir_uuid": "10",
+            },
+            "user",
         )
 
         self.assertEqual(expected_result, actual_result)
@@ -365,11 +364,9 @@ class TestFile(TestCase):
         def handle_file_query(**kwargs):
             out = mock.MagicMock()
             if "new_filename" in kwargs:
-                self.assertEqual({
-                    "device": mock_device.uuid,
-                    "new_filename": "new-name",
-                    "new_parent_dir_uuid": "0"
-                }, kwargs)
+                self.assertEqual(
+                    {"device": mock_device.uuid, "new_filename": "new-name", "new_parent_dir_uuid": "0"}, kwargs
+                )
                 out.first.return_value = None
             elif "uuid" in kwargs and kwargs["uuid"] == "my-file":
                 self.assertEqual({"device": mock_device.uuid, "uuid": "my-file"}, kwargs)
@@ -388,8 +385,9 @@ class TestFile(TestCase):
                 "device_uuid": mock_device.uuid,
                 "file_uuid": "my-file",
                 "new_filename": "new-name",
-                "new_parent_dir_uuid": "0"
-            }, "user"
+                "new_parent_dir_uuid": "0",
+            },
+            "user",
         )
 
         self.assertEqual(expected_result, actual_result)
@@ -582,6 +580,7 @@ class TestFile(TestCase):
 
         filesystem = {}
         filesystem_after_deletion = {}
+
         def create_file(uuid, parent_dir_uuid, is_changeable, is_directory, add_to_filesystem_a_d):
             file_mock = mock.MagicMock()
             file_mock.uuid = uuid
@@ -609,14 +608,13 @@ class TestFile(TestCase):
         def handle_file_query(**kwargs):
             out = mock.MagicMock()
             if "uuid" in kwargs:
-                self.assertEqual({
-                    "device": mock_device.uuid,
-                    "uuid": "AC"
-                }, kwargs)
+                self.assertEqual({"device": mock_device.uuid, "uuid": "AC"}, kwargs)
                 out.first.return_value = mock_file
             elif "parent_dir_uuid" in kwargs:
                 self.assertIn(kwargs["parent_dir_uuid"], filesystem)
-                out.all.return_value = [v for _,v in filesystem.items() if v.parent_dir_uuid == kwargs["parent_dir_uuid"]]
+                out.all.return_value = [
+                    v for _, v in filesystem.items() if v.parent_dir_uuid == kwargs["parent_dir_uuid"]
+                ]
             return out
 
         def delete_file(file):
@@ -627,11 +625,7 @@ class TestFile(TestCase):
         self.query_device.get.return_value = mock_device
 
         expected_result = file_not_changeable
-        actual_result = file.delete_file(
-            {"device_uuid": mock_device.uuid,
-             "file_uuid": "AC"
-             }, "user"
-        )
+        actual_result = file.delete_file({"device_uuid": mock_device.uuid, "file_uuid": "AC"}, "user")
 
         self.assertEqual(expected_result, actual_result)
         self.assertEqual(filesystem, filesystem_after_deletion)
@@ -676,15 +670,13 @@ class TestFile(TestCase):
         def handle_file_query(**kwargs):
             out = mock.MagicMock()
             if "uuid" in kwargs:
-                self.assertEqual({
-                    "device": mock_device.uuid,
-                    "uuid": "AC"
-                }, kwargs)
+                self.assertEqual({"device": mock_device.uuid, "uuid": "AC"}, kwargs)
                 out.first.return_value = mock_file
             elif "parent_dir_uuid" in kwargs:
                 self.assertIn(kwargs["parent_dir_uuid"], filesystem)
-                out.all.return_value = [v for _, v in filesystem.items() if
-                                        v.parent_dir_uuid == kwargs["parent_dir_uuid"]]
+                out.all.return_value = [
+                    v for _, v in filesystem.items() if v.parent_dir_uuid == kwargs["parent_dir_uuid"]
+                ]
             return out
 
         def delete_file(file):
@@ -695,11 +687,7 @@ class TestFile(TestCase):
         self.query_device.get.return_value = mock_device
 
         expected_result = success
-        actual_result = file.delete_file(
-            {"device_uuid": mock_device.uuid,
-             "file_uuid": "AC"
-             }, "user"
-        )
+        actual_result = file.delete_file({"device_uuid": mock_device.uuid, "file_uuid": "AC"}, "user")
 
         self.assertEqual(expected_result, actual_result)
         self.assertEqual(filesystem, filesystem_after_deletion)
@@ -737,21 +725,24 @@ class TestFile(TestCase):
 
         expected_result = file_already_exists
         actual_result = file.create_file(
-            {"device_uuid": mock_device.uuid,
-             "filename": "test-file",
-             "content": "some random content here",
-             "parent_dir_uuid": "0",
+            {
+                "device_uuid": mock_device.uuid,
+                "filename": "test-file",
+                "content": "some random content here",
+                "parent_dir_uuid": "0",
                 "is_directory": False,
                 "is_changeable": True,
-             }, "user"
+            },
+            "user",
         )
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with(mock_device.uuid)
         mock_device.check_access.assert_called_with("user")
         self.sqlalchemy_func.count.assert_called_with(File.uuid)
-        self.query_func_count.filter_by.assert_called_with(device=mock_device.uuid, filename="test-file",
-                                                           parent_dir_uuid="0")
+        self.query_func_count.filter_by.assert_called_with(
+            device=mock_device.uuid, filename="test-file", parent_dir_uuid="0"
+        )
 
     @patch("resources.file.File.create")
     def test__user_endpoint__file_create__successful(self, file_create_patch):
@@ -769,16 +760,18 @@ class TestFile(TestCase):
                 "content": "some random content here",
                 "is_directory": False,
                 "is_changeable": True,
-                "parent_dir_uuid": "0"
-            }, "user"
+                "parent_dir_uuid": "0",
+            },
+            "user",
         )
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with(mock_device.uuid)
         mock_device.check_access.assert_called_with("user")
         self.sqlalchemy_func.count.assert_called_with(File.uuid)
-        self.query_func_count.filter_by.assert_called_with(device=mock_device.uuid, filename="test-file",
-                                                           parent_dir_uuid="0")
+        self.query_func_count.filter_by.assert_called_with(
+            device=mock_device.uuid, filename="test-file", parent_dir_uuid="0"
+        )
         file_create_patch.assert_called_with(
             mock_device.uuid, "test-file", "some random content here", "0", False, True
         )
@@ -799,13 +792,15 @@ class TestFile(TestCase):
                 "content": "some random content here",
                 "is_changeable": True,
                 "is_directory": True,
-                "parent_dir_uuid": "0"
-            }, "user"
+                "parent_dir_uuid": "0",
+            },
+            "user",
         )
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with(mock_device.uuid)
         mock_device.check_access.assert_called_with("user")
         self.sqlalchemy_func.count.assert_called_with(File.uuid)
-        self.query_func_count.filter_by.assert_called_with(device=mock_device.uuid, filename="test-file",
-                                                           parent_dir_uuid="0")
+        self.query_func_count.filter_by.assert_called_with(
+            device=mock_device.uuid, filename="test-file", parent_dir_uuid="0"
+        )
