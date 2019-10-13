@@ -200,7 +200,7 @@ def delete_device(data: dict, user: str) -> dict:
     if device is None:
         return device_not_found
 
-    if not device.check_access(user):
+    if device.owner != user:
         return permission_denied
 
     stop_all_service(data["device_uuid"], delete=True)

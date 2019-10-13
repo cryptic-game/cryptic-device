@@ -275,7 +275,7 @@ class TestDevice(TestCase):
 
     def test__user_endpoint__device_delete__permission_denied(self):
         mock_device = mock.MagicMock()
-        mock_device.check_access.return_value = False
+        mock_device.owner = "other-user"
         self.query_device.get.return_value = mock_device
 
         expected_result = permission_denied
@@ -283,13 +283,12 @@ class TestDevice(TestCase):
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with("the-device")
-        mock_device.check_access.assert_called_with("user")
 
     @patch("resources.device.delete_services")
     @patch("resources.device.stop_all_service")
     def test__user_endpoint__device_delete__successful(self, sas_patch, ds_patch):
         mock_device = mock.MagicMock()
-        mock_device.check_access.return_value = True
+        mock_device.owner = "user"
         self.query_device.get.return_value = mock_device
 
         expected_result = success
@@ -297,7 +296,6 @@ class TestDevice(TestCase):
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with("the-device")
-        mock_device.check_access.assert_called_with("user")
         sas_patch.assert_called_with("the-device", delete=True)
         ds_patch.assert_called_with("the-device")
         mock.wrapper.session.delete.assert_called_with(mock_device)

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9a69c964eefc4e0ccc5e899acdd7df36a538677ebb164efb620b995fd7d99df6"
+            "sha256": "f73408d62cd38f0761f24508e76e1676f73182f69d28d95fd960f36ca7cf9bad"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -25,18 +25,18 @@
         },
         "cryptic-game": {
             "hashes": [
-                "sha256:0595c2a387fb5c0865b5f83bebcf9c7aa7fb584386f0b16a6bd979c3d74aacc0",
-                "sha256:23f2870478c662c91ff16063ab5187c4c532f79ea7caf90ae41c70a6fd6ccd8b"
+                "sha256:1f380cf772ccba25ed556b4a11ba90de6a44800d728f462e14b9ea92e684cbfb",
+                "sha256:b73682b6439f7bf2ead2a859f09893d573ee3ea6fe7ef77a1982101d7d188cde"
             ],
             "index": "pypi",
-            "version": "==0.4.4.dev0"
+            "version": "==0.4.7.dev0"
         },
         "jinja2": {
             "hashes": [
-                "sha256:065c4f02ebe7f7cf559e49ee5a95fb800a9e4528727aec6f24402a5374c65013",
-                "sha256:14dd6caf1527abb21f08f86c784eac40853ba93edb79552aa1e4b8aef1b61c7b"
+                "sha256:74320bb91f31270f9551d46522e33af46a80c3d619f4a4bf42b3164d30b5911f",
+                "sha256:9fe95f19286cfefaa917656583d020be14e7859c6b0252588391e47db34527de"
             ],
-            "version": "==2.10.1"
+            "version": "==2.10.3"
         },
         "markupsafe": {
             "hashes": [
