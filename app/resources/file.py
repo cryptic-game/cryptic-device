@@ -11,7 +11,6 @@ from schemes import (
     device_not_found,
     permission_denied,
     success,
-    basic_file_requirement,
     requirement_file,
     requirement_file_delete,
     requirement_file_move,
@@ -101,15 +100,16 @@ def move(data: dict, user: str) -> dict:
     if not file.is_changeable:
         return file_not_changeable
 
-    if (
-        wrapper.session.query(File)
-        .filter_by(device=device_uuid, new_filename=new_filename, new_parent_dir_uuid=new_parent_dir_uuid)
-        .first()
-        is not None
-    ):
+    target_file: Optional[File] = wrapper.session.query(File).filter_by(
+        device=device_uuid, filename=new_filename, parent_dir_uuid=new_parent_dir_uuid
+    ).first()
+    if target_file is not None:
         return file_already_exists
 
-    if wrapper.session.query(File).filter_by(device=device_uuid, uuid=new_parent_dir_uuid).first() is None:
+    target_dir: Optional[File] = (
+        wrapper.session.query(File).filter_by(device=device_uuid, is_directory=True, uuid=new_parent_dir_uuid).first()
+    )
+    if target_dir is None:
         return parent_directory_not_found
 
     if file.is_directory:
@@ -200,7 +200,7 @@ def delete_file(data: dict, user: str) -> dict:
         stack_to_delete = []
         dirs = [file]
         while len(dirs) > 0:
-            dir_to_check = dirs.pop(-1)
+            dir_to_check = dirs.pop()
             stack_to_delete.append(dir_to_check)
             files_in_dir: list = wrapper.session.query(File).filter_by(
                 device=device_uuid, parent_dir_uuid=dir_to_check.uuid
@@ -214,8 +214,8 @@ def delete_file(data: dict, user: str) -> dict:
         stack_to_delete = [file]
 
     error_while_deleting = None
-    while len(stack_to_delete) > 0:
-        file_to_delete = stack_to_delete.pop(-1)
+    while stack_to_delete:
+        file_to_delete = stack_to_delete.pop()
         if file_to_delete.is_changeable:
             wrapper.session.delete(file_to_delete)
         else:

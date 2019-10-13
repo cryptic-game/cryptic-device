@@ -133,6 +133,8 @@ def starter_device(data: dict, user: str) -> dict:
 
     create_hardware(hardware["start_pc"], device.uuid)
 
+    File.create(device.uuid, "/", "", None, True, False)
+
     return device.serialize
 
 
