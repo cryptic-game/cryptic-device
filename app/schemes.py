@@ -37,7 +37,7 @@ success: dict = {"ok": True}
 
 requirement_device: dict = {"device_uuid": UUID()}
 
-basic_file_requirement: dict = {"device_uuid": UUID(), "parent_dir_uuid": str}
+basic_file_requirement: dict = {"device_uuid": UUID(), "parent_dir_uuid": UUID()}
 
 requirement_change_name: dict = {"device_uuid": UUID(), "name": Text(min_length=1, max_length=15)}
 

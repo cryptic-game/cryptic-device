@@ -13,6 +13,7 @@ from schemes import (
     requirement_file_create,
     requirement_service,
     requirement_file_delete,
+    basic_file_requirement,
 )
 
 
@@ -73,7 +74,7 @@ class TestApp(TestCase):
             (["device", "change_name"], requirement_change_name, device.change_name),
             (["device", "delete"], requirement_device, device.delete_device),
             (["device", "spot"], {}, device.spot),
-            (["file", "all"], requirement_device, file.list_files),
+            (["file", "all"], basic_file_requirement, file.list_files),
             (["file", "info"], requirement_file, file.file_info),
             (["file", "move"], requirement_file_move, file.move),
             (["file", "update"], requirement_file_update, file.update),

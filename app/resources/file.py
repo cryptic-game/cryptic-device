@@ -21,11 +21,11 @@ from schemes import (
     parent_directory_not_found,
     file_not_changeable,
     can_not_move_dir_into_itself,
-    requirement_device,
+    basic_file_requirement,
 )
 
 
-@m.user_endpoint(path=["file", "all"], requires=requirement_device)
+@m.user_endpoint(path=["file", "all"], requires=basic_file_requirement)
 def list_files(data: dict, user: str) -> dict:
     """
     Get all files of a device.

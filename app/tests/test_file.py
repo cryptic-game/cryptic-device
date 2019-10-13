@@ -195,9 +195,7 @@ class TestFile(TestCase):
         def handle_file_query(**kwargs):
             out = mock.MagicMock()
             if "filename" in kwargs:
-                self.assertEqual(
-                    {"device": mock_device.uuid, "filename": "new-name", "parent_dir_uuid": "0"}, kwargs
-                )
+                self.assertEqual({"device": mock_device.uuid, "filename": "new-name", "parent_dir_uuid": "0"}, kwargs)
                 out.first.return_value = mock.MagicMock()
             else:
                 self.assertEqual({"device": mock_device.uuid, "uuid": "my-file"}, kwargs)
@@ -267,9 +265,7 @@ class TestFile(TestCase):
         def handle_file_query(**kwargs):
             out = mock.MagicMock()
             if "filename" in kwargs:
-                self.assertEqual(
-                    {"device": mock_device.uuid, "filename": "new-name", "parent_dir_uuid": "0"}, kwargs
-                )
+                self.assertEqual({"device": mock_device.uuid, "filename": "new-name", "parent_dir_uuid": "0"}, kwargs)
                 out.first.return_value = None
             elif "uuid" in kwargs and kwargs["uuid"] == "0":
                 self.assertEqual({"device": mock_device.uuid, "uuid": "0", "is_directory": True}, kwargs)
@@ -316,9 +312,7 @@ class TestFile(TestCase):
         def handle_file_query(**kwargs):
             out = mock.MagicMock()
             if "filename" in kwargs:
-                self.assertEqual(
-                    {"device": mock_device.uuid, "filename": "new-name", "parent_dir_uuid": "10"}, kwargs
-                )
+                self.assertEqual({"device": mock_device.uuid, "filename": "new-name", "parent_dir_uuid": "10"}, kwargs)
                 out.first.return_value = None
             elif "uuid" in kwargs and kwargs["uuid"] == "my-file":
                 self.assertEqual({"device": mock_device.uuid, "uuid": "my-file"}, kwargs)
@@ -364,9 +358,7 @@ class TestFile(TestCase):
         def handle_file_query(**kwargs):
             out = mock.MagicMock()
             if "filename" in kwargs:
-                self.assertEqual(
-                    {"device": mock_device.uuid, "filename": "new-name", "parent_dir_uuid": "0"}, kwargs
-                )
+                self.assertEqual({"device": mock_device.uuid, "filename": "new-name", "parent_dir_uuid": "0"}, kwargs)
                 out.first.return_value = None
             elif "uuid" in kwargs and kwargs["uuid"] == "my-file":
                 self.assertEqual({"device": mock_device.uuid, "uuid": "my-file"}, kwargs)
