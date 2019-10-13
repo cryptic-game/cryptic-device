@@ -53,7 +53,12 @@ def hardware_resources(data: dict, user: str) -> dict:
 
 @m.user_endpoint(path=["hardware", "process"], requires=requirement_service)
 def hardware_process(data: dict, user: str) -> dict:
-    return calculate_real_use(data["service_uuid"])
+    service_uuid: str = data["service_uuid"]
+
+    if wrapper.session.query(Service).get(service_uuid) is None:
+        return service_not_found
+
+    return calculate_real_use(service_uuid)
 
 
 @m.user_endpoint(path=["hardware", "list"], requires={})
