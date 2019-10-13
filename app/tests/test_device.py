@@ -158,12 +158,13 @@ class TestDevice(TestCase):
         self.sqlalchemy_func.count.assert_called_with(Device.uuid)
         self.query_func_count.filter_by.assert_called_with(owner="user")
 
+    @patch("resources.device.File")
     @patch("resources.device.create_hardware")
     @patch("resources.device.calculate_power")
     @patch("resources.device.Workload")
     @patch("resources.device.Device.create")
     def test__user_endpoint__device_starter_device__successful(
-        self, device_create_patch, workload_patch, calculate_patch, create_patch
+        self, device_create_patch, workload_patch, calculate_patch, create_patch, file_patch
     ):
         self.query_func_count.filter_by().scalar.return_value = 0
 
@@ -179,6 +180,7 @@ class TestDevice(TestCase):
         device_create_patch.assert_called_with("user", True)
         workload_patch.create.assert_called_with(mock_device.uuid, calculate_patch())
         create_patch.assert_called_with(hardware["start_pc"], mock_device.uuid)
+        file_patch.create.assert_called_with(mock_device.uuid, "/", "", None, True, False)
 
     def test__user_endpoint__device_power__device_not_found(self):
         self.query_device.get.return_value = None
