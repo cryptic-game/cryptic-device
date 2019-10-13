@@ -19,5 +19,5 @@ python_version = "3.7"
 [scripts]
 test = "python3 -m unittest discover -v tests"
 coverage = "sh coverage.sh"
-dev = "python3 app.py --debug"
-prod = "python3 app.py"
+dev = "python3 main.py --debug"
+prod = "python3 main.py"
