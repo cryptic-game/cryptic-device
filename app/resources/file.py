@@ -249,7 +249,6 @@ def create_file(data: dict, user: str) -> dict:
     content: str = data["content"]
     is_directory: bool = data["is_directory"]
     parent_dir_uuid: str = data["parent_dir_uuid"]
-    is_changeable: bool = data["is_changeable"]
 
     file_count: int = wrapper.session.query(func.count(File.uuid)).filter_by(
         device=device.uuid, filename=filename, parent_dir_uuid=parent_dir_uuid
@@ -261,6 +260,6 @@ def create_file(data: dict, user: str) -> dict:
     if is_directory and content != "":
         return directory_can_not_have_textcontent
 
-    file: File = File.create(device.uuid, filename, content, parent_dir_uuid, is_directory, is_changeable)
+    file: File = File.create(device.uuid, filename, content, parent_dir_uuid, is_directory, True)
 
     return file.serialize

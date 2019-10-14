@@ -68,7 +68,6 @@ requirement_file_create: dict = {
     "content": Text(max_length=CONTENT_LENGTH),
     "is_directory": Boolean(),
     "parent_dir_uuid": UUID(),
-    "is_changeable": Boolean(),
 }
 
 requirement_service: dict = {"service_uuid": UUID()}
