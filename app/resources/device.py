@@ -207,6 +207,9 @@ def delete_device(data: dict, user: str) -> dict:
 
     stop_all_service(data["device_uuid"], delete=True)
     delete_services(data["device_uuid"])  # Removes all Services in MS_Service
+    files: list = wrapper.session.query(File).filter_by(device=device.uuid)
+    for file in files:
+        wrapper.session.delete(file)
 
     device: Device = wrapper.session.query(Device).get(data["device_uuid"])
     wrapper.session.delete(device)
@@ -273,6 +276,11 @@ def delete_user(data: dict, microservice: str) -> dict:
         # delete all services running on the device
         for service in wrapper.session.query(Service).filter_by(device_uuid=device.uuid):
             wrapper.session.delete(service)
+
+        #delete all files in filesystem
+        files: list = wrapper.session.query(File).filter_by(device=device.uuid)
+        for file in files:
+            wrapper.session.delete(file)
 
         # delete the device itself
         wrapper.session.delete(device)
