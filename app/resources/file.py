@@ -258,7 +258,8 @@ def create_file(data: dict, user: str) -> dict:
     if file_count > 0:
         return file_already_exists
 
-    parent_dir: File = wrapper.session.query(File).filter_by(device=device.uuid, parent_dir_uuid=parent_dir_uuid)
+    parent_dir: File = wrapper.session.query(File).filter_by(device=device.uuid, parent_dir_uuid=parent_dir_uuid,
+                                                             is_directory=True).first()
     if not parent_dir:
         return parent_dir_does_not_exist
 

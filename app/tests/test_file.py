@@ -16,6 +16,7 @@ from schemes import (
     parent_directory_not_found,
     can_not_move_dir_into_itself,
     directory_can_not_have_textcontent,
+    parent_dir_does_not_exist,
 )
 
 
@@ -777,6 +778,36 @@ class TestFile(TestCase):
         self.query_func_count.filter_by().scalar.return_value = 0
 
         expected_result = directory_can_not_have_textcontent
+        actual_result = file.create_file(
+            {
+                "device_uuid": mock_device.uuid,
+                "filename": "test-file",
+                "content": "some random content here",
+                "is_changeable": True,
+                "is_directory": True,
+                "parent_dir_uuid": "0",
+            },
+            "user",
+        )
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_device.get.assert_called_with(mock_device.uuid)
+        mock_device.check_access.assert_called_with("user")
+        self.sqlalchemy_func.count.assert_called_with(File.uuid)
+        self.query_func_count.filter_by.assert_called_with(
+            device=mock_device.uuid, filename="test-file", parent_dir_uuid="0"
+        )
+
+    @patch("resources.file.File.create")
+    def test__user_endpoint__file_create__no_parent_dir(self, file_create_patch):
+        mock_device = mock.MagicMock()
+        mock_device.check_access.return_value = True
+
+        self.query_file.filter_by().first.return_value = None
+        self.query_device.get.return_value = mock_device
+        self.query_func_count.filter_by().scalar.return_value = 0
+
+        expected_result = parent_dir_does_not_exist
         actual_result = file.create_file(
             {
                 "device_uuid": mock_device.uuid,

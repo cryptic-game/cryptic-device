@@ -5,6 +5,7 @@ from app import m, wrapper
 from models.hardware import Hardware
 from models.service import Service
 from models.workload import Workload
+from models.file import File
 from vars import hardware, resolve_ram_type, resolve_gpu_type
 
 
@@ -196,6 +197,12 @@ def stop_services(device_uuid: str) -> None:
 
 def delete_services(device_uuid: str) -> None:
     m.contact_microservice("service", ["hardware", "delete"], {"device_uuid": device_uuid})
+
+
+def delete_files(device_uuid: str) -> None:
+    files: list = wrapper.session.query(File).filter_by(device=device_uuid)
+    for file in files:
+        wrapper.session.delete(file)
 
 
 def generate_scale_with_no_new(wl: Workload) -> Tuple[float, float, float, float, float]:

@@ -291,6 +291,11 @@ class TestDevice(TestCase):
     def test__user_endpoint__device_delete__successful(self, sas_patch, ds_patch):
         mock_device = mock.MagicMock()
         mock_device.owner = "user"
+        files = []
+        for i in range(5):
+            files.append([mock.MagicMock() for _ in range(5)])
+
+        self.query_file.filter_by.return_value = files
         self.query_device.get.return_value = mock_device
 
         expected_result = success
