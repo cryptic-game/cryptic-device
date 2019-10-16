@@ -208,7 +208,7 @@ def delete_device(data: dict, user: str) -> dict:
 
     stop_all_service(data["device_uuid"], delete=True)
     delete_services(data["device_uuid"])  # Removes all Services in MS_Service
-    delete_files(data["device_uuid"])     # remove all files
+    delete_files(data["device_uuid"])  # remove all files
 
     device: Device = wrapper.session.query(Device).get(data["device_uuid"])
     wrapper.session.delete(device)
