@@ -19,8 +19,6 @@ file_already_exists: dict = make_error("file_already_exists", origin="user")
 
 directory_can_not_have_textcontent: dict = make_error("directory_can_not_have_textcontent", origin="user")
 
-parent_dir_does_not_exist: dict = make_error("parent directory for new file does not exist", origin="user")
-
 directories_can_not_be_updated: dict = make_error("directories_can_not_be_updated", origin="user")
 
 parent_directory_not_found: dict = make_error("parent_directory_not_found", origin="user")

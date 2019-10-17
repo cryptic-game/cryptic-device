@@ -22,7 +22,6 @@ from schemes import (
     file_not_changeable,
     can_not_move_dir_into_itself,
     basic_file_requirement,
-    parent_dir_does_not_exist,
 )
 
 
@@ -261,7 +260,7 @@ def create_file(data: dict, user: str) -> dict:
     parent_dir: File = wrapper.session.query(File).filter_by(device=device.uuid, parent_dir_uuid=parent_dir_uuid,
                                                              is_directory=True).first()
     if not parent_dir:
-        return parent_dir_does_not_exist
+        return parent_directory_not_found
 
     if is_directory and content != "":
         return directory_can_not_have_textcontent
