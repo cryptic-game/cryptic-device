@@ -16,7 +16,6 @@ from schemes import (
     parent_directory_not_found,
     can_not_move_dir_into_itself,
     directory_can_not_have_textcontent,
-    parent_dir_does_not_exist,
 )
 
 
@@ -807,7 +806,7 @@ class TestFile(TestCase):
         self.query_device.get.return_value = mock_device
         self.query_func_count.filter_by().scalar.return_value = 0
 
-        expected_result = parent_dir_does_not_exist
+        expected_result = parent_directory_not_found
         actual_result = file.create_file(
             {
                 "device_uuid": mock_device.uuid,
