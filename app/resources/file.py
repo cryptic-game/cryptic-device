@@ -16,6 +16,7 @@ from schemes import (
     requirement_file_move,
     requirement_file_update,
     requirement_file_create,
+    device_powered_off,
 )
 
 
@@ -34,6 +35,9 @@ def list_files(data: dict, user: str) -> dict:
 
     if not device.check_access(user):
         return permission_denied
+
+    if not device.powered_on:
+        return device_powered_off
 
     return {"files": [f.serialize for f in wrapper.session.query(File).filter_by(device=device.uuid).all()]}
 
@@ -57,6 +61,9 @@ def file_info(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
+    if not device.powered_on:
+        return device_powered_off
+
     file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
 
     if file is None:
@@ -77,6 +84,8 @@ def move(data: dict, user: str) -> dict:
         return device_not_found
     if not device.check_access(user):
         return permission_denied
+    if not device.powered_on:
+        return device_powered_off
 
     file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
 
@@ -112,6 +121,8 @@ def update(data: dict, user: str) -> dict:
         return device_not_found
     if not device.check_access(user):
         return permission_denied
+    if not device.powered_on:
+        return device_powered_off
 
     file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
 
@@ -144,6 +155,9 @@ def delete_file(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
+    if not device.powered_on:
+        return device_powered_off
+
     file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
 
     if file is None:
@@ -170,6 +184,9 @@ def create_file(data: dict, user: str) -> dict:
 
     if not device.check_access(user):
         return permission_denied
+
+    if not device.powered_on:
+        return device_powered_off
 
     filename: str = data["filename"]
     content: str = data["content"]
