@@ -354,6 +354,25 @@ class TestDevice(TestCase):
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with("my device")
 
+    def test__ms_endpoint__ping__device_not_found(self):
+        self.query_device.get.return_value = None
+
+        expected_result = device_not_found
+        actual_result = device.ms_ping({"device_uuid": "my device"}, "")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_device.get.assert_called_with("my device")
+
+    def test__ms_endpoint__ping__successful(self):
+        mock_device = mock.MagicMock()
+        self.query_device.get.return_value = mock_device
+
+        expected_result = {"online": mock_device.powered_on}
+        actual_result = device.ms_ping({"device_uuid": "my device"}, "")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_device.get.assert_called_with("my device")
+
     def test__ms_endpoint__owner__device_not_found(self):
         self.query_device.get.return_value = None
 

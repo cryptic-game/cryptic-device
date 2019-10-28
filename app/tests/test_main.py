@@ -86,6 +86,7 @@ class TestApp(TestCase):
 
         expected_ms_endpoints = [
             (["exist"], device.exist),
+            (["ping"], device.ms_ping),
             (["owner"], device.owner),
             (["hardware", "register"], hardware.hardware_register),
             (["hardware", "stop"], hardware.hardware_stop),

@@ -242,6 +242,16 @@ def exist(data: dict, microservice: str) -> dict:
     return {"exist": device is not None}
 
 
+@m.microservice_endpoint(path=["ping"])
+def ms_ping(data: dict, microservice: str) -> dict:
+    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
+
+    if device is None:
+        return device_not_found
+    else:
+        return {"online": device.powered_on}
+
+
 @m.microservice_endpoint(path=["owner"])
 def owner(data: dict, microservice: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
