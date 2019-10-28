@@ -15,6 +15,8 @@ permission_denied: dict = make_error("permission_denied", origin="user")
 
 device_not_found: dict = make_error("device_not_found", origin="user")
 
+device_powered_off: dict = make_error("device_powered_off", origin="user")
+
 file_not_found: dict = make_error("file_not_found", origin="user")
 
 file_already_exists: dict = make_error("file_already_exists", origin="user")

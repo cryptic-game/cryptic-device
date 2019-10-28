@@ -8,7 +8,14 @@ from models.hardware import Hardware
 from models.service import Service
 from models.workload import Workload
 from resources import device
-from schemes import device_not_found, permission_denied, success, already_own_a_device, maximum_devices_reached
+from schemes import (
+    device_not_found,
+    permission_denied,
+    success,
+    already_own_a_device,
+    maximum_devices_reached,
+    device_powered_off,
+)
 from vars import hardware
 
 
@@ -256,9 +263,23 @@ class TestDevice(TestCase):
         self.query_device.get.assert_called_with("the-device")
         mock_device.check_access.assert_called_with("user")
 
+    def test__user_endpoint__device_change_name__device_powered_off(self):
+        mock_device = mock.MagicMock()
+        mock_device.check_access.return_value = True
+        mock_device.powered_on = False
+        self.query_device.get.return_value = mock_device
+
+        expected_result = device_powered_off
+        actual_result = device.change_name({"device_uuid": "the-device"}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_device.get.assert_called_with("the-device")
+        mock_device.check_access.assert_called_with("user")
+
     def test__user_endpoint__device_change_name__successful(self):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
         self.query_device.get.return_value = mock_device
 
         expected_result = mock_device.serialize
