@@ -8,7 +8,7 @@ from models.hardware import Hardware
 from models.service import Service
 from models.workload import Workload
 from resources import device
-from schemes import device_not_found, permission_denied, success, already_own_a_device
+from schemes import device_not_found, permission_denied, success, already_own_a_device, maximum_devices_reached
 from vars import hardware
 
 
@@ -85,8 +85,19 @@ class TestDevice(TestCase):
         self.assertEqual(expected_result, actual_result)
         self.query_device.filter_by.assert_called_with(owner="user")
 
+    def test__user_endpoint__device_create__maximum_devices_reached(self):
+        self.query_func_count.filter_by().scalar.return_value = 3
+
+        expected_result = maximum_devices_reached
+        actual_result = device.create_device({}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_func_count.filter_by.assert_called_with(owner="user")
+
     @patch("resources.device.check_compatible")
     def test__user_endpoint__device_create__not_compatible(self, compatible_patch):
+        self.query_func_count.filter_by().scalar.return_value = 2
+
         compatible_patch.return_value = False, {"error": "some error message"}
         data = mock.MagicMock()
 
@@ -94,11 +105,13 @@ class TestDevice(TestCase):
         actual_result = device.create_device(data, "user")
 
         self.assertEqual(expected_result, actual_result)
+        self.query_func_count.filter_by.assert_called_with(owner="user")
         compatible_patch.assert_called_with(data)
 
     @patch("resources.device.check_exists")
     @patch("resources.device.check_compatible")
     def test__user_endpoint__device_create__inventory_incomplete(self, compatible_patch, exists_patch):
+        self.query_func_count.filter_by().scalar.return_value = 2
         compatible_patch.return_value = True, {}
         exists_patch.return_value = False, {"error": "some other error message"}
         data = mock.MagicMock()
@@ -107,6 +120,7 @@ class TestDevice(TestCase):
         actual_result = device.create_device(data, "user")
 
         self.assertEqual(expected_result, actual_result)
+        self.query_func_count.filter_by.assert_called_with(owner="user")
         compatible_patch.assert_called_with(data)
         exists_patch.assert_called_with("user", data)
 
@@ -120,6 +134,7 @@ class TestDevice(TestCase):
     def test__user_endpoint__device_create__successful(
         self, compatible_patch, exists_patch, device_patch, workload_patch, calculate_patch, create_patch, delete_patch
     ):
+        self.query_func_count.filter_by().scalar.return_value = 2
         compatible_patch.return_value = True, {}
         exists_patch.return_value = True, {}
         data = mock.MagicMock()
@@ -130,6 +145,7 @@ class TestDevice(TestCase):
         actual_result = device.create_device(data, "user")
 
         self.assertEqual(expected_result, actual_result)
+        self.query_func_count.filter_by.assert_called_with(owner="user")
         compatible_patch.assert_called_with(data)
         exists_patch.assert_called_with("user", data)
         calculate_patch.assert_called_with(data)

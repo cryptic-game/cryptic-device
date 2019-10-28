@@ -26,6 +26,7 @@ from schemes import (
     requirement_device,
     requirement_change_name,
     already_own_a_device,
+    maximum_devices_reached,
 )
 from vars import hardware
 
@@ -88,6 +89,12 @@ def create_device(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
+
+    count: int = wrapper.session.query(func.count(Device.uuid)).filter_by(owner=user).scalar()
+
+    if count >= 3:
+        return maximum_devices_reached
+
     comp, message = check_compatible(data)
     if not comp:
         return message
