@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Optional, Callable, List, Union, Any
+from typing import Optional, Callable, Union, Any
 
 from app import wrapper
 from models.device import Device
@@ -11,8 +11,8 @@ class MicroserviceException(Exception):
         self.error: dict = error
 
 
-def register_errors(*errors: Callable) -> Callable:
-    def deco(f: Callable) -> Callable:
+def register_errors(*errors: Callable) -> Callable[[Callable], Callable[[dict, str], dict]]:
+    def deco(f: Callable) -> Callable[[dict, str], dict]:
         @wraps(f)
         def inner(data: dict, user: str) -> dict:
             args: tuple = (data, user)
