@@ -1,43 +1,25 @@
-from typing import Optional, Callable
+from typing import Optional
 
 from sqlalchemy import func
 
 from app import m, wrapper
 from models.device import Device
 from models.file import File
+from resources.errors import register_errors, device_exists, can_access_device, device_powered_on
 from schemes import (
     file_already_exists,
     file_not_found,
-    device_not_found,
-    permission_denied,
     success,
     requirement_device,
     requirement_file,
     requirement_file_move,
     requirement_file_update,
     requirement_file_create,
-    device_powered_off,
 )
 
 
-def check_device_available(f: Callable) -> Callable:
-    def inner(data: dict, user: str) -> dict:
-        device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
-
-        if device is None:
-            return device_not_found
-        if not device.check_access(user):
-            return permission_denied
-        if not device.powered_on:
-            return device_powered_off
-
-        return f(data, user, device)
-
-    return inner
-
-
 @m.user_endpoint(path=["file", "all"], requires=requirement_device)
-@check_device_available
+@register_errors(device_exists, can_access_device, device_powered_on)
 def list_files(data: dict, user: str, device: Device) -> dict:
     """
     Get all files of a device.
@@ -51,7 +33,7 @@ def list_files(data: dict, user: str, device: Device) -> dict:
 
 
 @m.user_endpoint(path=["file", "info"], requires=requirement_file)
-@check_device_available
+@register_errors(device_exists, can_access_device, device_powered_on)
 def file_info(data: dict, user: str, device: Device) -> dict:
     """
     Get information about a file
@@ -70,7 +52,7 @@ def file_info(data: dict, user: str, device: Device) -> dict:
 
 
 @m.user_endpoint(path=["file", "move"], requires=requirement_file_move)
-@check_device_available
+@register_errors(device_exists, can_access_device, device_powered_on)
 def move(data: dict, user: str, device: Device) -> dict:
     file_uuid = data["file_uuid"]
     filename = data["filename"]
@@ -90,7 +72,7 @@ def move(data: dict, user: str, device: Device) -> dict:
 
 
 @m.user_endpoint(path=["file", "update"], requires=requirement_file_update)
-@check_device_available
+@register_errors(device_exists, can_access_device, device_powered_on)
 def update(data: dict, user: str, device: Device) -> dict:
     """
     Update the content of a file.
@@ -113,7 +95,7 @@ def update(data: dict, user: str, device: Device) -> dict:
 
 
 @m.user_endpoint(path=["file", "delete"], requires=requirement_file)
-@check_device_available
+@register_errors(device_exists, can_access_device, device_powered_on)
 def delete_file(data: dict, user: str, device: Device) -> dict:
     """
     Delete a file.
@@ -135,7 +117,7 @@ def delete_file(data: dict, user: str, device: Device) -> dict:
 
 
 @m.user_endpoint(path=["file", "create"], requires=requirement_file_create)
-@check_device_available
+@register_errors(device_exists, can_access_device, device_powered_on)
 def create_file(data: dict, user: str, device: Device) -> dict:
     """
     Create a new file.
