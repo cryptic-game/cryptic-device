@@ -6,7 +6,14 @@ from models.device import Device
 from models.file import File
 
 from resources import file
-from schemes import device_not_found, permission_denied, file_not_found, file_already_exists, success
+from schemes import (
+    device_not_found,
+    permission_denied,
+    file_not_found,
+    file_already_exists,
+    success,
+    device_powered_off,
+)
 
 
 class TestFile(TestCase):
@@ -45,9 +52,24 @@ class TestFile(TestCase):
         self.query_device.get.assert_called_with("my-device")
         mock_device.check_access.assert_called_with("user")
 
+    def test__user_endpoint__file_all__device_powered_off(self):
+        mock_device = mock.MagicMock()
+        mock_device.check_access.return_value = True
+        mock_device.powered_on = False
+
+        self.query_device.get.return_value = mock_device
+
+        expected_result = device_powered_off
+        actual_result = file.list_files({"device_uuid": "my-device"}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_device.get.assert_called_with("my-device")
+        mock_device.check_access.assert_called_with("user")
+
     def test__user_endpoint__file_all__successful(self):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
         files = [mock.MagicMock() for _ in range(5)]
 
         self.query_device.get.return_value = mock_device
@@ -83,9 +105,24 @@ class TestFile(TestCase):
         self.query_device.get.assert_called_with("my-device")
         mock_device.check_access.assert_called_with("user")
 
+    def test__user_endpoint__file_info__device_powered_off(self):
+        mock_device = mock.MagicMock()
+        mock_device.check_access.return_value = True
+        mock_device.powered_on = False
+
+        self.query_device.get.return_value = mock_device
+
+        expected_result = device_powered_off
+        actual_result = file.file_info({"device_uuid": "my-device", "file_uuid": "my-file"}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_device.get.assert_called_with("my-device")
+        mock_device.check_access.assert_called_with("user")
+
     def test__user_endpoint__file_info__file_not_found(self):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
 
         self.query_device.get.return_value = mock_device
         self.query_file.filter_by().first.return_value = None
@@ -101,6 +138,7 @@ class TestFile(TestCase):
     def test__user_endpoint__file_info__successful(self):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
         mock_file = mock.MagicMock()
 
         self.query_device.get.return_value = mock_device
@@ -136,9 +174,24 @@ class TestFile(TestCase):
         self.query_device.get.assert_called_with("my-device")
         mock_device.check_access.assert_called_with("user")
 
+    def test__user_endpoint__file_move__device_powered_off(self):
+        mock_device = mock.MagicMock()
+        mock_device.check_access.return_value = True
+        mock_device.powered_on = False
+
+        self.query_device.get.return_value = mock_device
+
+        expected_result = device_powered_off
+        actual_result = file.move({"device_uuid": "my-device", "file_uuid": "my-file", "filename": "new-name"}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_device.get.assert_called_with("my-device")
+        mock_device.check_access.assert_called_with("user")
+
     def test__user_endpoint__file_move__file_not_found(self):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
 
         self.query_device.get.return_value = mock_device
         self.query_file.filter_by().first.return_value = None
@@ -156,6 +209,7 @@ class TestFile(TestCase):
     def test__user_endpoint__file_move__file_already_exists(self):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
         mock_file = mock.MagicMock()
 
         self.query_device.get.return_value = mock_device
@@ -184,6 +238,7 @@ class TestFile(TestCase):
     def test__user_endpoint__file_move__successful(self):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
         mock_file = mock.MagicMock()
 
         self.query_device.get.return_value = mock_device
@@ -233,9 +288,24 @@ class TestFile(TestCase):
         self.query_device.get.assert_called_with("my-device")
         mock_device.check_access.assert_called_with("user")
 
+    def test__user_endpoint__file_update__device_powered_off(self):
+        mock_device = mock.MagicMock()
+        mock_device.check_access.return_value = True
+        mock_device.powered_on = False
+
+        self.query_device.get.return_value = mock_device
+
+        expected_result = device_powered_off
+        actual_result = file.update({"device_uuid": "my-device", "file_uuid": "my-file", "content": "test"}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_device.get.assert_called_with("my-device")
+        mock_device.check_access.assert_called_with("user")
+
     def test__user_endpoint__file_update__file_not_found(self):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
 
         self.query_device.get.return_value = mock_device
         self.query_file.filter_by().first.return_value = None
@@ -253,6 +323,7 @@ class TestFile(TestCase):
     def test__user_endpoint__file_update__successful(self):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
         mock_file = mock.MagicMock()
 
         self.query_device.get.return_value = mock_device
@@ -292,9 +363,24 @@ class TestFile(TestCase):
         self.query_device.get.assert_called_with("my-device")
         mock_device.check_access.assert_called_with("user")
 
+    def test__user_endpoint__file_delete__device_powered_off(self):
+        mock_device = mock.MagicMock()
+        mock_device.check_access.return_value = True
+        mock_device.powered_on = False
+
+        self.query_device.get.return_value = mock_device
+
+        expected_result = device_powered_off
+        actual_result = file.delete_file({"device_uuid": "my-device", "file_uuid": "my-file"}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_device.get.assert_called_with("my-device")
+        mock_device.check_access.assert_called_with("user")
+
     def test__user_endpoint__file_delete__file_not_found(self):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
 
         self.query_device.get.return_value = mock_device
         self.query_file.filter_by().first.return_value = None
@@ -310,6 +396,7 @@ class TestFile(TestCase):
     def test__user_endpoint__file_delete__successful(self):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
         mock_file = mock.MagicMock()
 
         self.query_device.get.return_value = mock_device
@@ -347,9 +434,24 @@ class TestFile(TestCase):
         self.query_device.get.assert_called_with("my-device")
         mock_device.check_access.assert_called_with("user")
 
+    def test__user_endpoint__file_create__device_powered_off(self):
+        mock_device = mock.MagicMock()
+        mock_device.check_access.return_value = True
+        mock_device.powered_on = False
+
+        self.query_device.get.return_value = mock_device
+
+        expected_result = device_powered_off
+        actual_result = file.create_file({"device_uuid": "my-device"}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_device.get.assert_called_with("my-device")
+        mock_device.check_access.assert_called_with("user")
+
     def test__user_endpoint__file_create__file_already_exists(self):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
 
         self.query_device.get.return_value = mock_device
         self.query_func_count.filter_by().scalar.return_value = 1
@@ -369,6 +471,7 @@ class TestFile(TestCase):
     def test__user_endpoint__file_create__successful(self, file_create_patch):
         mock_device = mock.MagicMock()
         mock_device.check_access.return_value = True
+        mock_device.powered_on = True
 
         self.query_device.get.return_value = mock_device
         self.query_func_count.filter_by().scalar.return_value = 0

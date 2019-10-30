@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Callable
 
 from sqlalchemy import func
 
@@ -16,48 +16,52 @@ from schemes import (
     requirement_file_move,
     requirement_file_update,
     requirement_file_create,
+    device_powered_off,
 )
 
 
+def check_device_available(f: Callable) -> Callable:
+    def inner(data: dict, user: str) -> dict:
+        device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
+
+        if device is None:
+            return device_not_found
+        if not device.check_access(user):
+            return permission_denied
+        if not device.powered_on:
+            return device_powered_off
+
+        return f(data, user, device)
+
+    return inner
+
+
 @m.user_endpoint(path=["file", "all"], requires=requirement_device)
-def list_files(data: dict, user: str) -> dict:
+@check_device_available
+def list_files(data: dict, user: str, device: Device) -> dict:
     """
     Get all files of a device.
     :param data: The given data.
     :param user: The user uuid.
+    :param device: The device of the file.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
-
-    if device is None:
-        return device_not_found
-
-    if not device.check_access(user):
-        return permission_denied
 
     return {"files": [f.serialize for f in wrapper.session.query(File).filter_by(device=device.uuid).all()]}
 
 
 @m.user_endpoint(path=["file", "info"], requires=requirement_file)
-def file_info(data: dict, user: str) -> dict:
+@check_device_available
+def file_info(data: dict, user: str, device: Device) -> dict:
     """
     Get information about a file
     :param data: The given data.
     :param user: The user uuid.
+    :param device: The device of the file.
     :return: The response
     """
-    device_uuid: str = data["device_uuid"]
-    file_uuid: str = data["file_uuid"]
 
-    device: Optional[Device] = wrapper.session.query(Device).get(device_uuid)
-
-    if device is None:
-        return device_not_found
-
-    if not device.check_access(user):
-        return permission_denied
-
-    file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
+    file: Optional[File] = wrapper.session.query(File).filter_by(device=device.uuid, uuid=(data["file_uuid"])).first()
 
     if file is None:
         return file_not_found
@@ -66,24 +70,17 @@ def file_info(data: dict, user: str) -> dict:
 
 
 @m.user_endpoint(path=["file", "move"], requires=requirement_file_move)
-def move(data: dict, user: str) -> dict:
-    device_uuid: str = data["device_uuid"]
+@check_device_available
+def move(data: dict, user: str, device: Device) -> dict:
     file_uuid = data["file_uuid"]
     filename = data["filename"]
 
-    device: Optional[Device] = wrapper.session.query(Device).get(device_uuid)
-
-    if device is None:
-        return device_not_found
-    if not device.check_access(user):
-        return permission_denied
-
-    file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
+    file: Optional[File] = wrapper.session.query(File).filter_by(device=device.uuid, uuid=file_uuid).first()
 
     if file is None:
         return file_not_found
 
-    if wrapper.session.query(File).filter_by(device=device_uuid, filename=filename).first() is not None:
+    if wrapper.session.query(File).filter_by(device=device.uuid, filename=filename).first() is not None:
         return file_already_exists
 
     file.filename = filename
@@ -93,58 +90,40 @@ def move(data: dict, user: str) -> dict:
 
 
 @m.user_endpoint(path=["file", "update"], requires=requirement_file_update)
-def update(data: dict, user: str) -> dict:
+@check_device_available
+def update(data: dict, user: str, device: Device) -> dict:
     """
     Update the content of a file.
 
     :param data: The given data.
     :param user: The user uuid.
+    :param device: The device of the file.
     :return: The response
     """
 
-    device_uuid: str = data["device_uuid"]
-    file_uuid = data["file_uuid"]
-    content = data["content"]
-
-    device: Optional[Device] = wrapper.session.query(Device).get(device_uuid)
-
-    if device is None:
-        return device_not_found
-    if not device.check_access(user):
-        return permission_denied
-
-    file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
+    file: Optional[File] = wrapper.session.query(File).filter_by(device=device.uuid, uuid=(data["file_uuid"])).first()
 
     if file is None:
         return file_not_found
 
-    file.content = content
+    file.content = data["content"]
     wrapper.session.commit()
 
     return file.serialize
 
 
 @m.user_endpoint(path=["file", "delete"], requires=requirement_file)
-def delete_file(data: dict, user: str) -> dict:
+@check_device_available
+def delete_file(data: dict, user: str, device: Device) -> dict:
     """
     Delete a file.
     :param data: The given data.
     :param user: The user uuid.
+    :param device: The device of the file.
     :return: The response
     """
 
-    device_uuid: str = data["device_uuid"]
-    file_uuid: str = data["file_uuid"]
-
-    device: Optional[Device] = wrapper.session.query(Device).get(device_uuid)
-
-    if device is None:
-        return device_not_found
-
-    if not device.check_access(user):
-        return permission_denied
-
-    file: Optional[File] = wrapper.session.query(File).filter_by(device=device_uuid, uuid=file_uuid).first()
+    file: Optional[File] = wrapper.session.query(File).filter_by(device=device.uuid, uuid=(data["file_uuid"])).first()
 
     if file is None:
         return file_not_found
@@ -156,20 +135,15 @@ def delete_file(data: dict, user: str) -> dict:
 
 
 @m.user_endpoint(path=["file", "create"], requires=requirement_file_create)
-def create_file(data: dict, user: str) -> dict:
+@check_device_available
+def create_file(data: dict, user: str, device: Device) -> dict:
     """
     Create a new file.
     :param data: The given data.
     :param user: The user uuid.
+    :param device: The device of the file.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
-
-    if device is None:
-        return device_not_found
-
-    if not device.check_access(user):
-        return permission_denied
 
     filename: str = data["filename"]
     content: str = data["content"]

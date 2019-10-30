@@ -27,6 +27,7 @@ from schemes import (
     requirement_change_name,
     already_own_a_device,
     maximum_devices_reached,
+    device_powered_off,
 )
 from vars import hardware
 
@@ -183,6 +184,9 @@ def change_name(data: dict, user: str) -> dict:
     if not device.check_access(user):
         return permission_denied
 
+    if not device.powered_on:
+        return device_powered_off
+
     name: str = str(data["name"])
 
     device.name = name
@@ -236,6 +240,16 @@ def exist(data: dict, microservice: str) -> dict:
     device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
 
     return {"exist": device is not None}
+
+
+@m.microservice_endpoint(path=["ping"])
+def ms_ping(data: dict, microservice: str) -> dict:
+    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
+
+    if device is None:
+        return device_not_found
+    else:
+        return {"online": device.powered_on}
 
 
 @m.microservice_endpoint(path=["owner"])
