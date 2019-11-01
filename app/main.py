@@ -1,9 +1,13 @@
 import app
 
-if __name__ == "__main__":
-    from resources.device import *
-    from resources.file import *
-    from resources.hardware import *
 
-    app.wrapper.Base.metadata.create_all(bind=wrapper.engine)
+# noinspection PyUnresolvedReferences
+def load_endpoints():
+    import resources.device
+    import resources.file
+    import resources.hardware
+
+
+if __name__ == "__main__":
+    load_endpoints()
     app.m.run()
