@@ -1,4 +1,4 @@
-from cryptic import MicroService, Config, DatabaseWrapper
+from cryptic import MicroService, DatabaseWrapper
 
 m: MicroService = MicroService("device")
 
