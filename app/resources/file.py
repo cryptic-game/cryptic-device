@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy import func
 
@@ -127,6 +127,16 @@ def move(data: dict, user: str) -> dict:
     file.parent_dir_uuid = new_parent_dir_uuid
     wrapper.session.commit()
 
+    m.contact_user(
+        user,
+        {
+            "notify-id": "file-update",
+            "origin": "update",
+            "device_uuid": device.uuid,
+            "data": {"created": [], "deleted": [], "changed": [file.uuid]},
+        },
+    )
+
     return file.serialize
 
 
@@ -164,6 +174,16 @@ def update(data: dict, user: str) -> dict:
 
     file.content = content
     wrapper.session.commit()
+
+    m.contact_user(
+        user,
+        {
+            "notify-id": "file-update",
+            "origin": "update",
+            "device_uuid": device.uuid,
+            "data": {"created": [], "deleted": [], "changed": [file.uuid]},
+        },
+    )
 
     return file.serialize
 
@@ -214,15 +234,27 @@ def delete_file(data: dict, user: str) -> dict:
         stack_to_delete = [file]
 
     error_while_deleting = None
+    deleted_files: List[str] = []
     while stack_to_delete:
         file_to_delete = stack_to_delete.pop()
         if file_to_delete.is_changeable:
             wrapper.session.delete(file_to_delete)
+            deleted_files.append(file_to_delete.uuid)
         else:
             error_while_deleting = file_not_changeable
             break
 
     wrapper.session.commit()
+
+    m.contact_user(
+        user,
+        {
+            "notify-id": "file-update",
+            "origin": "delete",
+            "device_uuid": device.uuid,
+            "data": {"created": [], "deleted": deleted_files, "changed": []},
+        },
+    )
 
     if error_while_deleting:
         return error_while_deleting
@@ -267,5 +299,15 @@ def create_file(data: dict, user: str) -> dict:
         return directory_can_not_have_textcontent
 
     file: File = File.create(device.uuid, filename, content, parent_dir_uuid, is_directory, True)
+
+    m.contact_user(
+        user,
+        {
+            "notify-id": "file-update",
+            "origin": "create",
+            "device_uuid": device.uuid,
+            "data": {"created": [file.uuid], "deleted": [], "changed": []},
+        },
+    )
 
     return file.serialize

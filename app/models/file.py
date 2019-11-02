@@ -17,7 +17,7 @@ class File(wrapper.Base):
 
     uuid: Union[Column, str] = Column(String(36), primary_key=True, unique=True)
     device: Union[Column, str] = Column(String(36), nullable=False)
-    filename: Union[Column, str] = Column(String(255, collation='utf8_bin'), nullable=False)
+    filename: Union[Column, str] = Column(String(255, collation="utf8_bin"), nullable=False)
     content: Union[Column, str] = Column(String(CONTENT_LENGTH), nullable=False)
     is_directory: Union[Column, bool] = Column(Boolean, nullable=False, default=False)
     parent_dir_uuid: Union[Column, str] = Column(String(36))

@@ -387,6 +387,15 @@ class TestFile(TestCase):
         mock_device.check_access.assert_called_with("user")
         self.assertEqual("new-name", mock_file.filename)
         mock.wrapper.session.commit.assert_called_with()
+        mock.m.contact_user.assert_called_with(
+            "user",
+            {
+                "notify-id": "file-update",
+                "origin": "update",
+                "device_uuid": mock_device.uuid,
+                "data": {"created": [], "deleted": [], "changed": [mock_file.uuid]},
+            },
+        )
 
     def test__user_endpoint__file_update__device_not_found(self):
         self.query_device.get.return_value = None
@@ -487,6 +496,15 @@ class TestFile(TestCase):
         self.query_file.filter_by.assert_called_with(device=mock_device.uuid, uuid=mock_file.uuid)
         self.assertEqual("test", mock_file.content)
         mock.wrapper.session.commit.assert_called_with()
+        mock.m.contact_user.assert_called_with(
+            "user",
+            {
+                "notify-id": "file-update",
+                "origin": "update",
+                "device_uuid": mock_device.uuid,
+                "data": {"created": [], "deleted": [], "changed": [mock_file.uuid]},
+            },
+        )
 
     def test__user_endpoint__file_delete__device_not_found(self):
         self.query_device.get.return_value = None
@@ -623,6 +641,15 @@ class TestFile(TestCase):
         self.assertEqual(filesystem, filesystem_after_deletion)
         self.query_device.get.assert_called_with(mock_device.uuid)
         mock_device.check_access.assert_called_with("user")
+        mock.m.contact_user.assert_called_with(
+            "user",
+            {
+                "notify-id": "file-update",
+                "origin": "delete",
+                "device_uuid": mock_device.uuid,
+                "data": {"created": [], "deleted": ["AAA", "AAD"], "changed": []},
+            },
+        )
 
     def test__user_endpoint__directory_file_delete__successful(self):
         mock_device = mock.MagicMock()
@@ -685,6 +712,15 @@ class TestFile(TestCase):
         self.assertEqual(filesystem, filesystem_after_deletion)
         self.query_device.get.assert_called_with(mock_device.uuid)
         mock_device.check_access.assert_called_with("user")
+        mock.m.contact_user.assert_called_with(
+            "user",
+            {
+                "notify-id": "file-update",
+                "origin": "delete",
+                "device_uuid": mock_device.uuid,
+                "data": {"created": [], "deleted": ["AAA", "AAD", "AAC", "AAB", "AC"], "changed": []},
+            },
+        )
 
     def test__user_endpoint__file_create__device_not_found(self):
         self.query_device.get.return_value = None
@@ -766,6 +802,15 @@ class TestFile(TestCase):
         )
         file_create_patch.assert_called_with(
             mock_device.uuid, "test-file", "some random content here", "0", False, True
+        )
+        mock.m.contact_user.assert_called_with(
+            "user",
+            {
+                "notify-id": "file-update",
+                "origin": "create",
+                "device_uuid": mock_device.uuid,
+                "data": {"created": [file_create_patch().uuid], "deleted": [], "changed": []},
+            },
         )
 
     @patch("resources.file.File.create")
