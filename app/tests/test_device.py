@@ -179,6 +179,9 @@ class TestDevice(TestCase):
 
         self.assertEqual(expected_result, actual_result)
         self.assertTrue(mock_device.powered_on)
+        mock.m.contact_microservice.assert_called_with(
+            "service", ["device_restart"], {"device_uuid": "my-device", "user": mock_device.owner}
+        )
 
     @patch("resources.device.stop_services")
     @patch("resources.device.stop_all_service")

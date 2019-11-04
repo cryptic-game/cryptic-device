@@ -150,12 +150,16 @@ def power(data: dict, user: str, device: Device) -> dict:
     :return: The response
     """
 
+    device_uuid: str = data["device_uuid"]
+
     device.powered_on = not device.powered_on
     wrapper.session.commit()
 
     if not device.powered_on:
-        stop_all_service(data["device_uuid"])
-        stop_services(data["device_uuid"])
+        stop_all_service(device_uuid)
+        stop_services(device_uuid)
+    else:
+        m.contact_microservice("service", ["device_restart"], {"device_uuid": device_uuid, "user": device.owner})
 
     return device.serialize
 
