@@ -131,6 +131,9 @@ class TestDevice(TestCase):
         workload_patch.create.assert_called_with(mock_device.uuid, calculate_patch())
         create_patch.assert_called_with(data, mock_device.uuid)
         delete_patch.assert_called_with("user", data)
+        mock.m.contact_microservice.assert_called_with(
+            "service", ["device_init"], {"device_uuid": mock_device.uuid, "user": mock_device.owner}
+        )
 
     def test__user_endpoint__device_starter_device__already_own_a_device(self):
         self.query_func_count.filter_by().scalar.return_value = 1
@@ -163,6 +166,9 @@ class TestDevice(TestCase):
         device_create_patch.assert_called_with("user", True)
         workload_patch.create.assert_called_with(mock_device.uuid, calculate_patch())
         create_patch.assert_called_with(hardware["start_pc"], mock_device.uuid)
+        mock.m.contact_microservice.assert_called_with(
+            "service", ["device_init"], {"device_uuid": mock_device.uuid, "user": mock_device.owner}
+        )
 
     def test__user_endpoint__device_power__turn_on(self):
         mock_device = self.query_device.get()
@@ -173,6 +179,9 @@ class TestDevice(TestCase):
 
         self.assertEqual(expected_result, actual_result)
         self.assertTrue(mock_device.powered_on)
+        mock.m.contact_microservice.assert_called_with(
+            "service", ["device_restart"], {"device_uuid": "my-device", "user": mock_device.owner}
+        )
 
     @patch("resources.device.stop_services")
     @patch("resources.device.stop_all_service")

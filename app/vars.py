@@ -55,13 +55,7 @@ hardware = {
     "processorCooler": [{"name": "CPU Cooler Mini", "coolerSpeed": 1, "sockel": "XT2019", "power": 10}],
     "ram": {
         "Crossfire ZX100": {"name": "Crossfire ZX100", "ramSize": 256, "ramTyp": "DDR1", "frequency": 422, "power": 5},
-        "Crossfire ZX1000": {
-            "name": "Crossfire ZX100",
-            "ramSize": 512,
-            "ramTyp": "DDR1",
-            "frequency": 422,
-            "power": 5,
-        },
+        "Crossfire ZX1000": {"name": "Crossfire ZX100", "ramSize": 512, "ramTyp": "DDR1", "frequency": 422, "power": 5},
     },
     "gpu": {
         "Forcevid MX1000": {

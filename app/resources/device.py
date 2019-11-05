@@ -107,6 +107,8 @@ def create_device(data: dict, user: str) -> dict:
 
     delete_items(user, data)
 
+    m.contact_microservice("service", ["device_init"], {"device_uuid": device.uuid, "user": device.owner})
+
     return device.serialize
 
 
@@ -132,6 +134,8 @@ def starter_device(data: dict, user: str) -> dict:
 
     create_hardware(hardware["start_pc"], device.uuid)
 
+    m.contact_microservice("service", ["device_init"], {"device_uuid": device.uuid, "user": device.owner})
+
     return device.serialize
 
 
@@ -146,12 +150,16 @@ def power(data: dict, user: str, device: Device) -> dict:
     :return: The response
     """
 
+    device_uuid: str = data["device_uuid"]
+
     device.powered_on = not device.powered_on
     wrapper.session.commit()
 
     if not device.powered_on:
-        stop_all_service(data["device_uuid"])
-        stop_services(data["device_uuid"])
+        stop_all_service(device_uuid)
+        stop_services(device_uuid)
+    else:
+        m.contact_microservice("service", ["device_restart"], {"device_uuid": device_uuid, "user": device.owner})
 
     return device.serialize
 
