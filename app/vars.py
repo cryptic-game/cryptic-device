@@ -34,7 +34,7 @@ hardware = {
             "networkPort": {"name": "LAN Megabit Ethernet", "interface": "RJ45", "speed": 1000},
             "power": 10,
         },
-		"Zero MX Pro": {
+	"Zero MX Pro": {
             "name": "Zero MX Pro",
             "case": "Mini-ATX",
             "cpuSockel": "XT2019",
@@ -63,7 +63,7 @@ hardware = {
             "networkPort": {"name": "LAN Megabit Ethernet", "interface": "RJ45", "speed": 1000},
             "power": 15,
         },
-		"Zetta Ultimate M150": {
+	"Zetta Ultimate M150": {
             "name": "Zetta Ultimate M150",
             "case": "Mini-ATX",
             "cpuSockel": "XT2019",
@@ -120,7 +120,7 @@ hardware = {
             "graphicUnitExist": True,
             "graphicUnit": {"name": "HD Graphic 110", "ramSize": 1024, "frequency": 350},
         },
-		"QuadCore TX": {
+	"QuadCore TX": {
             "name": "QuadCore TX",
             "frequencyMin": 2200,
             "frequencyMax": 2200,
@@ -144,7 +144,7 @@ hardware = {
             "frequency": 422,
             "power": 10,
         },
-		"Crossfire ZX200": {
+	"Crossfire ZX200": {
             "name": "Crossfire ZX200",
             "ramSize": 1024,
             "ramTyp": "DDR2",
