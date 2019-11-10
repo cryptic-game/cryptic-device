@@ -3,12 +3,13 @@ from typing import List, Optional
 from sqlalchemy import func
 
 from app import m, wrapper
+from cryptic import register_errors
 from models.device import Device
 from models.file import File
 from models.hardware import Hardware
 from models.service import Service
 from models.workload import Workload
-from resources.errors import register_errors, device_exists, can_access_device, device_powered_on
+from resources.errors import device_exists, can_access_device, device_powered_on
 from resources.game_content import (
     check_compatible,
     calculate_power,

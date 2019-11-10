@@ -29,7 +29,7 @@ class TestFile(TestCase):
         self.query_file.filter_by().all.return_value = files
 
         expected_result = {"files": [f.serialize for f in files]}
-        actual_result = file.list_files.__wrapped__({"device_uuid": mock_device.uuid}, "user", mock_device)
+        actual_result = file.list_files({"device_uuid": mock_device.uuid}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
         self.query_file.filter_by.assert_called_with(device=mock_device.uuid)
@@ -40,9 +40,7 @@ class TestFile(TestCase):
         self.query_file.filter_by().first.return_value = None
 
         expected_result = file_not_found
-        actual_result = file.file_info.__wrapped__(
-            {"device_uuid": mock_device.uuid, "file_uuid": "myfile"}, "user", mock_device
-        )
+        actual_result = file.file_info({"device_uuid": mock_device.uuid, "file_uuid": "myfile"}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
         self.query_file.filter_by.assert_called_with(device=mock_device.uuid, uuid="myfile")
@@ -54,7 +52,7 @@ class TestFile(TestCase):
         self.query_file.filter_by().first.return_value = mock_file
 
         expected_result = mock_file.serialize
-        actual_result = file.file_info.__wrapped__(
+        actual_result = file.file_info(
             {"device_uuid": mock_device.uuid, "file_uuid": mock_file.uuid}, "user", mock_device
         )
 
@@ -67,7 +65,7 @@ class TestFile(TestCase):
         self.query_file.filter_by().first.return_value = None
 
         expected_result = file_not_found
-        actual_result = file.move.__wrapped__(
+        actual_result = file.move(
             {"device_uuid": mock_device.uuid, "file_uuid": "my-file", "filename": "new-name"}, "user", mock_device
         )
 
@@ -91,7 +89,7 @@ class TestFile(TestCase):
         self.query_file.filter_by.side_effect = handle_file_query
 
         expected_result = file_already_exists
-        actual_result = file.move.__wrapped__(
+        actual_result = file.move(
             {"device_uuid": mock_device.uuid, "file_uuid": "my-file", "filename": "new-name"}, "user", mock_device
         )
 
@@ -114,7 +112,7 @@ class TestFile(TestCase):
         self.query_file.filter_by.side_effect = handle_file_query
 
         expected_result = mock_file.serialize
-        actual_result = file.move.__wrapped__(
+        actual_result = file.move(
             {"device_uuid": mock_device.uuid, "file_uuid": "my-file", "filename": "new-name"}, "user", mock_device
         )
 
@@ -128,7 +126,7 @@ class TestFile(TestCase):
         self.query_file.filter_by().first.return_value = None
 
         expected_result = file_not_found
-        actual_result = file.update.__wrapped__(
+        actual_result = file.update(
             {"device_uuid": mock_device.uuid, "file_uuid": "my-file", "content": "test"}, "user", mock_device
         )
 
@@ -142,7 +140,7 @@ class TestFile(TestCase):
         self.query_file.filter_by().first.return_value = mock_file
 
         expected_result = mock_file.serialize
-        actual_result = file.update.__wrapped__(
+        actual_result = file.update(
             {"device_uuid": mock_device.uuid, "file_uuid": mock_file.uuid, "content": "test"}, "user", mock_device
         )
 
@@ -157,9 +155,7 @@ class TestFile(TestCase):
         self.query_file.filter_by().first.return_value = None
 
         expected_result = file_not_found
-        actual_result = file.delete_file.__wrapped__(
-            {"device_uuid": mock_device.uuid, "file_uuid": "my-file"}, "user", mock_device
-        )
+        actual_result = file.delete_file({"device_uuid": mock_device.uuid, "file_uuid": "my-file"}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
         self.query_file.filter_by.assert_called_with(device=mock_device.uuid, uuid="my-file")
@@ -171,7 +167,7 @@ class TestFile(TestCase):
         self.query_file.filter_by().first.return_value = mock_file
 
         expected_result = success
-        actual_result = file.delete_file.__wrapped__(
+        actual_result = file.delete_file(
             {"device_uuid": mock_device.uuid, "file_uuid": mock_file.uuid}, "user", mock_device
         )
 
@@ -186,7 +182,7 @@ class TestFile(TestCase):
         self.query_func_count.filter_by().scalar.return_value = 1
 
         expected_result = file_already_exists
-        actual_result = file.create_file.__wrapped__(
+        actual_result = file.create_file(
             {"device_uuid": mock_device.uuid, "filename": "test-file", "content": "some random content here"},
             "user",
             mock_device,
@@ -203,7 +199,7 @@ class TestFile(TestCase):
         self.query_func_count.filter_by().scalar.return_value = 0
 
         expected_result = file_create_patch().serialize
-        actual_result = file.create_file.__wrapped__(
+        actual_result = file.create_file(
             {"device_uuid": mock_device.uuid, "filename": "testfile", "content": "some random content here"},
             "user",
             mock_device,
