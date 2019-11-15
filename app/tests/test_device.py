@@ -8,7 +8,7 @@ from models.hardware import Hardware
 from models.service import Service
 from models.workload import Workload
 from resources import device
-from schemes import device_not_found, permission_denied, success, already_own_a_device
+from schemes import permission_denied, success, already_own_a_device, maximum_devices_reached
 from vars import hardware
 
 
@@ -32,48 +32,26 @@ class TestDevice(TestCase):
             self.sqlalchemy_func.count(): self.query_func_count,
         }.__getitem__
 
-    def test__user_endpoint__device_info__device_not_found(self):
-        self.query_device.get.return_value = None
-
-        expected_result = device_not_found
-        actual_result = device.device_info({"device_uuid": "does-not-exist"}, "")
-
-        self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("does-not-exist")
-
-    def test__user_endpoint__device_info__successful(self):
+    def test__user_endpoint__device_info(self):
         hardware = [mock.MagicMock() for _ in range(5)]
         mock_device = mock.MagicMock()
         mock_device.serialize = {"foo": "bar", "foo2": "bar2"}
 
-        self.query_device.get.return_value = mock_device
         self.query_hardware.filter_by.return_value = hardware
 
         expected_result = {"foo": "bar", "foo2": "bar2", "hardware": [e.serialize for e in hardware]}
-        actual_result = device.device_info({"device_uuid": mock_device.uuid}, "")
+        actual_result = device.device_info({"device_uuid": mock_device.uuid}, "", mock_device)
 
         self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with(mock_device.uuid)
         self.query_hardware.filter_by.assert_called_with(device_uuid=mock_device.uuid)
 
-    def test__user_endpoint__device_ping__device_not_found(self):
-        self.query_device.get.return_value = None
-
-        expected_result = device_not_found
-        actual_result = device.ping({"device_uuid": "my-device"}, "")
-
-        self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("my-device")
-
-    def test__user_endpoint__device_ping_successful(self):
+    def test__user_endpoint__device_ping(self):
         mock_device = mock.MagicMock()
-        self.query_device.get.return_value = mock_device
 
         expected_result = {"online": mock_device.powered_on}
-        actual_result = device.ping({"device_uuid": "my-device"}, "")
+        actual_result = device.ping({"device_uuid": "my-device"}, "", mock_device)
 
         self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("my-device")
 
     def test__user_endpoint__device_all(self):
         devices = [mock.MagicMock() for _ in range(5)]
@@ -85,8 +63,19 @@ class TestDevice(TestCase):
         self.assertEqual(expected_result, actual_result)
         self.query_device.filter_by.assert_called_with(owner="user")
 
+    def test__user_endpoint__device_create__maximum_devices_reached(self):
+        self.query_func_count.filter_by().scalar.return_value = 3
+
+        expected_result = maximum_devices_reached
+        actual_result = device.create_device({}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        self.query_func_count.filter_by.assert_called_with(owner="user")
+
     @patch("resources.device.check_compatible")
     def test__user_endpoint__device_create__not_compatible(self, compatible_patch):
+        self.query_func_count.filter_by().scalar.return_value = 2
+
         compatible_patch.return_value = False, {"error": "some error message"}
         data = mock.MagicMock()
 
@@ -94,11 +83,13 @@ class TestDevice(TestCase):
         actual_result = device.create_device(data, "user")
 
         self.assertEqual(expected_result, actual_result)
+        self.query_func_count.filter_by.assert_called_with(owner="user")
         compatible_patch.assert_called_with(data)
 
     @patch("resources.device.check_exists")
     @patch("resources.device.check_compatible")
     def test__user_endpoint__device_create__inventory_incomplete(self, compatible_patch, exists_patch):
+        self.query_func_count.filter_by().scalar.return_value = 2
         compatible_patch.return_value = True, {}
         exists_patch.return_value = False, {"error": "some other error message"}
         data = mock.MagicMock()
@@ -107,6 +98,7 @@ class TestDevice(TestCase):
         actual_result = device.create_device(data, "user")
 
         self.assertEqual(expected_result, actual_result)
+        self.query_func_count.filter_by.assert_called_with(owner="user")
         compatible_patch.assert_called_with(data)
         exists_patch.assert_called_with("user", data)
 
@@ -129,6 +121,7 @@ class TestDevice(TestCase):
         delete_patch,
         file_patch,
     ):
+        self.query_func_count.filter_by().scalar.return_value = 2
         compatible_patch.return_value = True, {}
         exists_patch.return_value = True, {}
         data = mock.MagicMock()
@@ -139,6 +132,7 @@ class TestDevice(TestCase):
         actual_result = device.create_device(data, "user")
 
         self.assertEqual(expected_result, actual_result)
+        self.query_func_count.filter_by.assert_called_with(owner="user")
         compatible_patch.assert_called_with(data)
         exists_patch.assert_called_with("user", data)
         calculate_patch.assert_called_with(data)
@@ -147,6 +141,9 @@ class TestDevice(TestCase):
         create_patch.assert_called_with(data, mock_device.uuid)
         delete_patch.assert_called_with("user", data)
         file_patch.create.assert_called_with(mock_device.uuid, "/", "", None, True, False)
+        mock.m.contact_microservice.assert_called_with(
+            "service", ["device_init"], {"device_uuid": mock_device.uuid, "user": mock_device.owner}
+        )
 
     def test__user_endpoint__device_starter_device__already_own_a_device(self):
         self.query_func_count.filter_by().scalar.return_value = 1
@@ -181,110 +178,55 @@ class TestDevice(TestCase):
         workload_patch.create.assert_called_with(mock_device.uuid, calculate_patch())
         create_patch.assert_called_with(hardware["start_pc"], mock_device.uuid)
         file_patch.create.assert_called_with(mock_device.uuid, "/", "", None, True, False)
-
-    def test__user_endpoint__device_power__device_not_found(self):
-        self.query_device.get.return_value = None
-
-        expected_result = device_not_found
-        actual_result = device.power({"device_uuid": "my-device"}, "user")
-
-        self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("my-device")
-
-    def test__user_endpoint__device_power__permission_denied(self):
-        self.query_device.get().check_access.return_value = False
-
-        expected_result = permission_denied
-        actual_result = device.power({"device_uuid": "my-device"}, "user")
-
-        self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("my-device")
-        self.query_device.get().check_access.assert_called_with("user")
+        mock.m.contact_microservice.assert_called_with(
+            "service", ["device_init"], {"device_uuid": mock_device.uuid, "user": mock_device.owner}
+        )
 
     def test__user_endpoint__device_power__turn_on(self):
         mock_device = self.query_device.get()
-        mock_device.check_access.return_value = True
         mock_device.powered_on = False
 
         expected_result = mock_device.serialize
-        actual_result = device.power({"device_uuid": "my-device"}, "user")
+        actual_result = device.power({"device_uuid": "my-device"}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("my-device")
-        self.query_device.get().check_access.assert_called_with("user")
         self.assertTrue(mock_device.powered_on)
+        mock.m.contact_microservice.assert_called_with(
+            "service", ["device_restart"], {"device_uuid": "my-device", "user": mock_device.owner}
+        )
 
     @patch("resources.device.stop_services")
     @patch("resources.device.stop_all_service")
     def test__user_endpoint__device_power__turn_off(self, stop_all_patch, stop_services_patch):
         mock_device = self.query_device.get()
-        mock_device.check_access.return_value = True
         mock_device.powered_on = True
 
         expected_result = mock_device.serialize
-        actual_result = device.power({"device_uuid": "my device"}, "user")
+        actual_result = device.power({"device_uuid": "my device"}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("my device")
-        self.query_device.get().check_access.assert_called_with("user")
         self.assertFalse(mock_device.powered_on)
         stop_all_patch.assert_called_with("my device")
         stop_services_patch.assert_called_with("my device")
 
-    def test__user_endpoint__device_change_name__device_not_found(self):
-        self.query_device.get.return_value = None
-
-        expected_result = device_not_found
-        actual_result = device.change_name({"device_uuid": "the-device"}, "user")
-
-        self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("the-device")
-
-    def test__user_endpoint__device_change_name__permission_denied(self):
+    def test__user_endpoint__device_change_name(self):
         mock_device = mock.MagicMock()
-        mock_device.check_access.return_value = False
-        self.query_device.get.return_value = mock_device
-
-        expected_result = permission_denied
-        actual_result = device.change_name({"device_uuid": "the-device"}, "user")
-
-        self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("the-device")
-        mock_device.check_access.assert_called_with("user")
-
-    def test__user_endpoint__device_change_name__successful(self):
-        mock_device = mock.MagicMock()
-        mock_device.check_access.return_value = True
-        self.query_device.get.return_value = mock_device
 
         expected_result = mock_device.serialize
-        actual_result = device.change_name({"device_uuid": "the-device", "name": "new-name"}, "user")
+        actual_result = device.change_name({"device_uuid": "the-device", "name": "new-name"}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("the-device")
-        mock_device.check_access.assert_called_with("user")
         self.assertEqual("new-name", mock_device.name)
         mock.wrapper.session.commit.assert_called_with()
-
-    def test__user_endpoint__device_delete__device_not_found(self):
-        self.query_device.get.return_value = None
-
-        expected_result = device_not_found
-        actual_result = device.delete_device({"device_uuid": "the-device"}, "user")
-
-        self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("the-device")
 
     def test__user_endpoint__device_delete__permission_denied(self):
         mock_device = mock.MagicMock()
         mock_device.owner = "other-user"
-        self.query_device.get.return_value = mock_device
 
         expected_result = permission_denied
-        actual_result = device.delete_device({"device_uuid": "the-device"}, "user")
+        actual_result = device.delete_device({"device_uuid": "the-device"}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("the-device")
 
     @patch("resources.device.delete_services")
     @patch("resources.device.stop_all_service")
@@ -299,7 +241,7 @@ class TestDevice(TestCase):
         self.query_device.get.return_value = mock_device
 
         expected_result = success
-        actual_result = device.delete_device({"device_uuid": "the-device"}, "user")
+        actual_result = device.delete_device({"device_uuid": "the-device"}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with("the-device")
@@ -334,24 +276,21 @@ class TestDevice(TestCase):
         self.assertEqual(expected_result, actual_result)
         self.query_device.get.assert_called_with("my device")
 
-    def test__ms_endpoint__owner__device_not_found(self):
-        self.query_device.get.return_value = None
+    def test__ms_endpoint__ping(self):
+        mock_device = mock.MagicMock()
 
-        expected_result = device_not_found
-        actual_result = device.owner({"device_uuid": "my device"}, "")
+        expected_result = {"online": mock_device.powered_on}
+        actual_result = device.ms_ping({"device_uuid": "my device"}, "", mock_device)
 
         self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("my device")
 
     def test__ms_endpoint__owner__successful(self):
         mock_device = mock.MagicMock()
-        self.query_device.get.return_value = mock_device
 
         expected_result = {"owner": mock_device.owner}
-        actual_result = device.owner({"device_uuid": "my device"}, "")
+        actual_result = device.owner({"device_uuid": "my device"}, "", mock_device)
 
         self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("my device")
 
     def test__ms_endpoint__delete_user(self):
         devices = [mock.MagicMock() for _ in range(5)]

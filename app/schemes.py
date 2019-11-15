@@ -9,9 +9,13 @@ def make_error(*args: str, origin: str, sep: str = "") -> dict:
 
 already_own_a_device: dict = make_error("already_own_a_device", origin="user")
 
+maximum_devices_reached: dict = make_error("maximum_devices_reached", origin="user")
+
 permission_denied: dict = make_error("permission_denied", origin="user")
 
 device_not_found: dict = make_error("device_not_found", origin="user")
+
+device_powered_off: dict = make_error("device_powered_off", origin="user")
 
 file_not_found: dict = make_error("file_not_found", origin="user")
 

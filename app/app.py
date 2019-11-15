@@ -1,6 +1,4 @@
-from cryptic import MicroService, Config, DatabaseWrapper, get_config
-
-config: Config = get_config()  # / production
+from cryptic import MicroService, DatabaseWrapper
 
 m: MicroService = MicroService("device")
 

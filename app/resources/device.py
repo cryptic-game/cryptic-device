@@ -3,11 +3,13 @@ from typing import List, Optional
 from sqlalchemy import func
 
 from app import m, wrapper
+from cryptic import register_errors
 from models.device import Device
 from models.hardware import Hardware
-from models.workload import Workload
 from models.service import Service
 from models.file import File
+from models.workload import Workload
+from resources.errors import device_exists, can_access_device, device_powered_on
 from resources.game_content import (
     check_compatible,
     calculate_power,
@@ -21,49 +23,43 @@ from resources.game_content import (
 )
 from schemes import (
     success,
-    device_not_found,
     permission_denied,
     requirement_build,
     requirement_device,
     requirement_change_name,
     already_own_a_device,
+    maximum_devices_reached,
 )
 from vars import hardware
 
 
 @m.user_endpoint(path=["device", "info"], requires=requirement_device)
-def device_info(data: dict, user: str) -> dict:
+@register_errors(device_exists)
+def device_info(data: dict, user: str, device: Device) -> dict:
     """
     Get public information about a device.
     :param data: The given data.
     :param user: The user uuid.
+    :param device: The device.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
-
-    if device is None:
-        return device_not_found
 
     return {
         **device.serialize,
-        "hardware": [
-            hardware.serialize for hardware in wrapper.session.query(Hardware).filter_by(device_uuid=device.uuid)
-        ],
+        "hardware": [h.serialize for h in wrapper.session.query(Hardware).filter_by(device_uuid=device.uuid)],
     }
 
 
 @m.user_endpoint(path=["device", "ping"], requires=requirement_device)
-def ping(data: dict, user: str) -> dict:
+@register_errors(device_exists)
+def ping(data: dict, user: str, device: Device) -> dict:
     """
     Ping a device.
     :param data: The given data.
     :param user: The user uuid.
+    :param device: The device.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
-
-    if device is None:
-        return device_not_found
 
     return {"online": device.powered_on}
 
@@ -89,6 +85,12 @@ def create_device(data: dict, user: str) -> dict:
     :param user: The user uuid.
     :return: The response
     """
+
+    count: int = wrapper.session.query(func.count(Device.uuid)).filter_by(owner=user).scalar()
+
+    if count >= 3:
+        return maximum_devices_reached
+
     comp, message = check_compatible(data)
     if not comp:
         return message
@@ -108,6 +110,8 @@ def create_device(data: dict, user: str) -> dict:
     delete_items(user, data)
 
     File.create(device.uuid, "/", "", None, True, False)
+
+    m.contact_microservice("service", ["device_init"], {"device_uuid": device.uuid, "user": device.owner})
 
     return device.serialize
 
@@ -136,50 +140,46 @@ def starter_device(data: dict, user: str) -> dict:
 
     File.create(device.uuid, "/", "", None, True, False)
 
+    m.contact_microservice("service", ["device_init"], {"device_uuid": device.uuid, "user": device.owner})
+
     return device.serialize
 
 
 @m.user_endpoint(path=["device", "power"], requires=requirement_device)
-def power(data: dict, user: str) -> dict:
+@register_errors(device_exists, can_access_device)
+def power(data: dict, user: str, device: Device) -> dict:
     """
     Turn a device on/off.
     :param data: The given data.
     :param user: The user uuid.
+    :param device: The device.
     :return: The response
     """
-    device: Device = wrapper.session.query(Device).get(data["device_uuid"])
 
-    if device is None:
-        return device_not_found
-
-    if not device.check_access(user):
-        return permission_denied
+    device_uuid: str = data["device_uuid"]
 
     device.powered_on = not device.powered_on
     wrapper.session.commit()
 
     if not device.powered_on:
-        stop_all_service(data["device_uuid"])
-        stop_services(data["device_uuid"])
+        stop_all_service(device_uuid)
+        stop_services(device_uuid)
+    else:
+        m.contact_microservice("service", ["device_restart"], {"device_uuid": device_uuid, "user": device.owner})
 
     return device.serialize
 
 
 @m.user_endpoint(path=["device", "change_name"], requires=requirement_change_name)
-def change_name(data: dict, user: str) -> dict:
+@register_errors(device_exists, can_access_device, device_powered_on)
+def change_name(data: dict, user: str, device: Device) -> dict:
     """
     Change the name of the device.
     :param data: The given data.
     :param user: The user uuid.
+    :param device: The device.
     :return: The response
     """
-    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
-
-    if device is None:
-        return device_not_found
-
-    if not device.check_access(user):
-        return permission_denied
 
     name: str = str(data["name"])
 
@@ -191,17 +191,15 @@ def change_name(data: dict, user: str) -> dict:
 
 
 @m.user_endpoint(path=["device", "delete"], requires=requirement_device)
-def delete_device(data: dict, user: str) -> dict:
+@register_errors(device_exists)
+def delete_device(data: dict, user: str, device: Device) -> dict:
     """
     Delete a device.
     :param data: The given data.
     :param user: The user uuid.
+    :param device: The device.
     :return: Success or not
     """
-    device: Device = wrapper.session.query(Device).get(data["device_uuid"])
-
-    if device is None:
-        return device_not_found
 
     if device.owner != user:
         return permission_denied
@@ -237,14 +235,16 @@ def exist(data: dict, microservice: str) -> dict:
     return {"exist": device is not None}
 
 
-@m.microservice_endpoint(path=["owner"])
-def owner(data: dict, microservice: str) -> dict:
-    device: Optional[Device] = wrapper.session.query(Device).get(data["device_uuid"])
+@m.microservice_endpoint(path=["ping"])
+@register_errors(device_exists)
+def ms_ping(data: dict, microservice: str, device: Device) -> dict:
+    return {"online": device.powered_on}
 
-    if device is None:
-        return device_not_found
-    else:
-        return {"owner": device.owner}
+
+@m.microservice_endpoint(path=["owner"])
+@register_errors(device_exists)
+def owner(data: dict, microservice: str, device: Device) -> dict:
+    return {"owner": device.owner}
 
 
 @m.microservice_endpoint(path=["delete_user"])
@@ -253,6 +253,7 @@ def delete_user(data: dict, microservice: str) -> dict:
     Delete all devices of a user.
 
     :param data: The given data.
+    :param microservice: The microservice.
     :return: Success or not
     """
 
