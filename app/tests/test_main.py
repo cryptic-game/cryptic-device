@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from mock.mock_loader import mock
 from resources import device, file, hardware
-from resources.errors import device_exists, can_access_device, device_powered_on
+from resources.errors import device_exists, can_access_device, device_powered_on, file_exists
 from schemes import (
     requirement_device,
     requirement_build,
@@ -74,10 +74,10 @@ class TestApp(TestCase):
             (["device", "delete"], requirement_device, device.delete_device, device_exists),
             (["device", "spot"], {}, device.spot),
             (["file", "all"], basic_file_requirement, file.list_files, *file_errors),
-            (["file", "info"], requirement_file, file.file_info, *file_errors),
-            (["file", "move"], requirement_file_move, file.move, *file_errors),
-            (["file", "update"], requirement_file_update, file.update, *file_errors),
-            (["file", "delete"], requirement_file_delete, file.delete_file, *file_errors),
+            (["file", "info"], requirement_file, file.file_info, *file_errors, file_exists),
+            (["file", "move"], requirement_file_move, file.move, *file_errors, file_exists),
+            (["file", "update"], requirement_file_update, file.update, *file_errors, file_exists),
+            (["file", "delete"], requirement_file_delete, file.delete_file, *file_errors, file_exists),
             (["file", "create"], requirement_file_create, file.create_file, *file_errors),
             (["hardware", "build"], requirement_build, hardware.build),
             (["hardware", "resources"], requirement_device, hardware.hardware_resources),

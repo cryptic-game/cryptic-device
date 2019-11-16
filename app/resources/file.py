@@ -1,15 +1,14 @@
 from typing import Optional, List
 
+from cryptic import register_errors
 from sqlalchemy import func
 
 from app import m, wrapper
-from cryptic import register_errors
 from models.device import Device
 from models.file import File
-from resources.errors import device_exists, can_access_device, device_powered_on
+from resources.errors import device_exists, can_access_device, device_powered_on, file_exists
 from schemes import (
     file_already_exists,
-    file_not_found,
     success,
     requirement_file,
     requirement_file_delete,
@@ -47,35 +46,25 @@ def list_files(data: dict, user: str, device: Device) -> dict:
 
 
 @m.user_endpoint(path=["file", "info"], requires=requirement_file)
-@register_errors(device_exists, can_access_device, device_powered_on)
-def file_info(data: dict, user: str, device: Device) -> dict:
+@register_errors(device_exists, can_access_device, device_powered_on, file_exists)
+def file_info(data: dict, user: str, device: Device, file: File) -> dict:
     """
     Get information about a file
     :param data: The given data.
     :param user: The user uuid.
     :param device: The device of the file.
+    :param file: The file.
     :return: The response
     """
-
-    file: Optional[File] = wrapper.session.query(File).filter_by(device=device.uuid, uuid=(data["file_uuid"])).first()
-
-    if file is None:
-        return file_not_found
 
     return file.serialize
 
 
 @m.user_endpoint(path=["file", "move"], requires=requirement_file_move)
-@register_errors(device_exists, can_access_device, device_powered_on)
-def move(data: dict, user: str, device: Device) -> dict:
-    file_uuid = data["file_uuid"]
+@register_errors(device_exists, can_access_device, device_powered_on, file_exists)
+def move(data: dict, user: str, device: Device, file: File) -> dict:
     new_filename = data["new_filename"]
     new_parent_dir_uuid = data["new_parent_dir_uuid"]
-
-    file: Optional[File] = wrapper.session.query(File).filter_by(device=device.uuid, uuid=file_uuid).first()
-
-    if file is None:
-        return file_not_found
 
     if not file.is_changeable:
         return file_not_changeable
@@ -87,20 +76,20 @@ def move(data: dict, user: str, device: Device) -> dict:
         return file_already_exists
 
     target_dir: Optional[File] = (
-        wrapper.session.query(File).filter_by(device=device_uuid, is_directory=True, uuid=new_parent_dir_uuid).first()
+        wrapper.session.query(File).filter_by(device=device.uuid, is_directory=True, uuid=new_parent_dir_uuid).first()
     )
     if target_dir is None:
         return parent_directory_not_found
 
     if file.is_directory:
         parent_to_check: Optional[File] = wrapper.session.query(File).filter_by(
-            device=device_uuid, uuid=new_parent_dir_uuid
+            device=device.uuid, uuid=new_parent_dir_uuid
         ).first()
         while parent_to_check.parent_dir_uuid is not None:
             if parent_to_check.uuid == file.uuid:
                 return can_not_move_dir_into_itself
             parent_to_check: Optional[File] = wrapper.session.query(File).filter_by(
-                device=device_uuid, uuid=parent_to_check.parent_dir_uuid
+                device=device.uuid, uuid=parent_to_check.parent_dir_uuid
             ).first()
 
     file.filename = new_filename
@@ -121,21 +110,17 @@ def move(data: dict, user: str, device: Device) -> dict:
 
 
 @m.user_endpoint(path=["file", "update"], requires=requirement_file_update)
-@register_errors(device_exists, can_access_device, device_powered_on)
-def update(data: dict, user: str, device: Device) -> dict:
+@register_errors(device_exists, can_access_device, device_powered_on, file_exists)
+def update(data: dict, user: str, device: Device, file: File) -> dict:
     """
     Update the content of a file.
 
     :param data: The given data.
     :param user: The user uuid.
     :param device: The device of the file.
+    :param file: The file.
     :return: The response
     """
-
-    file: Optional[File] = wrapper.session.query(File).filter_by(device=device.uuid, uuid=(data["file_uuid"])).first()
-
-    if file is None:
-        return file_not_found
 
     if file.is_directory:
         return directories_can_not_be_updated
@@ -160,20 +145,16 @@ def update(data: dict, user: str, device: Device) -> dict:
 
 
 @m.user_endpoint(path=["file", "delete"], requires=requirement_file_delete)
-@register_errors(device_exists, can_access_device, device_powered_on)
-def delete_file(data: dict, user: str, device: Device) -> dict:
+@register_errors(device_exists, can_access_device, device_powered_on, file_exists)
+def delete_file(data: dict, user: str, device: Device, file: File) -> dict:
     """
     Delete a file.
     :param data: The given data.
     :param user: The user uuid.
     :param device: The device of the file.
+    :param file: The file.
     :return: The response
     """
-
-    file: Optional[File] = wrapper.session.query(File).filter_by(device=device.uuid, uuid=(data["file_uuid"])).first()
-
-    if file is None:
-        return file_not_found
 
     if not file.is_changeable:
         return file_not_changeable
@@ -185,7 +166,7 @@ def delete_file(data: dict, user: str, device: Device) -> dict:
             dir_to_check = dirs.pop()
             stack_to_delete.append(dir_to_check)
             files_in_dir: list = wrapper.session.query(File).filter_by(
-                device=device_uuid, parent_dir_uuid=dir_to_check.uuid
+                device=device.uuid, parent_dir_uuid=dir_to_check.uuid
             ).all()
             for child_file in files_in_dir:
                 if child_file.is_directory:
