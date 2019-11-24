@@ -25,8 +25,13 @@ hardware = {
             "cpuSlots": 1,
             "coreTemperatureControl": False,
             "usbPorts": 0,
-            "ram": {"ramSlots": 1, "maxRamSize": 128, "typ": "DDR1", "frequency": [422, 922]},
-            "graphicUnitOnBoard": False, # Verwendung Graphic-Processor der CPU
+            "ram": {"ramSlots": 1, "maxRamSize": 128, "typ": "DDR1", "frequency": 422},
+            "graphicUnitOnBoard": True,
+            "graphicUnit": {
+                "name": "nForce 1", 
+                "ramSize": 128, 
+                "frequency": 322,
+            },
             "expansionSlots":
             {
                 # Kann mit anderen Werten gefüllt und gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, M.2, usw
@@ -51,7 +56,12 @@ hardware = {
             "coreTemperatureControl": False,
             "usbPorts": 1,
             "ram": {"ramSlots": 1, "maxRamSize": 1024, "typ": "DDR1", "frequency": [922, 1122]},
-            "graphicUnitOnBoard": False, # Verwendung Graphic-Processor der CPU
+            "graphicUnitOnBoard": False,
+            "graphicUnit": {
+                "name": None, 
+                "ramSize": None, 
+                "frequency": None,
+            },
             "expansionSlots":
             {
                 # Kann mit anderen Werten gefüllt und gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, M.2, usw
@@ -74,7 +84,12 @@ hardware = {
             "coreTemperatureControl": False,
             "usbPorts": 2,
             "ram": {"ramSlots": 2, "maxRamSize": 2048, "typ": "DDR2", "frequency": [922, 1222, 1422]},
-            "graphicUnitOnBoard": False, # Verwendung Graphic-Processor der CPU
+            "graphicUnitOnBoard": False,
+            "graphicUnit": {
+                "name": None, 
+                "ramSize": None, 
+                "frequency": None,
+            },
             "expansionSlots":
             {
                 # Kann mit anderen Werten gefüllt und gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, M.2, usw
@@ -96,8 +111,13 @@ hardware = {
             "cpuSlots": 1,
             "coreTemperatureControl": False,
             "usbPorts": 2,
-            "ram": {"ramSlots": 2, "maxRamSize": 4096, "typ": "DDR2", "frequency": 1622},
-            "graphicUnitOnBoard": False, # Verwendung Graphic-Processor der CPU
+            "ram": {"ramSlots": 2, "maxRamSize": 4096, "typ": "DDR2", "frequency": [1422, 1622]},
+            "graphicUnitOnBoard": None,
+            "graphicUnit": {
+                "name": None, 
+                "ramSize": None, 
+                "frequency": None,
+            },
             "expansionSlots":
             {
                 # Kann mit anderen Werten gefüllt und gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, M.2, usw
@@ -110,7 +130,7 @@ hardware = {
                 "M.2":
                 {
                     "interface": "SATA4",
-                    "version": None,
+                    "version": 4,
                     "interfaceSlots": 1,
                 },
             },
@@ -148,8 +168,8 @@ hardware = {
             "overClock": False,
             "maxTemperature": 72,
             "power": 240,
-            "graphicUnitExist": True,
-            "graphicUnit": {"name": "HD Graphic 110", "ramSize": 1024, "frequency": 350},
+            "graphicUnitExist": False,
+            "graphicUnit": {"name": None, "ramSize": None, "frequency": None},
         },
         
         # Dual Core
@@ -164,7 +184,7 @@ hardware = {
             "maxTemperature": 72,
             "power": 250,
             "graphicUnitExist": True,
-            "graphicUnit": {"name": "HD Graphic 110", "ramSize": 1024, "frequency": 350},
+            "graphicUnit": {"name": "HD Graphic 110", "ramSize": 1024, "frequency": 522},
         },
         
         # Quad Core
@@ -179,7 +199,7 @@ hardware = {
             "maxTemperature": 92,
             "power": 190,
             "graphicUnitExist": True,
-            "graphicUnit": {"name": "HD Graphic 110", "ramSize": 1024, "frequency": 350},
+            "graphicUnit": {"name": "HD Graphic 110", "ramSize": 1024, "frequency": 522},
         },
     },
     
@@ -264,15 +284,15 @@ hardware = {
         # Start GPU - nicht verändern
         "Forcevid MX1000": {
             "name": "Forcevid MX1000",
-            "ramSize": 128,
+            "ramSize": 512,
             "ramTyp": "DDR1",
             "frequency": 422,
             "interface": "AGP 1.0",
-            "power": 120,
+            "power": 80,
         },
         "Zetta TX2066": {
             "name": "Zetta TX2066",
-            "ramSize": 1048,
+            "ramSize": 1024,
             "ramTyp": "DDR1",
             "frequency": 1200,
             "interface": "PCI 1.0",
@@ -304,8 +324,8 @@ hardware = {
             "name": "HDD Elements Zero B",
             "diskTyp": "HDD",
             "capacity": 5000,
-            "writingSpeed": 10,
-            "readingSpeed": 20,
+            "writingSpeed": 15,
+            "readingSpeed": 25,
             "interface": "IDE",
             "power": 15,
         },
