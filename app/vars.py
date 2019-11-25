@@ -11,7 +11,7 @@ hardware = {
         "gpu": "Forcevid MX1000",
         "ram": ["Crossfire One"],
         "disk": ["HDD Elements Zero A"],
-        "powerPack": "Crossfire XSOne 250 Watt",
+        "powerPack": "Crossfire XSOne 300 Watt",
         "case": "Mini-ITX",
     },
     
@@ -25,7 +25,7 @@ hardware = {
             "cpuSlots": 1,
             "coreTemperatureControl": False,
             "usbPorts": 0,
-            "ram": {"ramSlots": 1, "maxRamSize": 128, "typ": "DDR1", "frequency": 422},
+            "ram": {"ramSlots": 1, "maxRamSize": 128, "ramTyp": "DDR1", "frequency": 422},
             "graphicUnitOnBoard": True,
             "graphicUnit": {
                 "name": "nForce 1", 
@@ -34,7 +34,7 @@ hardware = {
             },
             "expansionSlots":
             {
-                # Kann mit anderen Werten gefüllt und gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, M.2, usw
+                # Kann mit anderen Werten gefüllt und gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, usw
                 "AGP 1.0":
                 {
                     "interface": "AGP",
@@ -55,7 +55,7 @@ hardware = {
             "cpuSlots": 1,
             "coreTemperatureControl": False,
             "usbPorts": 1,
-            "ram": {"ramSlots": 1, "maxRamSize": 1024, "typ": "DDR1", "frequency": [922, 1122]},
+            "ram": {"ramSlots": 1, "maxRamSize": 1024, "ramTyp": "DDR1", "frequency": [922, 1122]},
             "graphicUnitOnBoard": False,
             "graphicUnit": {
                 "name": None, 
@@ -64,7 +64,7 @@ hardware = {
             },
             "expansionSlots":
             {
-                # Kann mit anderen Werten gefüllt und gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, M.2, usw
+                # Kann mit anderen Werten gefüllt und gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, usw
                 "AGP 1.0":
                 {
                     "interface": "AGP",
@@ -83,7 +83,7 @@ hardware = {
             "cpuSlots": 1,
             "coreTemperatureControl": False,
             "usbPorts": 2,
-            "ram": {"ramSlots": 2, "maxRamSize": 2048, "typ": "DDR2", "frequency": [922, 1222, 1422]},
+            "ram": {"ramSlots": 2, "maxRamSize": 2048, "ramTyp": "DDR2", "frequency": [922, 1222, 1422]},
             "graphicUnitOnBoard": False,
             "graphicUnit": {
                 "name": None, 
@@ -92,7 +92,7 @@ hardware = {
             },
             "expansionSlots":
             {
-                # Kann mit anderen Werten gefüllt und gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, M.2, usw
+                # Kann mit anderen Werten gefüllt und gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, usw
                 "PCI 1.0":
                 {
                     "interface": "PCI",
@@ -111,7 +111,7 @@ hardware = {
             "cpuSlots": 1,
             "coreTemperatureControl": False,
             "usbPorts": 2,
-            "ram": {"ramSlots": 2, "maxRamSize": 4096, "typ": "DDR2", "frequency": [1422, 1622]},
+            "ram": {"ramSlots": 2, "maxRamSize": 4096, "ramTyp": "DDR2", "frequency": [1422, 1622]},
             "graphicUnitOnBoard": None,
             "graphicUnit": {
                 "name": None, 
@@ -120,21 +120,21 @@ hardware = {
             },
             "expansionSlots":
             {
-                # Kann mit anderen Werten gefüllt und gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, M.2, usw
+                # Kann mit anderen Werten gefüllt und gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, usw
                 "PCI 2.0":
                 {
                     "interface": "PCI",
                     "version": 2,
                     "interfaceSlots": 1,
                 },
-                "M.2":
+                "PCIe 3.0":
                 {
-                    "interface": "SATA4",
-                    "version": 4,
+                    "interface": "PCIe",
+                    "version": 3,
                     "interfaceSlots": 1,
                 },
             },
-            "diskStorage": {"diskSlots": 3, "interface": "SATA3"},
+            "diskStorage": {"diskSlots": 3, "interface": ["SATA3", "SATA1"]},
             "networkPort": {"name": "LAN Gigabit Ethernet", "interface": "RJ45", "speed": 1000},
             "power": 20,
         },
@@ -142,8 +142,8 @@ hardware = {
     
 # ----- Processor -----
     "cpu": {
-        # Start CPU - nicht verändern
-        "CoreOne A100": {
+        # Single Core
+        "CoreOne A100": { # Start CPU - nicht verändern
             "name": "CoreOne A100",
             "frequencyMin": 500,
             "frequencyMax": 500,
@@ -152,12 +152,10 @@ hardware = {
             "turboSpeed": False,
             "overClock": False,
             "maxTemperature": 72,
-            "power": 220,
             "graphicUnitExist": False,
             "graphicUnit": {"name": None "ramSize": None, "frequency": None},
-        },
-        
-        # Single Core
+            "power": 220,
+        },     
         "CoreOne A110": {
             "name": "CoreOne A110",
             "frequencyMin": 800,
@@ -167,9 +165,9 @@ hardware = {
             "turboSpeed": False,
             "overClock": False,
             "maxTemperature": 72,
-            "power": 240,
             "graphicUnitExist": False,
             "graphicUnit": {"name": None, "ramSize": None, "frequency": None},
+            "power": 240,
         },
         
         # Dual Core
@@ -182,9 +180,9 @@ hardware = {
             "turboSpeed": False,
             "overClock": False,
             "maxTemperature": 72,
-            "power": 250,
             "graphicUnitExist": True,
             "graphicUnit": {"name": "HD Graphic 110", "ramSize": 1024, "frequency": 522},
+            "power": 250,
         },
         
         # Quad Core
@@ -197,9 +195,9 @@ hardware = {
             "turboSpeed": False,
             "overClock": False,
             "maxTemperature": 92,
-            "power": 190,
             "graphicUnitExist": True,
             "graphicUnit": {"name": "HD Graphic 110", "ramSize": 1024, "frequency": 522},
+            "power": 190,
         },
     },
     
@@ -296,7 +294,7 @@ hardware = {
             "ramTyp": "DDR1",
             "frequency": 1200,
             "interface": "PCI 1.0",
-            "power": 300,
+            "power": 220,
         },
         "Zetta TX2066 Pro": {
             "name": "Zetta TX2066 Pro",
@@ -304,7 +302,7 @@ hardware = {
             "ramTyp": "DDR2",
             "frequency": 1444,
             "interface": "PCI 2.0",
-            "power": 350,
+            "power": 280,
         },
     },
     
@@ -353,15 +351,15 @@ hardware = {
             "capacity": 100000,
             "writingSpeed": 1500,
             "readingSpeed": 1800,
-            "interface": "SATA4",
+            "interface": "PCIe 3.0",
             "power": 5,
         },
     },
     
 # ----- PowerPack -----
     "powerPack": [
-        {"name": "Crossfire XSOne 250 Watt", "totalPower": 250},
-        {"name": "Zeus X10 Pro", "totalPower": 400},
+        {"name": "Crossfire XSOne 300 Watt", "totalPower": 300},
+        {"name": "Zeus X10 Pro", "totalPower": 600},
     ],
     
 # ----- Case -----
