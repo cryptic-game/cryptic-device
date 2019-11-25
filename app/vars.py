@@ -153,7 +153,7 @@ hardware = {
             "overClock": False,
             "maxTemperature": 72,
             "graphicUnitExist": False,
-            "graphicUnit": {"name": None "ramSize": None, "frequency": None},
+            "graphicUnit": {"name": None, "ramSize": None, "frequency": None},
             "power": 220,
         },     
         "CoreOne A110": {
