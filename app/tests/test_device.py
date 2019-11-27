@@ -140,7 +140,6 @@ class TestDevice(TestCase):
         workload_patch.create.assert_called_with(mock_device.uuid, calculate_patch())
         create_patch.assert_called_with(data, mock_device.uuid)
         delete_patch.assert_called_with("user", data)
-        file_patch.create.assert_called_with(mock_device.uuid, "/", "", None, True, False)
         mock.m.contact_microservice.assert_called_with(
             "service", ["device_init"], {"device_uuid": mock_device.uuid, "user": mock_device.owner}
         )
@@ -177,7 +176,6 @@ class TestDevice(TestCase):
         device_create_patch.assert_called_with("user", True)
         workload_patch.create.assert_called_with(mock_device.uuid, calculate_patch())
         create_patch.assert_called_with(hardware["start_pc"], mock_device.uuid)
-        file_patch.create.assert_called_with(mock_device.uuid, "/", "", None, True, False)
         mock.m.contact_microservice.assert_called_with(
             "service", ["device_init"], {"device_uuid": mock_device.uuid, "user": mock_device.owner}
         )

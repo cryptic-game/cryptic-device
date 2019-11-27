@@ -78,7 +78,7 @@ def move(data: dict, user: str, device: Device, file: File) -> dict:
     target_dir: Optional[File] = (
         wrapper.session.query(File).filter_by(device=device.uuid, is_directory=True, uuid=new_parent_dir_uuid).first()
     )
-    if target_dir is None:
+    if target_dir is None and new_parent_dir_uuid is not None:
         return parent_directory_not_found
 
     if file.is_directory:
@@ -230,7 +230,7 @@ def create_file(data: dict, user: str, device: Device) -> dict:
     parent_dir: File = wrapper.session.query(File).filter_by(
         device=device.uuid, uuid=parent_dir_uuid, is_directory=True
     ).first()
-    if not parent_dir:
+    if not parent_dir and parent_dir_uuid is not None:
         return parent_directory_not_found
 
     if is_directory and content != "":

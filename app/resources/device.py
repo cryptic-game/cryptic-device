@@ -109,8 +109,6 @@ def create_device(data: dict, user: str) -> dict:
 
     delete_items(user, data)
 
-    File.create(device.uuid, "/", "", None, True, False)
-
     m.contact_microservice("service", ["device_init"], {"device_uuid": device.uuid, "user": device.owner})
 
     return device.serialize
@@ -137,8 +135,6 @@ def starter_device(data: dict, user: str) -> dict:
     Workload.create(device.uuid, performance)
 
     create_hardware(hardware["start_pc"], device.uuid)
-
-    File.create(device.uuid, "/", "", None, True, False)
 
     m.contact_microservice("service", ["device_init"], {"device_uuid": device.uuid, "user": device.owner})
 
