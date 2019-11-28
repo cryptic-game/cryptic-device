@@ -18,7 +18,6 @@ from schemes import (
     directories_can_not_be_updated,
     directory_can_not_have_textcontent,
     parent_directory_not_found,
-    file_not_changeable,
     can_not_move_dir_into_itself,
     basic_file_requirement,
 )
@@ -65,9 +64,6 @@ def file_info(data: dict, user: str, device: Device, file: File) -> dict:
 def move(data: dict, user: str, device: Device, file: File) -> dict:
     new_filename = data["new_filename"]
     new_parent_dir_uuid = data["new_parent_dir_uuid"]
-
-    if not file.is_changeable:
-        return file_not_changeable
 
     target_file: Optional[File] = wrapper.session.query(File).filter_by(
         device=device.uuid, filename=new_filename, parent_dir_uuid=new_parent_dir_uuid
@@ -125,9 +121,6 @@ def update(data: dict, user: str, device: Device, file: File) -> dict:
     if file.is_directory:
         return directories_can_not_be_updated
 
-    if not file.is_changeable:
-        return file_not_changeable
-
     file.content = data["content"]
     wrapper.session.commit()
 
@@ -156,9 +149,6 @@ def delete_file(data: dict, user: str, device: Device, file: File) -> dict:
     :return: The response
     """
 
-    if not file.is_changeable:
-        return file_not_changeable
-
     if file.is_directory:
         stack_to_delete = []
         dirs = [file]
@@ -176,16 +166,11 @@ def delete_file(data: dict, user: str, device: Device, file: File) -> dict:
     else:
         stack_to_delete = [file]
 
-    error_while_deleting = None
     deleted_files: List[str] = []
     while stack_to_delete:
         file_to_delete = stack_to_delete.pop()
-        if file_to_delete.is_changeable:
-            wrapper.session.delete(file_to_delete)
-            deleted_files.append(file_to_delete.uuid)
-        else:
-            error_while_deleting = file_not_changeable
-            break
+        wrapper.session.delete(file_to_delete)
+        deleted_files.append(file_to_delete.uuid)
 
     wrapper.session.commit()
 
@@ -199,8 +184,6 @@ def delete_file(data: dict, user: str, device: Device, file: File) -> dict:
         },
     )
 
-    if error_while_deleting:
-        return error_while_deleting
     return success
 
 
@@ -236,7 +219,7 @@ def create_file(data: dict, user: str, device: Device) -> dict:
     if is_directory and content != "":
         return directory_can_not_have_textcontent
 
-    file: File = File.create(device.uuid, filename, content, parent_dir_uuid, is_directory, True)
+    file: File = File.create(device.uuid, filename, content, parent_dir_uuid, is_directory)
 
     m.contact_user(
         user,

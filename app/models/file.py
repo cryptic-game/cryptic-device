@@ -21,7 +21,6 @@ class File(wrapper.Base):
     content: Union[Column, str] = Column(String(CONTENT_LENGTH), nullable=False)
     is_directory: Union[Column, bool] = Column(Boolean, nullable=False, default=False)
     parent_dir_uuid: Union[Column, str] = Column(String(36))
-    is_changeable: [Union, bool] = Column(Boolean, nullable=False, default=True)
 
     @property
     def serialize(self) -> dict:
@@ -33,14 +32,7 @@ class File(wrapper.Base):
         return d
 
     @staticmethod
-    def create(
-        device: str,
-        filename: str,
-        content: str,
-        parent_dir_uuid: Optional[str],
-        is_directory: bool,
-        is_changeable: bool,
-    ) -> "File":
+    def create(device: str, filename: str, content: str, parent_dir_uuid: Optional[str], is_directory: bool,) -> "File":
         """
         Creates a new file
         :param device: The device's uuid
@@ -48,7 +40,6 @@ class File(wrapper.Base):
         :param parent_dir_uuid: The parent directory (uuid) of the new file
         :param content: The content of the new file
         :param is_directory: If the new file is a directory
-        :param is_changeable: If the new file is changeable by the user (move, filename, content)
         :return: New File
         """
 
@@ -62,7 +53,6 @@ class File(wrapper.Base):
             content=content,
             parent_dir_uuid=parent_dir_uuid,
             is_directory=is_directory,
-            is_changeable=is_changeable,
         )
 
         wrapper.session.add(file)

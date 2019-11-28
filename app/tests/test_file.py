@@ -9,7 +9,6 @@ from schemes import (
     file_already_exists,
     success,
     directories_can_not_be_updated,
-    file_not_changeable,
     parent_directory_not_found,
     can_not_move_dir_into_itself,
     directory_can_not_have_textcontent,
@@ -46,17 +45,6 @@ class TestFile(TestCase):
         mock_file = mock.MagicMock()
         self.assertEqual(mock_file.serialize, file.file_info({}, "", mock.MagicMock(), mock_file))
 
-    def test__user_endpoint__file_move__file_not_changeable(self):
-        mock_file = mock.MagicMock()
-        mock_file.is_changeable = False
-
-        expected_result = file_not_changeable
-        actual_result = file.move(
-            {"new_filename": "new-name", "new_parent_dir_uuid": "0"}, "user", mock.MagicMock, mock_file
-        )
-
-        self.assertEqual(expected_result, actual_result)
-
     def test__user_endpoint__file_move__file_already_exists(self):
         mock_device = mock.MagicMock()
         mock_file = mock.MagicMock()
@@ -81,7 +69,6 @@ class TestFile(TestCase):
     def test__user_endpoint__file_move__parent_directory_not_found(self):
         mock_device = mock.MagicMock()
         mock_file = mock.MagicMock()
-        mock_file.is_changeable = True
 
         self.query_device.get.return_value = mock_device
         query_results = [None, None]
@@ -123,7 +110,6 @@ class TestFile(TestCase):
 
         mock_device = mock.MagicMock()
         mock_file = mock.MagicMock()
-        mock_file.is_changeable = True
         mock_file.is_directory = True
         mock_file.uuid = "3"
         filesystem = {str(i): make_file(i, i - 1) for i in range(0, 11)}
@@ -165,7 +151,6 @@ class TestFile(TestCase):
     def test__user_endpoint__file_move__successful(self):
         mock_device = mock.MagicMock()
         mock_file = mock.MagicMock()
-        mock_file.is_changeable = True
         mock_file.is_directory = True
         mock_file.uuid = "3"
         filesystem = {}
@@ -230,24 +215,10 @@ class TestFile(TestCase):
 
         self.assertEqual(expected_result, actual_result)
 
-    def test__user_endpoint__file_update__file_not_changeable(self):
-        mock_device = mock.MagicMock()
-        mock_file = mock.MagicMock()
-        mock_file.is_directory = False
-        mock_file.is_changeable = False
-
-        expected_result = file_not_changeable
-        actual_result = file.update(
-            {"device_uuid": mock_device.uuid, "file_uuid": "my-file", "content": "test"}, "user", mock_device, mock_file
-        )
-
-        self.assertEqual(expected_result, actual_result)
-
     def test__user_endpoint__file_update__successful(self):
         mock_device = mock.MagicMock()
         mock_file = mock.MagicMock()
         mock_file.is_directory = False
-        mock_file.is_changeable = True
 
         expected_result = mock_file.serialize
         actual_result = file.update(
@@ -270,19 +241,6 @@ class TestFile(TestCase):
             },
         )
 
-    def test__user_endpoint__normal_file_delete__file_not_changeable(self):
-        mock_device = mock.MagicMock()
-        mock_file = mock.MagicMock()
-        mock_file.is_changeable = False
-        mock_file.is_directory = False
-
-        expected_result = file_not_changeable
-        actual_result = file.delete_file(
-            {"device_uuid": mock_device.uuid, "file_uuid": mock_file.uuid}, "user", mock_device, mock_file
-        )
-
-        self.assertEqual(expected_result, actual_result)
-
     def test__user_endpoint__normal_file_delete__successful(self):
         mock_device = mock.MagicMock()
         mock_file = mock.MagicMock()
@@ -297,104 +255,35 @@ class TestFile(TestCase):
         mock.wrapper.session.delete.assert_called_with(mock_file)
         mock.wrapper.session.commit.assert_called_with()
 
-    def test__user_endpoint__directory_file_delete__file_not_changeable(self):
-        mock_device = mock.MagicMock()
-        mock_file = mock.MagicMock()
-        mock_file.is_changeable = True
-        mock_file.is_directory = True
-        mock_file.uuid = "AC"
-
-        filesystem = {}
-        filesystem_after_deletion = {}
-
-        def create_file(uuid, parent_dir_uuid, is_changeable, is_directory, add_to_filesystem_a_d):
-            file_mock = mock.MagicMock()
-            file_mock.uuid = uuid
-            file_mock.parent_dir_uuid = parent_dir_uuid
-            file_mock.is_changeable = is_changeable
-            file_mock.is_directory = is_directory
-            filesystem.update({uuid: file_mock})
-            if add_to_filesystem_a_d:
-                filesystem_after_deletion.update({uuid: file_mock})
-
-        create_file("0", None, False, True, True)
-        create_file("A", "0", True, True, True)
-        create_file("AA", "A", True, False, True)
-        create_file("AB", "A", True, False, True)
-        create_file("AC", "A", True, True, True)
-        create_file("AAA", "AC", True, True, False)
-        create_file("AAB", "AC", True, False, True)
-        create_file("AAC", "AC", False, False, True)
-        create_file("AAD", "AC", True, False, False)
-        create_file("AD", "A", True, False, True)
-        create_file("AE", "0", False, False, True)
-
-        def handle_file_query(**kwargs):
-            out = mock.MagicMock()
-            if "uuid" in kwargs:
-                self.assertEqual({"device": mock_device.uuid, "uuid": "AC"}, kwargs)
-                out.first.return_value = mock_file
-            elif "parent_dir_uuid" in kwargs:
-                self.assertIn(kwargs["parent_dir_uuid"], filesystem)
-                out.all.return_value = [
-                    v for _, v in filesystem.items() if v.parent_dir_uuid == kwargs["parent_dir_uuid"]
-                ]
-            return out
-
-        def delete_file(file):
-            del filesystem[file.uuid]
-
-        self.query_file.filter_by.side_effect = handle_file_query
-        mock.wrapper.session.delete.side_effect = delete_file
-
-        expected_result = file_not_changeable
-        actual_result = file.delete_file(
-            {"device_uuid": mock_device.uuid, "file_uuid": "AC"}, "user", mock_device, mock_file
-        )
-
-        self.assertEqual(expected_result, actual_result)
-        self.assertEqual(filesystem, filesystem_after_deletion)
-        mock.m.contact_user.assert_called_with(
-            "user",
-            {
-                "notify-id": "file-update",
-                "origin": "delete",
-                "device_uuid": mock_device.uuid,
-                "data": {"created": [], "deleted": ["AAA", "AAD"], "changed": []},
-            },
-        )
-
     def test__user_endpoint__directory_file_delete__successful(self):
         mock_device = mock.MagicMock()
         mock_file = mock.MagicMock()
-        mock_file.is_changeable = True
         mock_file.is_directory = True
         mock_file.uuid = "AC"
 
         filesystem = {}
         filesystem_after_deletion = {}
 
-        def create_file(uuid, parent_dir_uuid, is_changeable, is_directory, add_to_filesystem_a_d):
+        def create_file(uuid, parent_dir_uuid, is_directory, add_to_filesystem_a_d):
             file_mock = mock.MagicMock()
             file_mock.uuid = uuid
             file_mock.parent_dir_uuid = parent_dir_uuid
-            file_mock.is_changeable = is_changeable
             file_mock.is_directory = is_directory
             filesystem.update({uuid: file_mock})
             if add_to_filesystem_a_d:
                 filesystem_after_deletion.update({uuid: file_mock})
 
-        create_file("0", None, False, True, True)
-        create_file("A", "0", True, True, True)
-        create_file("AA", "A", True, False, True)
-        create_file("AB", "A", True, False, True)
-        create_file("AC", "A", True, True, False)
-        create_file("AAA", "AC", True, True, False)
-        create_file("AAB", "AC", True, False, False)
-        create_file("AAC", "AC", True, False, False)
-        create_file("AAD", "AC", True, False, False)
-        create_file("AD", "A", True, False, True)
-        create_file("AE", "0", False, False, True)
+        create_file("0", None, True, True)
+        create_file("A", "0", True, True)
+        create_file("AA", "A", False, True)
+        create_file("AB", "A", False, True)
+        create_file("AC", "A", True, False)
+        create_file("AAA", "AC", True, False)
+        create_file("AAB", "AC", False, False)
+        create_file("AAC", "AC", False, False)
+        create_file("AAD", "AC", False, False)
+        create_file("AD", "A", False, True)
+        create_file("AE", "0", False, True)
 
         def handle_file_query(**kwargs):
             out = mock.MagicMock()
@@ -444,7 +333,6 @@ class TestFile(TestCase):
                 "content": "some random content here",
                 "parent_dir_uuid": "0",
                 "is_directory": False,
-                "is_changeable": True,
             },
             "user",
             mock_device,
@@ -469,7 +357,6 @@ class TestFile(TestCase):
                 "filename": "test-file",
                 "content": "some random content here",
                 "is_directory": False,
-                "is_changeable": True,
                 "parent_dir_uuid": "0",
             },
             "user",
@@ -481,9 +368,7 @@ class TestFile(TestCase):
         self.query_func_count.filter_by.assert_called_with(
             device=mock_device.uuid, filename="test-file", parent_dir_uuid="0"
         )
-        file_create_patch.assert_called_with(
-            mock_device.uuid, "test-file", "some random content here", "0", False, True
-        )
+        file_create_patch.assert_called_with(mock_device.uuid, "test-file", "some random content here", "0", False)
         mock.m.contact_user.assert_called_with(
             "user",
             {
@@ -508,7 +393,6 @@ class TestFile(TestCase):
                 "device_uuid": mock_device.uuid,
                 "filename": "test-file",
                 "content": "some random content here",
-                "is_changeable": True,
                 "is_directory": True,
                 "parent_dir_uuid": "0",
             },
@@ -537,7 +421,6 @@ class TestFile(TestCase):
                 "device_uuid": mock_device.uuid,
                 "filename": "test-file",
                 "content": "some random content here",
-                "is_changeable": True,
                 "is_directory": True,
                 "parent_dir_uuid": "0",
             },

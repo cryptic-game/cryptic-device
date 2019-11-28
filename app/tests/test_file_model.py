@@ -11,7 +11,7 @@ class TestFileModel(TestCase):
     def test__model__file__structure(self):
         self.assertEqual("device_file", File.__tablename__)
         self.assertTrue(issubclass(File, mock.wrapper.Base))
-        for col in ["uuid", "device", "filename", "content", "is_directory", "parent_dir_uuid", "is_changeable"]:
+        for col in ["uuid", "device", "filename", "content", "is_directory", "parent_dir_uuid"]:
             self.assertIn(col, dir(File))
 
     def test__model__file__serialize(self):
@@ -42,18 +42,17 @@ class TestFileModel(TestCase):
         self.assertEqual(expected_result, file.serialize)
 
     def test__model__file__create(self):
-        actual_result = File.create("my-device", "foo.bar", "super", "baz", False, True)
+        actual_result = File.create("my-device", "foo.bar", "super", "baz", False)
 
         self.assertEqual("my-device", actual_result.device)
         self.assertEqual("foo.bar", actual_result.filename)
         self.assertEqual("baz", actual_result.parent_dir_uuid)
         self.assertEqual(False, actual_result.is_directory)
-        self.assertEqual(True, actual_result.is_changeable)
         self.assertRegex(actual_result.uuid, r"[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}")
         mock.wrapper.session.add.assert_called_with(actual_result)
         mock.wrapper.session.commit.assert_called_with()
 
     def test__model__device__create__different_uuid(self):
-        first_element = File.create("device", "foo.bar", "super", "baz", False, True).uuid
-        second_element = File.create("device", "foo.bar", "super", "baz", False, True).uuid
+        first_element = File.create("device", "foo.bar", "super", "baz", False).uuid
+        second_element = File.create("device", "foo.bar", "super", "baz", False).uuid
         self.assertNotEqual(first_element, second_element)
