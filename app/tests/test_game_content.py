@@ -305,10 +305,11 @@ class TestGameContent(TestCase):
 
         expected_performance_cpu = cpu["cores"] * cpu["frequencyMax"]
         expected_performance_ram = (
-            min(resolve_ram_type[motherboard["ram"]["typ"]], resolve_ram_type[ram["ramTyp"]]) * ram["ramSize"]
+            min(resolve_ram_type[motherboard["ram"]["typ"]], resolve_ram_type[ram["ramTyp"]])
+            * (ram["ramSize"] * ram["frequency"]) ** 0.5
         )
-        expected_performance_gpu = resolve_gpu_type[gpu["interface"]] * math.sqrt(gpu["ramSize"] * gpu["frequency"])
-        expected_performance_disk = disk["capacity"] * math.log1p(disk["writingSpeed"] * disk["readingSpeed"])
+        expected_performance_gpu = resolve_ram_type[gpu["ramTyp"]] * math.sqrt(gpu["ramSize"] * gpu["frequency"])
+        expected_performance_disk = 100 * math.log10(disk["writingSpeed"] * disk["readingSpeed"])
         expected_performance_network = motherboard["networkCard"]["speed"]
         actual_result = game_content.calculate_power(elements)
 
