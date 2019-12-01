@@ -21,7 +21,7 @@ hardware = {
             "ram": {"ramSlots": 1, "ramSize": 256, "typ": "DDR1", "frequency": [422, 922, 1122]},
             "graphicUnit": {"onBoard": True, "interfaceSlots": None, "interface": None},
             "diskStorage": {"hdSlots": 1, "typ": "HDD", "interface": "IDE"},
-            "networkCard": {"name": "Name der karte", "interface": "Gigabit Ethernet", "speed": 1000},
+            "networkCard": {"name": "Name der Karte", "interface": "Gigabit Ethernet", "speed": 1000},
         }
     },
     "cpu": {
