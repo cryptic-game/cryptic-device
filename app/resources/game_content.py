@@ -106,25 +106,19 @@ def calculate_power(elements: dict) -> Tuple[float, float, float, float, float]:
 
     performance_ram: float = 0
     for ram_stick in ram:
-        performance_ram += (
-            min(
-                resolve_ram_type[hardware["mainboards"][motherboard]["ram"]["typ"]],
-                resolve_ram_type[hardware["ram"][ram_stick]["ramTyp"]],
-            ) * math.sqrt(
-                hardware["ram"][ram_stick]["ramSize"] * hardware["ram"][ram_stick]["frequency"]
-            )
-        )
+        performance_ram += min(
+            resolve_ram_type[hardware["mainboards"][motherboard]["ram"]["typ"]],
+            resolve_ram_type[hardware["ram"][ram_stick]["ramTyp"]],
+        ) * math.sqrt(hardware["ram"][ram_stick]["ramSize"] * hardware["ram"][ram_stick]["frequency"])
 
     performance_gpu: float = resolve_ram_type[hardware["gpu"][gpu]["ramTyp"]] * math.sqrt(
-            hardware["gpu"][gpu]["frequency"] * hardware["gpu"][gpu]["ramSize"]
+        hardware["gpu"][gpu]["frequency"] * hardware["gpu"][gpu]["ramSize"]
     )
 
     disk_speed: float = 0
 
     for i in disk:
-        disk_speed += 100 * math.log10(
-            hardware["disk"][i]["writingSpeed"] * hardware["disk"][i]["readingSpeed"]
-        )
+        disk_speed += 100 * math.log10(hardware["disk"][i]["writingSpeed"] * hardware["disk"][i]["readingSpeed"])
 
     network: float = hardware["mainboards"][motherboard]["networkCard"]["speed"]
 
