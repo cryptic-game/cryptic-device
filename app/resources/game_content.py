@@ -115,7 +115,7 @@ def calculate_power(elements: dict) -> Tuple[float, float, float, float, float]:
             )
         )
 
-    performance_gpu: float = resolve_ram_type[hardware["gpu"][gpu]["ramType"]] * math.sqrt(
+    performance_gpu: float = resolve_ram_type[hardware["gpu"][gpu]["ramTyp"]] * math.sqrt(
             hardware["gpu"][gpu]["frequency"] * hardware["gpu"][gpu]["ramSize"]
     )
 
