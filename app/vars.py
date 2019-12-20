@@ -1,14 +1,12 @@
 resolve_ram_type: dict = {"DDR1": 1, "DDR2": 2, "DDR3": 3, "DDR4": 4, "DDR5": 5}
 
-resolve_gpu_type: dict = {"AGP 1.0": 1, "PCI 1.0": 1, "PCI 2.0": 2, "PCIe": 3}
-
 hardware = {
     # Start PC - nicht verändern!
     "start_pc": {
         "mainboards": "Zero MX One",
         "cpu": "CoreOne A100",
         "processorCooler": "CPU Cooler Mini",
-        "gpu": "Forcevid MX1000",
+        "gpu": None,
         "ram": ["Crossfire One"],
         "disk": ["HDD Elements Zero A"],
         "powerPack": "Crossfire XSOne 300 Watt",
@@ -25,8 +23,7 @@ hardware = {
             "coreTemperatureControl": False,
             "usbPorts": 0,
             "ram": {"ramSlots": 1, "maxRamSize": 128, "ramTyp": ["DDR1"], "frequency": [422]},
-            "graphicUnitOnBoard": True,
-            "graphicUnit": {"name": "nForce 1", "ramSize": 128, "frequency": 322},
+            "graphicUnitOnBoard": {"name": "nForce 1", "ramSize": 128, "frequency": 322},
             "expansionSlots": {
                 # Kann mit anderen Werten gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, usw
                 "AGP 1.0": {"interface": "AGP", "version": 1, "interfaceSlots": 1},
@@ -44,8 +41,7 @@ hardware = {
             "coreTemperatureControl": False,
             "usbPorts": 1,
             "ram": {"ramSlots": 1, "maxRamSize": 1024, "ramTyp": ["DDR1"], "frequency": [922, 1122]},
-            "graphicUnitOnBoard": False,
-            "graphicUnit": {"name": None, "ramSize": None, "frequency": None},
+            "graphicUnitOnBoard": {"name": "nForce 1", "ramSize": 128, "frequency": 322},
             "expansionSlots": {
                 # Kann mit anderen Werten gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, usw
                 "AGP 1.0": {"interface": "AGP", "version": 1, "interfaceSlots": 1},
@@ -61,9 +57,8 @@ hardware = {
             "cpuSlots": 1,
             "coreTemperatureControl": False,
             "usbPorts": 2,
-            "ram": {"ramSlots": 2, "maxRamSize": 2048, "ramTyp": ["DDR2"], "frequency": [922, 1222, 1422]},
-            "graphicUnitOnBoard": False,
-            "graphicUnit": {"name": None, "ramSize": None, "frequency": None},
+            "ram": {"ramSlots": 2, "maxRamSize": 2048, "ramTyp": ["DDR1", "DDR2"], "frequency": [922, 1222, 1422]},
+            "graphicUnitOnBoard": None,
             "expansionSlots": {
                 # Kann mit anderen Werten gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, usw
                 "PCI 1.0": {"interface": "PCI", "version": 1, "interfaceSlots": 1},
@@ -81,7 +76,6 @@ hardware = {
             "usbPorts": 2,
             "ram": {"ramSlots": 2, "maxRamSize": 4096, "ramTyp": ["DDR2", "DDR3"], "frequency": [1422, 1622]},
             "graphicUnitOnBoard": None,
-            "graphicUnit": {"name": None, "ramSize": None, "frequency": None},
             "expansionSlots": {
                 # Kann mit anderen Werten gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, usw
                 "PCI 2.0": {"interface": "PCI", "version": 2, "interfaceSlots": 1},
@@ -100,7 +94,6 @@ hardware = {
             "usbPorts": 2,
             "ram": {"ramSlots": 2, "maxRamSize": 8192, "ramTyp": ["DDR3", "DDR4"], "frequency": [1622, 1800, 2400]},
             "graphicUnitOnBoard": None,
-            "graphicUnit": {"name": None, "ramSize": None, "frequency": None},
             "expansionSlots": {
                 # Kann mit anderen Werten gemischt werden zb. AGP 1.0, PCI 1.0, PCI 2.0, usw
                 "PCI 2.0": {"interface": "PCI", "version": 2, "interfaceSlots": 1},
@@ -251,7 +244,7 @@ hardware = {
             "ramSize": 512,
             "ramTyp": "GDDR1",
             "frequency": 422,
-            "interface": "AGP 1.0",
+            "interface": {"interface": "AGP", "version": 1},
             "power": 80
         },
         "Zetta TX2066": {
@@ -259,7 +252,7 @@ hardware = {
             "ramSize": 1024,
             "ramTyp": "GDDR1",
             "frequency": 1200,
-            "interface": "PCI 1.0",
+            "interface": {"interface": "PCI", "version": 1},
             "power": 220
         },
         "Zetta TX2066 Pro": {
@@ -267,7 +260,7 @@ hardware = {
             "ramSize": 2048,
             "ramTyp": "GDDR2",
             "frequency": 1444,
-            "interface": "PCI 2.0",
+            "interface": {"interface": "PCI", "version": 2},
             "power": 280
         },
     },
@@ -280,7 +273,7 @@ hardware = {
             "capacity": 2000,
             "writingSpeed": 8,
             "readingSpeed": 16,
-            "interface": "IDE",
+            "interface": {"interface": "IDE", "version": 1},
             "power": 15
         },
         "HDD Elements Zero B": {
@@ -289,7 +282,7 @@ hardware = {
             "capacity": 5000,
             "writingSpeed": 15,
             "readingSpeed": 25,
-            "interface": "IDE",
+            "interface": {"interface": "IDE", "version": 1},
             "power": 15
         },
         "HDD Elements Two": {
@@ -298,7 +291,7 @@ hardware = {
             "capacity": 10000,
             "writingSpeed": 60,
             "readingSpeed": 80,
-            "interface": "SATA1",
+            "interface": {"interface": "SATA", "version": 1},
             "power": 15
         },
         "SSD 20GB MX": {
@@ -307,7 +300,7 @@ hardware = {
             "capacity": 20000,
             "writingSpeed": 150,
             "readingSpeed": 200,
-            "interface": "SATA3",
+            "interface": {"interface": "IDE", "version": 3},
             "power": 6
         },
         "SSD 100GB M.2": {
@@ -316,7 +309,7 @@ hardware = {
             "capacity": 100000,
             "writingSpeed": 1500,
             "readingSpeed": 1800,
-            "interface": "PCIe 3.0",
+            "interface": {"interface": "PCIe", "version": 3},
             "power": 5
         },
     },
