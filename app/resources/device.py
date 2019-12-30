@@ -1,9 +1,9 @@
 from typing import List, Optional
 
+from cryptic import register_errors
 from sqlalchemy import func
 
 from app import m, wrapper
-from cryptic import register_errors
 from models.device import Device
 from models.file import File
 from models.hardware import Hardware
@@ -199,10 +199,21 @@ def delete_device(data: dict, user: str, device: Device) -> dict:
     if device.owner != user:
         return permission_denied
 
-    stop_all_service(data["device_uuid"], delete=True)
-    delete_services(data["device_uuid"])  # Removes all Services in MS_Service
+    stop_all_service(device.uuid, delete=True)
+    delete_services(device.uuid)  # Removes all Services in MS_Service
 
-    device: Device = wrapper.session.query(Device).get(data["device_uuid"])
+    for file in wrapper.session.query(File).filter_by(device=device.uuid):
+        wrapper.session.delete(file)
+
+    for hw in wrapper.session.query(Hardware).filter_by(device_uuid=device.uuid):
+        m.contact_microservice(
+            "inventory",
+            ["inventory", "create"],
+            {"item_name": hw.hardware_element, "owner": device.owner, "related_ms": "device"},
+        )
+        wrapper.session.delete(hw)
+
+    device: Device = wrapper.session.query(Device).get(device.uuid)
     wrapper.session.delete(device)
     wrapper.session.commit()
 
