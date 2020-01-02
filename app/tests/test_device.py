@@ -40,7 +40,7 @@ class TestDevice(TestCase):
         self.query_hardware.filter_by.return_value = hardware
 
         expected_result = {"foo": "bar", "foo2": "bar2", "hardware": [e.serialize for e in hardware]}
-        actual_result = device.device_info.__wrapped__({"device_uuid": mock_device.uuid}, "", mock_device)
+        actual_result = device.device_info({"device_uuid": mock_device.uuid}, "", mock_device)
 
         self.assertEqual(expected_result, actual_result)
         self.query_hardware.filter_by.assert_called_with(device_uuid=mock_device.uuid)
@@ -49,7 +49,7 @@ class TestDevice(TestCase):
         mock_device = mock.MagicMock()
 
         expected_result = {"online": mock_device.powered_on}
-        actual_result = device.ping.__wrapped__({"device_uuid": "my-device"}, "", mock_device)
+        actual_result = device.ping({"device_uuid": "my-device"}, "", mock_device)
 
         self.assertEqual(expected_result, actual_result)
 
@@ -175,7 +175,7 @@ class TestDevice(TestCase):
         mock_device.powered_on = False
 
         expected_result = mock_device.serialize
-        actual_result = device.power.__wrapped__({"device_uuid": "my-device"}, "user", mock_device)
+        actual_result = device.power({"device_uuid": "my-device"}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
         self.assertTrue(mock_device.powered_on)
@@ -190,7 +190,7 @@ class TestDevice(TestCase):
         mock_device.powered_on = True
 
         expected_result = mock_device.serialize
-        actual_result = device.power.__wrapped__({"device_uuid": "my device"}, "user", mock_device)
+        actual_result = device.power({"device_uuid": "my device"}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
         self.assertFalse(mock_device.powered_on)
@@ -201,9 +201,7 @@ class TestDevice(TestCase):
         mock_device = mock.MagicMock()
 
         expected_result = mock_device.serialize
-        actual_result = device.change_name.__wrapped__(
-            {"device_uuid": "the-device", "name": "new-name"}, "user", mock_device
-        )
+        actual_result = device.change_name({"device_uuid": "the-device", "name": "new-name"}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
         self.assertEqual("new-name", mock_device.name)
@@ -214,7 +212,7 @@ class TestDevice(TestCase):
         mock_device.owner = "other-user"
 
         expected_result = permission_denied
-        actual_result = device.delete_device.__wrapped__({"device_uuid": "the-device"}, "user", mock_device)
+        actual_result = device.delete_device({"device_uuid": "the-device"}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
 
@@ -224,15 +222,32 @@ class TestDevice(TestCase):
         mock_device = mock.MagicMock()
         mock_device.owner = "user"
         self.query_device.get.return_value = mock_device
+        files = self.query_file.filter_by.return_value = [mock.MagicMock() for _ in range(5)]
+        hw = self.query_hardware.filter_by.return_value = [mock.MagicMock() for _ in range(5)]
+        hw_names = [h.hardware_element for h in hw]
+        to_delete = files + hw + [mock_device]
+        restored_hardware = []
+        mock.wrapper.session.delete.side_effect = to_delete.remove
+
+        def contact_microservice_handler(ms, path, data):
+            self.assertEqual("inventory", ms)
+            self.assertEqual(["inventory", "create"], path)
+            restored_hardware.append(data.pop("item_name"))
+            self.assertEqual(mock_device.owner, data.pop("owner"))
+            self.assertEqual("device", data.pop("related_ms"))
+            self.assertFalse(data)
+
+        mock.m.contact_microservice.side_effect = contact_microservice_handler
 
         expected_result = success
-        actual_result = device.delete_device.__wrapped__({"device_uuid": "the-device"}, "user", mock_device)
+        actual_result = device.delete_device({}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
-        self.query_device.get.assert_called_with("the-device")
-        sas_patch.assert_called_with("the-device", delete=True)
-        ds_patch.assert_called_with("the-device")
-        mock.wrapper.session.delete.assert_called_with(mock_device)
+        self.query_device.get.assert_called_with(mock_device.uuid)
+        sas_patch.assert_called_with(mock_device.uuid, delete=True)
+        ds_patch.assert_called_with(mock_device.uuid)
+        self.assertFalse(to_delete)
+        self.assertEqual(hw_names, restored_hardware)
         mock.wrapper.session.commit.assert_called_with()
 
     @patch("resources.device.Device")
@@ -265,7 +280,7 @@ class TestDevice(TestCase):
         mock_device = mock.MagicMock()
 
         expected_result = {"online": mock_device.powered_on}
-        actual_result = device.ms_ping.__wrapped__({"device_uuid": "my device"}, "", mock_device)
+        actual_result = device.ms_ping({"device_uuid": "my device"}, "", mock_device)
 
         self.assertEqual(expected_result, actual_result)
 
@@ -273,7 +288,7 @@ class TestDevice(TestCase):
         mock_device = mock.MagicMock()
 
         expected_result = {"owner": mock_device.owner}
-        actual_result = device.owner.__wrapped__({"device_uuid": "my device"}, "", mock_device)
+        actual_result = device.owner({"device_uuid": "my device"}, "", mock_device)
 
         self.assertEqual(expected_result, actual_result)
 

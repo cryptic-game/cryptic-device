@@ -15,4 +15,6 @@ RUN pipenv sync
 
 ADD . /app/
 
+RUN pipenv run test
+
 CMD pipenv run prod

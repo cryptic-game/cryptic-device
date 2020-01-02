@@ -14,37 +14,6 @@ class TestErrors(TestCase):
         self.query_device = mock.MagicMock()
         mock.wrapper.session.query.side_effect = {Device: self.query_device}.__getitem__
 
-    def test__register_errors__without_exception(self):
-        e = [mock.MagicMock() for _ in range(3)]
-        deco = errors.register_errors(*e)
-        f = mock.MagicMock()
-        inner = deco(f)
-        args = ({"data": None}, "user")
-
-        expected_result = f()
-        actual_result = inner(*args)
-
-        self.assertEqual(expected_result, actual_result)
-        e[0].assert_called_with(*args)
-        e[1].assert_called_with(*args, e[0]())
-        e[2].assert_called_with(*args, e[1]())
-        f.assert_called_with(*args, e[2]())
-
-    def test__register_errors__with_exception(self):
-        def raise_error(*_):
-            raise MicroserviceException({"error": True})
-
-        e = [raise_error]
-        deco = errors.register_errors(*e)
-        f = mock.MagicMock()
-        inner = deco(f)
-        args = ({"data": None}, "user")
-
-        expected_result = {"error": True}
-        actual_result = inner(*args)
-
-        self.assertEqual(expected_result, actual_result)
-
     def test__device_exists__device_not_found(self):
         self.query_device.get.return_value = None
 

@@ -37,6 +37,19 @@ m.microservice_endpoint = MagicMock(side_effect=ms_endpoint_decorator)
 wrapper = m.get_wrapper()
 
 
+def register_errors(*errors):
+    def deco(f):
+        f.__errors__ = errors
+        return f
+
+    return deco
+
+
+class MicroserviceException(Exception):
+    def __init__(self, error: dict):
+        self.error: dict = error
+
+
 class Base:
     metadata = MagicMock()
 
