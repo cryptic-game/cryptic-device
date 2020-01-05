@@ -34,11 +34,14 @@ requirement_device: dict = {"device_uuid": UUID()}
 requirement_change_name: dict = {"device_uuid": UUID(), "name": Text(min_length=1, max_length=15)}
 
 requirement_build: dict = {
-    "gpu": Text(),
-    "cpu": Text(),
-    "motherboard": Text(),
+    "gpu": Sequence(Text(nonempty=True)),
+    "cpu": Sequence(Text(nonempty=True)),
+    "mainboard": Text(nonempty=True),
     "ram": Sequence(Text(nonempty=True)),
     "disk": Sequence(Text(nonempty=True)),
+    "processorCooler": Sequence(Text(nonempty=True)),
+    "powerPack": Text(nonempty=True),
+    "case": Text(nonempty=True),
 }
 
 requirement_file: dict = {"device_uuid": UUID(), "file_uuid": UUID()}

@@ -5,7 +5,7 @@ from app import m, wrapper
 from models.hardware import Hardware
 from models.service import Service
 from models.workload import Workload
-from vars import hardware, resolve_ram_type, resolve_gpu_type
+from vars import hardware
 
 
 def check_exists(user: str, elements: dict) -> Tuple[bool, dict]:
@@ -13,51 +13,37 @@ def check_exists(user: str, elements: dict) -> Tuple[bool, dict]:
 
     names: List[str] = [x["element_name"] for x in response["elements"]]
 
-    if elements["cpu"] not in names:
-        return False, {"error": "cpu_not_in_inventory"}
-    if elements["motherboard"] not in names:
-        return False, {"error": "motherboard_not_in_inventory"}
-    if elements["gpu"] not in names:
-        return False, {"error": "gpu_not_in_inventory"}
-    for ram in elements["ram"]:
-        if ram not in names:
-            return False, {"error": "ram_not_in_inventory"}
-        else:
-            names.remove(ram)
-    for disk in elements["disk"]:
-        if disk not in names:
-            return False, {"error": "disk_not_in_inventory"}
-        else:
-            names.remove(disk)
+    for element_type in ("mainboard", "powerPack", "case"):
+        if elements[element_type] not in names:
+            return False, {"error": f"{element_type}_not_in_inventory"}
+    for element_type in ("cpu", "gpu", "processorCooler", "disk", "ram"):
+        for element in elements[element_type]:
+            if element not in names:
+                return False, {"error": f"{element_type}_not_in_inventory"}
+            else:
+                names.remove(element)
 
     return True, {}
 
 
 def delete_items(user: str, elements: dict):
-    m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": elements["cpu"]})
-    m.contact_microservice(
-        "inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": elements["motherboard"]}
-    )
-    m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": elements["gpu"]})
-    for ram in elements["ram"]:
-        m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": ram})
-    for disk in elements["disk"]:
-        m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": disk})
+    for element_type in ("mainboard", "powerPack", "case"):
+        m.contact_microservice(
+            "inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": elements[element_type]}
+        )
+    for element_type in ("cpu", "gpu", "processorCooler", "disk", "ram"):
+        for element in elements[element_type]:
+            m.contact_microservice("inventory", ["inventory", "delete_by_name"], {"owner": user, "item_name": element})
 
 
 def check_element_existence(elements: dict) -> Tuple[bool, dict]:
-    if elements["cpu"] not in hardware["cpu"]:
-        return False, {"error": "element_cpu_not_found"}
-    if elements["gpu"] not in hardware["gpu"]:
-        return False, {"error": "element_gpu_not_found"}
-    if elements["motherboard"] not in hardware["mainboards"]:
-        return False, {"error": "element_motherboard_not_found"}
-    for disk in elements["disk"]:
-        if disk not in hardware["disk"]:
-            return False, {"error": "element_disk_not_found"}
-    for ram in elements["ram"]:
-        if ram not in hardware["ram"]:
-            return False, {"error": "element_ram_not_found"}
+    for element_type in ("mainboard", "powerPack", "case"):
+        if elements[element_type] not in hardware[element_type]:
+            return False, {"error": f"element_{element_type}_not_found"}
+    for element_type in ("cpu", "gpu", "processorCooler", "disk", "ram"):
+        for element in elements[element_type]:
+            if element not in hardware[element_type]:
+                return False, {"error": f"element_{element_type}_not_found"}
 
     return True, {}
 
@@ -67,72 +53,152 @@ def check_compatible(elements: dict) -> Tuple[bool, dict]:
     if not exists:
         return False, message
 
-    cpu: str = elements["cpu"]
-    motherboard: str = elements["motherboard"]
-    ram: List[str] = elements["ram"]
-    # gpu: str = elements["gpu"] ask gamedesign
-    disk: List[str] = elements["disk"]
+    cpu_units: List[str] = elements["cpu"]
+    mainboard: str = elements["mainboard"]
+    gpu_units: List[str] = elements["gpu"]
+    disk_units: List[str] = elements["disk"]
+    ram_units: List[str] = elements["ram"]
+    cooler_units: List[str] = elements["processorCooler"]
+    power_pack: str = elements["powerPack"]
+    case: str = elements["case"]
 
-    if hardware["cpu"][cpu]["sockel"] != hardware["mainboards"][motherboard]["sockel"]:
-        return False, {"error": "incompatible_cpu_socket"}
+    if not cpu_units:
+        return False, {"error": "missing_cpu"}
+    if not ram_units:
+        return False, {"error": "missing_ram"}
+    if not disk_units:
+        return False, {"error": "missing_disk"}
+    if len(cpu_units) != len(cooler_units):
+        return False, {"error": "invalid_amount_of_cpu_coolers"}
 
-    if hardware["mainboards"][motherboard]["ram"]["ramSlots"] < len(ram):
+    # Case
+    if case != hardware["mainboard"][mainboard]["case"]:
+        return False, {"error": "incompatible_case"}
+
+    external_gpu_necessary = hardware["mainboard"][mainboard]["graphicUnitOnBoard"] is None
+    total_power = hardware["mainboard"][mainboard]["power"]
+
+    # CPU and coolers
+    if len(cpu_units) > hardware["mainboard"][mainboard]["cpuSlots"]:
+        return False, {"error": "not_enough_cpu_slots"}
+
+    for cpu, cooler in zip(cpu_units, cooler_units):
+        if hardware["cpu"][cpu]["socket"] != hardware["mainboard"][mainboard]["cpuSocket"]:
+            return False, {"error": "incompatible_cpu_socket"}
+        if hardware["cpu"][cpu]["socket"] != hardware["processorCooler"][cooler]["socket"]:
+            return False, {"error": "incompatible_cooler_socket"}
+
+        if hardware["cpu"][cpu]["graphicUnit"] is not None:
+            external_gpu_necessary = False
+
+        total_power += hardware["cpu"][cpu]["power"] + hardware["processorCooler"][cooler]["power"]
+
+    # external GPU
+    if external_gpu_necessary and not gpu_units:
+        return False, {"error": "missing_external_gpu"}
+
+    expansion_slots = {
+        slot["interface"]: slot["interfaceSlots"] for slot in hardware["mainboard"][mainboard]["expansionSlots"]
+    }
+    for gpu in gpu_units:
+        interface = hardware["gpu"][gpu]["interface"]
+        if interface not in expansion_slots or expansion_slots[interface] <= 0:
+            return False, {"error": "no_compatible_expansion_slot_for_gpu"}
+        expansion_slots[interface] -= 1
+
+        total_power += hardware["gpu"][gpu]["power"]
+
+    # Disks
+    remaining_disk_slots = hardware["mainboard"][mainboard]["diskStorage"]["diskSlots"]
+    for disk in disk_units:
+        total_power += hardware["disk"][disk]["power"]
+
+        interface = hardware["disk"][disk]["interface"]
+        if interface in expansion_slots and expansion_slots[interface] >= 1:
+            expansion_slots[interface] -= 1
+            continue
+
+        if remaining_disk_slots <= 0 or interface not in hardware["mainboard"][mainboard]["diskStorage"]["interface"]:
+            return False, {"error": "no_compatible_expansion_slot_for_disk"}
+        remaining_disk_slots -= 1
+
+    # RAM
+    if len(ram_units) > hardware["mainboard"][mainboard]["ram"]["ramSlots"]:
         return False, {"error": "not_enough_ram_slots"}
 
-    for ram_stick in ram:
-        if hardware["ram"][ram_stick]["ramTyp"] != hardware["mainboards"][motherboard]["ram"]["typ"]:
-            return False, {"error": "incompatible_ram_types"}
+    total_ram_size = 0
+    for ram in ram_units:
+        total_power += hardware["ram"][ram]["power"]
 
-    for i in disk:
-        if hardware["disk"][i]["interface"] != hardware["mainboards"][motherboard]["diskStorage"]["interface"]:
-            return False, {"error": "incompatible_drive_interface"}
+        total_ram_size += hardware["ram"][ram]["ramSize"]
 
-    if len(ram) < 1:
-        return False, {"error": "missing_ram"}
-    if len(disk) < 1:
-        return False, {"error": "missing_hard_drive"}
+        if hardware["ram"][ram]["ramTyp"] not in hardware["mainboard"][mainboard]["ram"]["ramTyp"]:
+            return False, {"error": "incompatible_ram_type"}
+        if hardware["ram"][ram]["frequency"] not in hardware["mainboard"][mainboard]["ram"]["frequency"]:
+            return False, {"error": "incompatible_ram_frequency"}
+
+    if total_ram_size > hardware["mainboard"][mainboard]["ram"]["maxRamSize"]:
+        return False, {"error": "ram_limit_exceeded"}
+
+    # PowerPack
+    if total_power > hardware["powerPack"][power_pack]["totalPower"]:
+        return False, {"error": "insufficient_power_pack"}
 
     return True, {}
 
 
 def calculate_power(elements: dict) -> Tuple[float, float, float, float, float]:
-    cpu: str = elements["cpu"]
-    motherboard: str = elements["motherboard"]
-    ram: List[str] = elements["ram"]
-    gpu: str = elements["gpu"]
-    disk: List[str] = elements["disk"]
+    cpu_units: List[str] = elements["cpu"]
+    mainboard: str = elements["mainboard"]
+    gpu_units: List[str] = elements["gpu"]
+    disk_units: List[str] = elements["disk"]
+    ram_units: List[str] = elements["ram"]
 
-    performance_cpu: float = hardware["cpu"][cpu]["cores"] * hardware["cpu"][cpu]["frequencyMax"]
-
-    performance_ram: float = 0
-    for ram_stick in ram:
-        performance_ram += min(
-            resolve_ram_type[hardware["mainboards"][motherboard]["ram"]["typ"]],
-            resolve_ram_type[hardware["ram"][ram_stick]["ramTyp"]],
-        ) * math.sqrt(hardware["ram"][ram_stick]["ramSize"] * hardware["ram"][ram_stick]["frequency"])
-
-    performance_gpu: float = resolve_ram_type[hardware["gpu"][gpu]["ramTyp"]] * math.sqrt(
-        hardware["gpu"][gpu]["frequency"] * hardware["gpu"][gpu]["ramSize"]
+    performance_cpu: float = sum(
+        hardware["cpu"][cpu]["cores"] * hardware["cpu"][cpu]["frequencyMax"] for cpu in cpu_units
     )
 
-    disk_speed: float = 0
+    performance_ram: float = sum(
+        hardware["ram"][ram]["ramTyp"][1]
+        * math.sqrt(hardware["ram"][ram]["ramSize"] * hardware["ram"][ram]["frequency"])
+        for ram in ram_units
+    )
 
-    for i in disk:
-        disk_speed += 100 * math.log10(hardware["disk"][i]["writingSpeed"] * hardware["disk"][i]["readingSpeed"])
+    def calc_gpu_performance(gpu: dict) -> float:
+        if gpu is None:
+            return 0
 
-    network: float = hardware["mainboards"][motherboard]["networkCard"]["speed"]
+        if "ramTyp" in gpu:
+            ram_type: float = gpu["ramTyp"][1]
+        else:
+            ram_type: float = 1
+        return ram_type * math.sqrt(gpu["frequency"] * gpu["ramSize"])
+
+    performance_gpu: float = max(
+        map(
+            calc_gpu_performance,
+            [hardware["mainboard"][mainboard]["graphicUnitOnBoard"]]
+            + [hardware["cpu"][cpu]["graphicUnit"] for cpu in cpu_units]
+            + [hardware["gpu"][gpu] for gpu in gpu_units],
+        )
+    )
+
+    disk_speed: float = sum(
+        100 * math.log10(hardware["disk"][disk]["writingSpeed"] * hardware["disk"][disk]["readingSpeed"])
+        for disk in disk_units
+    )
+
+    network: float = hardware["mainboard"][mainboard]["networkPort"]["speed"]
 
     return performance_cpu, performance_ram, performance_gpu, disk_speed, network
 
 
 def create_hardware(elements: dict, device_uuid: str) -> None:
-    Hardware.create(device_uuid, elements["cpu"], "cpu")
-    Hardware.create(device_uuid, elements["gpu"], "gpu")
-    Hardware.create(device_uuid, elements["motherboard"], "mainboard")
-    for disk in elements["disk"]:
-        Hardware.create(device_uuid, disk, "disk")
-    for ram in elements["ram"]:
-        Hardware.create(device_uuid, ram, "ram")
+    for element_type in ("mainboard", "powerPack", "case"):
+        Hardware.create(device_uuid, elements[element_type], element_type)
+    for element_type in ("cpu", "gpu", "processorCooler", "disk", "ram"):
+        for element in elements[element_type]:
+            Hardware.create(device_uuid, element, element_type)
 
 
 def scale_resources(s: List[Service], scale: Tuple[float, float, float, float, float]):
