@@ -2,9 +2,9 @@ hardware = {
     # Start PC
     "start_pc": {
         "mainboard": "Zero MX One",
-        "cpu": "CoreOne A100",
-        "processorCooler": "CPU Cooler Mini",
-        "gpu": None,
+        "cpu": ["CoreOne A100"],
+        "processorCooler": ["CPU Cooler Mini"],
+        "gpu": [],
         "ram": ["Crossfire One"],
         "disk": ["HDD Elements Zero A"],
         "powerPack": "Crossfire XSOne 500 Watt",
