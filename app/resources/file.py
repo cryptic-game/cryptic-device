@@ -81,12 +81,13 @@ def move(data: dict, user: str, device: Device, file: File) -> dict:
         parent_to_check: Optional[File] = wrapper.session.query(File).filter_by(
             device=device.uuid, uuid=new_parent_dir_uuid
         ).first()
-        while parent_to_check.parent_dir_uuid is not None:
-            if parent_to_check.uuid == file.uuid:
-                return can_not_move_dir_into_itself
-            parent_to_check: Optional[File] = wrapper.session.query(File).filter_by(
-                device=device.uuid, uuid=parent_to_check.parent_dir_uuid
-            ).first()
+        if parent_to_check is not None:
+            while parent_to_check.parent_dir_uuid is not None:
+                if parent_to_check.uuid == file.uuid:
+                    return can_not_move_dir_into_itself
+                parent_to_check: Optional[File] = wrapper.session.query(File).filter_by(
+                    device=device.uuid, uuid=parent_to_check.parent_dir_uuid
+                ).first()
 
     file.filename = new_filename
     file.parent_dir_uuid = new_parent_dir_uuid
