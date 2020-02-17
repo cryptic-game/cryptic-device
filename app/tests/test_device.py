@@ -102,6 +102,7 @@ class TestDevice(TestCase):
         compatible_patch.assert_called_with(data)
         exists_patch.assert_called_with("user", data)
 
+    @patch("resources.device.File")
     @patch("resources.device.delete_items")
     @patch("resources.device.create_hardware")
     @patch("resources.device.calculate_power")
@@ -110,7 +111,15 @@ class TestDevice(TestCase):
     @patch("resources.device.check_exists")
     @patch("resources.device.check_compatible")
     def test__user_endpoint__device_create__successful(
-        self, compatible_patch, exists_patch, device_patch, workload_patch, calculate_patch, create_patch, delete_patch
+        self,
+        compatible_patch,
+        exists_patch,
+        device_patch,
+        workload_patch,
+        calculate_patch,
+        create_patch,
+        delete_patch,
+        file_patch,
     ):
         self.query_func_count.filter_by().scalar.return_value = 2
         compatible_patch.return_value = True, {}
@@ -145,12 +154,13 @@ class TestDevice(TestCase):
         self.sqlalchemy_func.count.assert_called_with(Device.uuid)
         self.query_func_count.filter_by.assert_called_with(owner="user")
 
+    @patch("resources.device.File")
     @patch("resources.device.create_hardware")
     @patch("resources.device.calculate_power")
     @patch("resources.device.Workload")
     @patch("resources.device.Device.create")
     def test__user_endpoint__device_starter_device__successful(
-        self, device_create_patch, workload_patch, calculate_patch, create_patch
+        self, device_create_patch, workload_patch, calculate_patch, create_patch, file_patch
     ):
         self.query_func_count.filter_by().scalar.return_value = 0
 
@@ -221,6 +231,11 @@ class TestDevice(TestCase):
     def test__user_endpoint__device_delete__successful(self, sas_patch, ds_patch):
         mock_device = mock.MagicMock()
         mock_device.owner = "user"
+        files = []
+        for i in range(5):
+            files.append([mock.MagicMock() for _ in range(5)])
+
+        self.query_file.filter_by.return_value = files
         self.query_device.get.return_value = mock_device
         files = self.query_file.filter_by.return_value = [mock.MagicMock() for _ in range(5)]
         hw = self.query_hardware.filter_by.return_value = [mock.MagicMock() for _ in range(5)]
