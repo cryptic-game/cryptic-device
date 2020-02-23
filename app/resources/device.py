@@ -5,9 +5,9 @@ from sqlalchemy import func
 
 from app import m, wrapper
 from models.device import Device
-from models.file import File
 from models.hardware import Hardware
 from models.service import Service
+from models.file import File
 from models.workload import Workload
 from resources.errors import device_exists, can_access_device, device_powered_on
 from resources.game_content import (
@@ -19,6 +19,7 @@ from resources.game_content import (
     stop_all_service,
     stop_services,
     delete_services,
+    delete_files,
 )
 from schemes import (
     success,
@@ -201,9 +202,7 @@ def delete_device(data: dict, user: str, device: Device) -> dict:
 
     stop_all_service(device.uuid, delete=True)
     delete_services(device.uuid)  # Removes all Services in MS_Service
-
-    for file in wrapper.session.query(File).filter_by(device=device.uuid):
-        wrapper.session.delete(file)
+    delete_files(device.uuid)  # remove all files
 
     for hw in wrapper.session.query(Hardware).filter_by(device_uuid=device.uuid):
         m.contact_microservice(

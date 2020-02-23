@@ -1,9 +1,10 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 from app import wrapper
 from cryptic import MicroserviceException
 from models.device import Device
-from schemes import device_not_found, permission_denied, device_powered_off
+from models.file import File
+from schemes import device_not_found, permission_denied, device_powered_off, file_not_found
 
 
 def device_exists(data: dict, user: str) -> Device:
@@ -27,3 +28,12 @@ def device_powered_on(data: dict, user: str, device: Device) -> Device:
         raise MicroserviceException(device_powered_off)
 
     return device
+
+
+def file_exists(data: dict, user: str, device: Device) -> Tuple[Device, File]:
+    file: Optional[File] = wrapper.session.query(File).filter_by(device=device.uuid, uuid=data["file_uuid"]).first()
+
+    if file is None:
+        raise MicroserviceException(file_not_found)
+
+    return device, file

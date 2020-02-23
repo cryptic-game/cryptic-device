@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from mock.mock_loader import mock
 from resources import device, file, hardware
-from resources.errors import device_exists, can_access_device, device_powered_on
+from resources.errors import device_exists, can_access_device, device_powered_on, file_exists
 from schemes import (
     requirement_device,
     requirement_build,
@@ -13,6 +13,8 @@ from schemes import (
     requirement_file_update,
     requirement_file_create,
     requirement_service,
+    requirement_file_delete,
+    basic_file_requirement,
 )
 
 
@@ -60,7 +62,8 @@ class TestApp(TestCase):
         registered_user_endpoints = mock.user_endpoints.copy()
         registered_ms_endpoints = mock.ms_endpoints.copy()
 
-        file_errors = (device_exists, can_access_device, device_powered_on)
+        device_reachable = (device_exists, can_access_device, device_powered_on)
+        file_errors = (*device_reachable, file_exists)
         expected_user_endpoints = [
             (["device", "info"], requirement_device, device.device_info, device_exists),
             (["device", "ping"], requirement_device, device.ping, device_exists),
@@ -68,15 +71,15 @@ class TestApp(TestCase):
             (["device", "create"], requirement_build, device.create_device),
             (["device", "starter_device"], {}, device.starter_device),
             (["device", "power"], requirement_device, device.power, device_exists, can_access_device),
-            (["device", "change_name"], requirement_change_name, device.change_name, *file_errors),
+            (["device", "change_name"], requirement_change_name, device.change_name, *device_reachable),
             (["device", "delete"], requirement_device, device.delete_device, device_exists),
             (["device", "spot"], {}, device.spot),
-            (["file", "all"], requirement_device, file.list_files, *file_errors),
+            (["file", "all"], basic_file_requirement, file.list_files, *device_reachable),
             (["file", "info"], requirement_file, file.file_info, *file_errors),
             (["file", "move"], requirement_file_move, file.move, *file_errors),
             (["file", "update"], requirement_file_update, file.update, *file_errors),
-            (["file", "delete"], requirement_file, file.delete_file, *file_errors),
-            (["file", "create"], requirement_file_create, file.create_file, *file_errors),
+            (["file", "delete"], requirement_file_delete, file.delete_file, *file_errors),
+            (["file", "create"], requirement_file_create, file.create_file, *device_reachable),
             (["hardware", "build"], requirement_build, hardware.build),
             (["hardware", "resources"], requirement_device, hardware.hardware_resources),
             (["hardware", "process"], requirement_service, hardware.hardware_process),
