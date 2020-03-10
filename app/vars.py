@@ -14,6 +14,7 @@ hardware = {
     "mainboard": {
         # Start Mainboard
         "Zero MX One": {
+            "id": 100,
             "case": "Mini-ITX",
             "cpuSocket": "XT2019",
             "cpuSlots": 1,
@@ -27,6 +28,7 @@ hardware = {
             "power": 10,
         },
         "Zero MX Pro": {
+            "id": 101,
             "case": "Mini-ATX",
             "cpuSocket": "XT2019",
             "cpuSlots": 1,
@@ -40,6 +42,7 @@ hardware = {
             "power": 15,
         },
         "Zetta Ultimate M150": {
+            "id": 102,
             "case": "Mini-ATX",
             "cpuSocket": "XT2020",
             "cpuSlots": 1,
@@ -58,6 +61,7 @@ hardware = {
             "power": 20,
         },
         "Zeus Professional X2": {
+            "id": 103,
             "case": "ATX",
             "cpuSocket": "XT2021",
             "cpuSlots": 1,
@@ -71,6 +75,7 @@ hardware = {
             "power": 20,
         },
         "Zeus Professional X3": {
+            "id": 104,
             "case": "ATX",
             "cpuSocket": "XT2021",
             "cpuSlots": 1,
@@ -96,6 +101,7 @@ hardware = {
     "cpu": {
         # Start CPU
         "CoreOne A100": {
+            "id": 200,
             "frequencyMin": 500,
             "frequencyMax": 500,
             "socket": "XT2019",
@@ -108,6 +114,7 @@ hardware = {
         },
         # Single Core
         "CoreOne A110": {
+            "id": 201,
             "frequencyMin": 800,
             "frequencyMax": 800,
             "socket": "XT2019",
@@ -120,6 +127,7 @@ hardware = {
         },
         # Dual Core
         "DualCore M101": {
+            "id": 202,
             "frequencyMin": 800,
             "frequencyMax": 800,
             "socket": "XT2020",
@@ -132,6 +140,7 @@ hardware = {
         },
         # Quad Core
         "QuadCore TX900": {
+            "id": 203,
             "frequencyMin": 2200,
             "frequencyMax": 2200,
             "socket": "XT2021",
@@ -143,6 +152,7 @@ hardware = {
             "power": 210,
         },
         "QuadCore TX950": {
+            "id": 204,
             "frequencyMin": 3000,
             "frequencyMax": 3000,
             "socket": "XT2021",
@@ -156,27 +166,28 @@ hardware = {
     },
     # ----- ProcessorCooler -----
     "processorCooler": {
-        "CPU Cooler Mini": {"coolerSpeed": 1, "socket": "XT2019", "power": 10},
-        "CPU Cooler Plus": {"coolerSpeed": 2, "socket": "XT2020", "power": 10},
-        "CPU Cooler Pro": {"coolerSpeed": 4, "socket": "XT2021", "power": 15},
+        "CPU Cooler Mini": {"id": 300, "coolerSpeed": 1, "socket": "XT2019", "power": 10},
+        "CPU Cooler Plus": {"id": 301, "coolerSpeed": 2, "socket": "XT2020", "power": 10},
+        "CPU Cooler Pro": {"id": 302, "coolerSpeed": 4, "socket": "XT2021", "power": 15},
     },
     # ----- RAM -----
     "ram": {
         # Start RAM
-        "Crossfire One": {"ramSize": 128, "ramTyp": ("DDR", 1), "frequency": 422, "power": 5},
-        "Crossfire ZX100": {"ramSize": 512, "ramTyp": ("DDR", 1), "frequency": 922, "power": 5},
-        "Crossfire ZX110": {"ramSize": 1024, "ramTyp": ("DDR", 1), "frequency": 922, "power": 10},
-        "Crossfire ZX120": {"ramSize": 1024, "ramTyp": ("DDR", 1), "frequency": 1122, "power": 10},
-        "Crossfire ZX200": {"ramSize": 1024, "ramTyp": ("DDR", 2), "frequency": 1222, "power": 10},
-        "Crossfire ZX210": {"ramSize": 1024, "ramTyp": ("DDR", 2), "frequency": 1422, "power": 10},
-        "Crossfire ZX220": {"ramSize": 2048, "ramTyp": ("DDR", 3), "frequency": 1622, "power": 10},
-        "Crossfire P50": {"ramSize": 4096, "ramTyp": ("DDR", 4), "frequency": 1800, "power": 10},
-        "Crossfire P60": {"ramSize": 4096, "ramTyp": ("DDR", 4), "frequency": 2400, "power": 10},
+        "Crossfire One": {"id": 400, "ramSize": 128, "ramTyp": ("DDR", 1), "frequency": 422, "power": 5},
+        "Crossfire ZX100": {"id": 401, "ramSize": 512, "ramTyp": ("DDR", 1), "frequency": 922, "power": 5},
+        "Crossfire ZX110": {"id": 402, "ramSize": 1024, "ramTyp": ("DDR", 1), "frequency": 922, "power": 10},
+        "Crossfire ZX120": {"id": 403, "ramSize": 1024, "ramTyp": ("DDR", 1), "frequency": 1122, "power": 10},
+        "Crossfire ZX200": {"id": 404, "ramSize": 1024, "ramTyp": ("DDR", 2), "frequency": 1222, "power": 10},
+        "Crossfire ZX210": {"id": 405, "ramSize": 1024, "ramTyp": ("DDR", 2), "frequency": 1422, "power": 10},
+        "Crossfire ZX220": {"id": 406, "ramSize": 2048, "ramTyp": ("DDR", 3), "frequency": 1622, "power": 10},
+        "Crossfire P50": {"id": 407, "ramSize": 4096, "ramTyp": ("DDR", 4), "frequency": 1800, "power": 10},
+        "Crossfire P60": {"id": 408, "ramSize": 4096, "ramTyp": ("DDR", 4), "frequency": 2400, "power": 10},
     },
     # ----- Graphic cards -----
     "gpu": {
         # Start GPU
         "Forcevid MX1000": {
+            "id": 500,
             "ramSize": 512,
             "ramTyp": ("GDDR", 1),
             "frequency": 422,
@@ -184,6 +195,7 @@ hardware = {
             "power": 80,
         },
         "Zetta TX2066": {
+            "id": 501,
             "ramSize": 1024,
             "ramTyp": ("GDDR", 1),
             "frequency": 1200,
@@ -191,6 +203,7 @@ hardware = {
             "power": 220,
         },
         "Zetta TX2066 Pro": {
+            "id": 502,
             "ramSize": 2048,
             "ramTyp": ("GDDR", 2),
             "frequency": 1444,
@@ -202,6 +215,7 @@ hardware = {
     "disk": {
         # Start Disk
         "HDD Elements Zero A": {
+            "id": 600,
             "diskTyp": "HDD",
             "capacity": 2000,
             "writingSpeed": 8,
@@ -210,6 +224,7 @@ hardware = {
             "power": 15,
         },
         "HDD Elements Zero B": {
+            "id": 601,
             "diskTyp": "HDD",
             "capacity": 5000,
             "writingSpeed": 15,
@@ -218,6 +233,7 @@ hardware = {
             "power": 15,
         },
         "HDD Elements Two": {
+            "id": 602,
             "diskTyp": "HDD",
             "capacity": 10000,
             "writingSpeed": 60,
@@ -226,6 +242,7 @@ hardware = {
             "power": 15,
         },
         "SSD 20GB MX": {
+            "id": 603,
             "diskTyp": "SSD",
             "capacity": 20000,
             "writingSpeed": 150,
@@ -234,6 +251,7 @@ hardware = {
             "power": 6,
         },
         "SSD 100GB M.2": {
+            "id": 604,
             "diskTyp": "SSD",
             "capacity": 100000,
             "writingSpeed": 1500,
@@ -243,7 +261,16 @@ hardware = {
         },
     },
     # ----- PowerPack -----
-    "powerPack": {"Crossfire XSOne 500 Watt": {"totalPower": 500}, "Zeus X10 Pro": {"totalPower": 700}},
+    "powerPack": {
+        "Crossfire XSOne 500 Watt": {
+            "id": 700,
+            "totalPower": 500,
+        },
+        "Zeus X10 Pro": {
+            "id": 701,
+            "totalPower": 700,
+        },
+    },
     # ----- Case -----
     "case": ["Mini-ITX", "Mini-ATX", "ATX"],
 }
