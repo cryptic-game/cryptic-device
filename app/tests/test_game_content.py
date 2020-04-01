@@ -7,7 +7,7 @@ from mock.mock_loader import mock
 from models.service import Service
 from models.workload import Workload
 from resources import game_content
-from vars import hardware, resolve_ram_type, resolve_gpu_type
+from vars import hardware
 
 
 class TestGameContent(TestCase):
@@ -22,14 +22,36 @@ class TestGameContent(TestCase):
         }.__getitem__
 
     def test__check_exists(self):
-        elements = ["cpu", "gpu", "motherboard", "ram1", "ram2", "disk1", None]
+        elements = [
+            "cpu1",
+            "cpu2",
+            "gpu1",
+            "gpu2",
+            "mainboard",
+            "ram1",
+            "ram2",
+            "disk1",
+            "disk2",
+            "powerPack",
+            "case",
+            "cooler1",
+            "cooler2",
+            None,
+        ]
         expected_results = [
             {"error": "cpu_not_in_inventory"},
+            {"error": "cpu_not_in_inventory"},
             {"error": "gpu_not_in_inventory"},
-            {"error": "motherboard_not_in_inventory"},
+            {"error": "gpu_not_in_inventory"},
+            {"error": "mainboard_not_in_inventory"},
             {"error": "ram_not_in_inventory"},
             {"error": "ram_not_in_inventory"},
             {"error": "disk_not_in_inventory"},
+            {"error": "disk_not_in_inventory"},
+            {"error": "powerPack_not_in_inventory"},
+            {"error": "case_not_in_inventory"},
+            {"error": "processorCooler_not_in_inventory"},
+            {"error": "processorCooler_not_in_inventory"},
             {},
         ]
 
@@ -40,7 +62,16 @@ class TestGameContent(TestCase):
 
             actual_result = game_content.check_exists(
                 "super",
-                {"cpu": "cpu", "ram": ["ram1", "ram2"], "gpu": "gpu", "disk": ["disk1"], "motherboard": "motherboard"},
+                {
+                    "cpu": ["cpu1", "cpu2"],
+                    "ram": ["ram1", "ram2"],
+                    "gpu": ["gpu1", "gpu2"],
+                    "disk": ["disk1", "disk2"],
+                    "mainboard": "mainboard",
+                    "powerPack": "powerPack",
+                    "case": "case",
+                    "processorCooler": ["cooler1", "cooler2"],
+                },
             )
 
             self.assertEqual((not expected_result, expected_result), actual_result)
@@ -49,13 +80,25 @@ class TestGameContent(TestCase):
 
     def test__delete_items(self):
         elements = {
-            "cpu": "cpu",
-            "gpu": "gpu",
-            "motherboard": "motherboard",
+            "cpu": ["cpu1", "cpu2"],
+            "gpu": ["gpu1", "gpu2"],
+            "mainboard": "mainboard",
             "ram": ["ram1", "ram2"],
             "disk": ["disk1", "ssd1"],
+            "powerPack": "powerPack",
+            "case": "case",
+            "processorCooler": ["cooler1"],
         }
-        inventory = [elements["cpu"], elements["gpu"], elements["motherboard"], *elements["ram"], *elements["disk"]]
+        inventory = [
+            *elements["cpu"],
+            *elements["gpu"],
+            elements["mainboard"],
+            *elements["ram"],
+            *elements["disk"],
+            elements["powerPack"],
+            elements["case"],
+            *elements["processorCooler"],
+        ]
 
         def handle_delete_endpoint(ms, path, data):
             self.assertEqual("inventory", ms)
@@ -71,14 +114,17 @@ class TestGameContent(TestCase):
 
     def test__check_element_existence(self):
         elements = {
-            "cpu": list(hardware["cpu"])[0],
-            "motherboard": list(hardware["mainboards"])[0],
-            "gpu": list(hardware["gpu"])[0],
+            "cpu": [list(hardware["cpu"])[0]],
+            "mainboard": list(hardware["mainboard"])[0],
+            "gpu": [list(hardware["gpu"])[0]],
             "ram": [list(hardware["ram"])[0]],
             "disk": [list(hardware["disk"])[0]],
+            "powerPack": list(hardware["powerPack"])[0],
+            "case": list(hardware["case"])[0],
+            "processorCooler": [list(hardware["processorCooler"])[0]],
         }
 
-        for e in ["cpu", "motherboard", "gpu", "ram", "disk"]:
+        for e in ["cpu", "mainboard", "gpu", "ram", "disk", "powerPack", "case", "processorCooler"]:
             expected_result = False, {"error": f"element_{e}_not_found"}
             actual_result = game_content.check_element_existence(
                 {k: (v if k != e else "does not exist") for k, v in elements.items()}
@@ -143,174 +189,609 @@ class TestGameContent(TestCase):
         self.assertEqual(expected_result, actual_result)
         cee_patch.assert_called_with(elements)
 
-    @patch(
-        "resources.game_content.hardware",
-        {"cpu": {"cpu": {"sockel": "foo"}}, "mainboards": {"motherboard": {"sockel": "bar"}}},
-    )
     @patch("resources.game_content.check_element_existence")
-    def test__check_compatible__incompatible_cpu_socket(self, cee_patch):
+    def test__check_compatible__missing_cpu(self, cee_patch):
+        elements = {
+            "cpu": [],
+            "mainboard": None,
+            "gpu": [],
+            "disk": [],
+            "ram": [],
+            "processorCooler": [],
+            "powerPack": None,
+            "case": None,
+        }
         cee_patch.return_value = True, {}
-        elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": None, "disk": None}
 
-        expected_result = False, {"error": "incompatible_cpu_socket"}
+        expected_result = False, {"error": "missing_cpu"}
         actual_result = game_content.check_compatible(elements)
 
         self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
 
-    @patch(
-        "resources.game_content.hardware",
-        {"cpu": {"cpu": {"sockel": "foo"}}, "mainboards": {"motherboard": {"sockel": "foo", "ram": {"ramSlots": 2}}}},
-    )
-    @patch("resources.game_content.check_element_existence")
-    def test__check_compatible__not_enough_ram_slots(self, cee_patch):
-        cee_patch.return_value = True, {}
-        elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": ["ram1", "ram2", "ram3", "ram4"], "disk": None}
-
-        expected_result = False, {"error": "not_enough_ram_slots"}
-        actual_result = game_content.check_compatible(elements)
-
-        self.assertEqual(expected_result, actual_result)
-
-    @patch(
-        "resources.game_content.hardware",
-        {
-            "cpu": {"cpu": {"sockel": "foo"}},
-            "mainboards": {"motherboard": {"sockel": "foo", "ram": {"ramSlots": 2, "typ": "xyz"}}},
-            "ram": {"ram": {"ramTyp": "abc"}},
-        },
-    )
-    @patch("resources.game_content.check_element_existence")
-    def test__check_compatible__incompatible_ram_types(self, cee_patch):
-        cee_patch.return_value = True, {}
-        elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": ["ram"], "disk": None}
-
-        expected_result = False, {"error": "incompatible_ram_types"}
-        actual_result = game_content.check_compatible(elements)
-
-        self.assertEqual(expected_result, actual_result)
-
-    @patch(
-        "resources.game_content.hardware",
-        {
-            "cpu": {"cpu": {"sockel": "foo"}},
-            "mainboards": {
-                "motherboard": {
-                    "sockel": "foo",
-                    "ram": {"ramSlots": 2, "typ": "xyz"},
-                    "diskStorage": {"interface": "disk-interface"},
-                }
-            },
-            "ram": {"ram": {"ramTyp": "xyz"}},
-            "disk": {"disk": {"interface": "wrong-interface"}},
-        },
-    )
-    @patch("resources.game_content.check_element_existence")
-    def test__check_compatible__incompatible_drive_interface(self, cee_patch):
-        cee_patch.return_value = True, {}
-        elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": ["ram"], "disk": ["disk"]}
-
-        expected_result = False, {"error": "incompatible_drive_interface"}
-        actual_result = game_content.check_compatible(elements)
-
-        self.assertEqual(expected_result, actual_result)
-
-    @patch(
-        "resources.game_content.hardware",
-        {
-            "cpu": {"cpu": {"sockel": "foo"}},
-            "mainboards": {
-                "motherboard": {
-                    "sockel": "foo",
-                    "ram": {"ramSlots": 2, "typ": "xyz"},
-                    "diskStorage": {"interface": "disk-interface"},
-                }
-            },
-            "ram": {"ram": {"ramTyp": "xyz"}},
-            "disk": {"disk": {"interface": "disk-interface"}},
-        },
-    )
     @patch("resources.game_content.check_element_existence")
     def test__check_compatible__missing_ram(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": None,
+            "gpu": [],
+            "disk": [],
+            "ram": [],
+            "processorCooler": [],
+            "powerPack": None,
+            "case": None,
+        }
         cee_patch.return_value = True, {}
-        elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": [], "disk": ["disk"]}
 
         expected_result = False, {"error": "missing_ram"}
         actual_result = game_content.check_compatible(elements)
 
         self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
 
-    @patch(
-        "resources.game_content.hardware",
-        {
-            "cpu": {"cpu": {"sockel": "foo"}},
-            "mainboards": {
-                "motherboard": {
-                    "sockel": "foo",
-                    "ram": {"ramSlots": 2, "typ": "xyz"},
-                    "diskStorage": {"interface": "disk-interface"},
-                }
-            },
-            "ram": {"ram": {"ramTyp": "xyz"}},
-            "disk": {"disk": {"interface": "disk-interface"}},
-        },
-    )
     @patch("resources.game_content.check_element_existence")
-    def test__check_compatible__missing_hard_drive(self, cee_patch):
+    def test__check_compatible__missing_disk(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": None,
+            "gpu": [],
+            "disk": [],
+            "ram": ["ram1"],
+            "processorCooler": [],
+            "powerPack": None,
+            "case": None,
+        }
         cee_patch.return_value = True, {}
-        elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": ["ram"], "disk": []}
 
-        expected_result = False, {"error": "missing_hard_drive"}
+        expected_result = False, {"error": "missing_disk"}
         actual_result = game_content.check_compatible(elements)
 
         self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__invalid_amount_of_cpu_coolers(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": None,
+            "gpu": [],
+            "disk": ["disk1"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1", "cooler2"],
+            "powerPack": None,
+            "case": None,
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "invalid_amount_of_cpu_coolers"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch("resources.game_content.hardware", {"mainboard": {"mainboard1": {"case": "case1"}}})
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__incompatible_case(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": "mainboard1",
+            "gpu": [],
+            "disk": ["disk1"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1"],
+            "powerPack": None,
+            "case": "incompatible",
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "incompatible_case"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch(
+        "resources.game_content.hardware",
+        {"mainboard": {"mainboard1": {"case": "case1", "graphicUnitOnBoard": None, "power": 10, "cpuSlots": 1}}},
+    )
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__not_enough_cpu_slots(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1", "cpu2"],
+            "mainboard": "mainboard1",
+            "gpu": [],
+            "disk": ["disk1"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1", "cooler2"],
+            "powerPack": None,
+            "case": "case1",
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "not_enough_cpu_slots"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
 
     @patch(
         "resources.game_content.hardware",
         {
-            "cpu": {"cpu": {"sockel": "foo"}},
-            "mainboards": {
-                "motherboard": {
-                    "sockel": "foo",
-                    "ram": {"ramSlots": 2, "typ": "xyz"},
-                    "diskStorage": {"interface": "disk-interface"},
+            "mainboard": {
+                "mainboard1": {
+                    "case": "case1",
+                    "graphicUnitOnBoard": None,
+                    "power": 10,
+                    "cpuSlots": 1,
+                    "cpuSocket": "cpu-socket1",
                 }
             },
-            "ram": {"ram": {"ramTyp": "xyz"}},
-            "disk": {"disk": {"interface": "disk-interface"}},
+            "cpu": {"cpu1": {"socket": "incompatible"}},
+        },
+    )
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__incompatible_cpu_socket(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": "mainboard1",
+            "gpu": [],
+            "disk": ["disk1"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1"],
+            "powerPack": None,
+            "case": "case1",
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "incompatible_cpu_socket"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch(
+        "resources.game_content.hardware",
+        {
+            "mainboard": {
+                "mainboard1": {
+                    "case": "case1",
+                    "graphicUnitOnBoard": None,
+                    "power": 10,
+                    "cpuSlots": 1,
+                    "cpuSocket": "cpu-socket1",
+                }
+            },
+            "cpu": {"cpu1": {"socket": "cpu-socket1"}},
+            "processorCooler": {"cooler1": {"socket": "incompatible"}},
+        },
+    )
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__incompatible_cooler_socket(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": "mainboard1",
+            "gpu": [],
+            "disk": ["disk1"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1"],
+            "powerPack": None,
+            "case": "case1",
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "incompatible_cooler_socket"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch(
+        "resources.game_content.hardware",
+        {
+            "mainboard": {
+                "mainboard1": {
+                    "case": "case1",
+                    "graphicUnitOnBoard": None,
+                    "power": 10,
+                    "cpuSlots": 1,
+                    "cpuSocket": "cpu-socket1",
+                }
+            },
+            "cpu": {"cpu1": {"socket": "cpu-socket1", "graphicUnit": None, "power": 10}},
+            "processorCooler": {"cooler1": {"socket": "cpu-socket1", "power": 10}},
+        },
+    )
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__missing_external_gpu(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": "mainboard1",
+            "gpu": [],
+            "disk": ["disk1"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1"],
+            "powerPack": None,
+            "case": "case1",
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "missing_external_gpu"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch(
+        "resources.game_content.hardware",
+        {
+            "mainboard": {
+                "mainboard1": {
+                    "case": "case1",
+                    "graphicUnitOnBoard": None,
+                    "power": 10,
+                    "cpuSlots": 1,
+                    "cpuSocket": "cpu-socket1",
+                    "expansionSlots": [{"interface": "int1", "interfaceSlots": 1}],
+                }
+            },
+            "cpu": {"cpu1": {"socket": "cpu-socket1", "graphicUnit": None, "power": 10}},
+            "processorCooler": {"cooler1": {"socket": "cpu-socket1", "power": 10}},
+            "gpu": {"gpu1": {"interface": "int1", "power": 10}},
+        },
+    )
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__no_compatible_expansion_slot_for_gpu(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": "mainboard1",
+            "gpu": ["gpu1", "gpu1"],
+            "disk": ["disk1"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1"],
+            "powerPack": None,
+            "case": "case1",
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "no_compatible_expansion_slot_for_gpu"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch(
+        "resources.game_content.hardware",
+        {
+            "mainboard": {
+                "mainboard1": {
+                    "case": "case1",
+                    "graphicUnitOnBoard": None,
+                    "power": 10,
+                    "cpuSlots": 1,
+                    "cpuSocket": "cpu-socket1",
+                    "expansionSlots": [
+                        {"interface": "int1", "interfaceSlots": 1},
+                        {"interface": "int2", "interfaceSlots": 1},
+                    ],
+                    "diskStorage": {"diskSlots": 1, "interface": "disk-int"},
+                }
+            },
+            "cpu": {"cpu1": {"socket": "cpu-socket1", "graphicUnit": None, "power": 10}},
+            "processorCooler": {"cooler1": {"socket": "cpu-socket1", "power": 10}},
+            "gpu": {"gpu1": {"interface": "int1", "power": 10}},
+            "disk": {"disk1": {"power": 10, "interface": "disk-int"}, "disk2": {"power": 10, "interface": "int2"}},
+        },
+    )
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__no_compatible_expansion_slot_for_disk(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": "mainboard1",
+            "gpu": ["gpu1"],
+            "disk": ["disk1", "disk2", "disk2"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1"],
+            "powerPack": None,
+            "case": "case1",
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "no_compatible_expansion_slot_for_disk"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch(
+        "resources.game_content.hardware",
+        {
+            "mainboard": {
+                "mainboard1": {
+                    "case": "case1",
+                    "graphicUnitOnBoard": None,
+                    "power": 10,
+                    "cpuSlots": 1,
+                    "cpuSocket": "cpu-socket1",
+                    "expansionSlots": [
+                        {"interface": "int1", "interfaceSlots": 1},
+                        {"interface": "int2", "interfaceSlots": 1},
+                    ],
+                    "diskStorage": {"diskSlots": 1, "interface": "disk-int"},
+                    "ram": {"ramSlots": 1},
+                }
+            },
+            "cpu": {"cpu1": {"socket": "cpu-socket1", "graphicUnit": None, "power": 10}},
+            "processorCooler": {"cooler1": {"socket": "cpu-socket1", "power": 10}},
+            "gpu": {"gpu1": {"interface": "int1", "power": 10}},
+            "disk": {"disk1": {"power": 10, "interface": "disk-int"}, "disk2": {"power": 10, "interface": "int2"}},
+        },
+    )
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__not_enough_ram_slots(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": "mainboard1",
+            "gpu": ["gpu1"],
+            "disk": ["disk1", "disk2"],
+            "ram": ["ram1", "ram2"],
+            "processorCooler": ["cooler1"],
+            "powerPack": None,
+            "case": "case1",
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "not_enough_ram_slots"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch(
+        "resources.game_content.hardware",
+        {
+            "mainboard": {
+                "mainboard1": {
+                    "case": "case1",
+                    "graphicUnitOnBoard": None,
+                    "power": 10,
+                    "cpuSlots": 1,
+                    "cpuSocket": "cpu-socket1",
+                    "expansionSlots": [
+                        {"interface": "int1", "interfaceSlots": 1},
+                        {"interface": "int2", "interfaceSlots": 1},
+                    ],
+                    "diskStorage": {"diskSlots": 1, "interface": "disk-int"},
+                    "ram": {"ramSlots": 1, "ramTyp": []},
+                }
+            },
+            "cpu": {"cpu1": {"socket": "cpu-socket1", "graphicUnit": None, "power": 10}},
+            "processorCooler": {"cooler1": {"socket": "cpu-socket1", "power": 10}},
+            "gpu": {"gpu1": {"interface": "int1", "power": 10}},
+            "disk": {"disk1": {"power": 10, "interface": "disk-int"}, "disk2": {"power": 10, "interface": "int2"}},
+            "ram": {"ram1": {"power": 10, "ramSize": 1337, "ramTyp": "incompatible"}},
+        },
+    )
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__incompatible_ram_type(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": "mainboard1",
+            "gpu": ["gpu1"],
+            "disk": ["disk1", "disk2"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1"],
+            "powerPack": None,
+            "case": "case1",
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "incompatible_ram_type"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch(
+        "resources.game_content.hardware",
+        {
+            "mainboard": {
+                "mainboard1": {
+                    "case": "case1",
+                    "graphicUnitOnBoard": None,
+                    "power": 10,
+                    "cpuSlots": 1,
+                    "cpuSocket": "cpu-socket1",
+                    "expansionSlots": [
+                        {"interface": "int1", "interfaceSlots": 1},
+                        {"interface": "int2", "interfaceSlots": 1},
+                    ],
+                    "diskStorage": {"diskSlots": 1, "interface": "disk-int"},
+                    "ram": {"ramSlots": 1, "ramTyp": ["typ1"], "frequency": []},
+                }
+            },
+            "cpu": {"cpu1": {"socket": "cpu-socket1", "graphicUnit": None, "power": 10}},
+            "processorCooler": {"cooler1": {"socket": "cpu-socket1", "power": 10}},
+            "gpu": {"gpu1": {"interface": "int1", "power": 10}},
+            "disk": {"disk1": {"power": 10, "interface": "disk-int"}, "disk2": {"power": 10, "interface": "int2"}},
+            "ram": {"ram1": {"power": 10, "ramSize": 1337, "ramTyp": "typ1", "frequency": "incompatible"}},
+        },
+    )
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__incompatible_ram_frequency(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": "mainboard1",
+            "gpu": ["gpu1"],
+            "disk": ["disk1", "disk2"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1"],
+            "powerPack": None,
+            "case": "case1",
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "incompatible_ram_frequency"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch(
+        "resources.game_content.hardware",
+        {
+            "mainboard": {
+                "mainboard1": {
+                    "case": "case1",
+                    "graphicUnitOnBoard": None,
+                    "power": 10,
+                    "cpuSlots": 1,
+                    "cpuSocket": "cpu-socket1",
+                    "expansionSlots": [
+                        {"interface": "int1", "interfaceSlots": 1},
+                        {"interface": "int2", "interfaceSlots": 1},
+                    ],
+                    "diskStorage": {"diskSlots": 1, "interface": "disk-int"},
+                    "ram": {"ramSlots": 1, "ramTyp": ["typ1"], "frequency": ["freq1"], "maxRamSize": 42},
+                }
+            },
+            "cpu": {"cpu1": {"socket": "cpu-socket1", "graphicUnit": None, "power": 10}},
+            "processorCooler": {"cooler1": {"socket": "cpu-socket1", "power": 10}},
+            "gpu": {"gpu1": {"interface": "int1", "power": 10}},
+            "disk": {"disk1": {"power": 10, "interface": "disk-int"}, "disk2": {"power": 10, "interface": "int2"}},
+            "ram": {"ram1": {"power": 10, "ramSize": 1337, "ramTyp": "typ1", "frequency": "freq1"}},
+        },
+    )
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__ram_limit_exceeded(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": "mainboard1",
+            "gpu": ["gpu1"],
+            "disk": ["disk1", "disk2"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1"],
+            "powerPack": None,
+            "case": "case1",
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "ram_limit_exceeded"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch(
+        "resources.game_content.hardware",
+        {
+            "mainboard": {
+                "mainboard1": {
+                    "case": "case1",
+                    "graphicUnitOnBoard": None,
+                    "power": 10,
+                    "cpuSlots": 1,
+                    "cpuSocket": "cpu-socket1",
+                    "expansionSlots": [
+                        {"interface": "int1", "interfaceSlots": 1},
+                        {"interface": "int2", "interfaceSlots": 1},
+                    ],
+                    "diskStorage": {"diskSlots": 1, "interface": "disk-int"},
+                    "ram": {"ramSlots": 1, "ramTyp": ["typ1"], "frequency": ["freq1"], "maxRamSize": 42},
+                }
+            },
+            "cpu": {"cpu1": {"socket": "cpu-socket1", "graphicUnit": None, "power": 10}},
+            "processorCooler": {"cooler1": {"socket": "cpu-socket1", "power": 10}},
+            "gpu": {"gpu1": {"interface": "int1", "power": 10}},
+            "disk": {"disk1": {"power": 10, "interface": "disk-int"}, "disk2": {"power": 10, "interface": "int2"}},
+            "ram": {"ram1": {"power": 10, "ramSize": 42, "ramTyp": "typ1", "frequency": "freq1"}},
+            "powerPack": {"pack1": {"totalPower": 69}},
+        },
+    )
+    @patch("resources.game_content.check_element_existence")
+    def test__check_compatible__insufficient_power_pack(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": "mainboard1",
+            "gpu": ["gpu1"],
+            "disk": ["disk1", "disk2"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1"],
+            "powerPack": "pack1",
+            "case": "case1",
+        }
+        cee_patch.return_value = True, {}
+
+        expected_result = False, {"error": "insufficient_power_pack"}
+        actual_result = game_content.check_compatible(elements)
+
+        self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
+
+    @patch(
+        "resources.game_content.hardware",
+        {
+            "mainboard": {
+                "mainboard1": {
+                    "case": "case1",
+                    "graphicUnitOnBoard": None,
+                    "power": 10,
+                    "cpuSlots": 1,
+                    "cpuSocket": "cpu-socket1",
+                    "expansionSlots": [
+                        {"interface": "int1", "interfaceSlots": 1},
+                        {"interface": "int2", "interfaceSlots": 1},
+                    ],
+                    "diskStorage": {"diskSlots": 1, "interface": "disk-int"},
+                    "ram": {"ramSlots": 1, "ramTyp": ["typ1"], "frequency": ["freq1"], "maxRamSize": 42},
+                }
+            },
+            "cpu": {"cpu1": {"socket": "cpu-socket1", "graphicUnit": {}, "power": 10}},
+            "processorCooler": {"cooler1": {"socket": "cpu-socket1", "power": 10}},
+            "gpu": {"gpu1": {"interface": "int1", "power": 10}},
+            "disk": {"disk1": {"power": 10, "interface": "disk-int"}, "disk2": {"power": 10, "interface": "int2"}},
+            "ram": {"ram1": {"power": 10, "ramSize": 42, "ramTyp": "typ1", "frequency": "freq1"}},
+            "powerPack": {"pack1": {"totalPower": 70}},
         },
     )
     @patch("resources.game_content.check_element_existence")
     def test__check_compatible__successful(self, cee_patch):
+        elements = {
+            "cpu": ["cpu1"],
+            "mainboard": "mainboard1",
+            "gpu": ["gpu1"],
+            "disk": ["disk1", "disk2"],
+            "ram": ["ram1"],
+            "processorCooler": ["cooler1"],
+            "powerPack": "pack1",
+            "case": "case1",
+        }
         cee_patch.return_value = True, {}
-        elements = {"cpu": "cpu", "motherboard": "motherboard", "ram": ["ram"], "disk": ["disk"]}
 
         expected_result = True, {}
         actual_result = game_content.check_compatible(elements)
 
         self.assertEqual(expected_result, actual_result)
+        cee_patch.assert_called_with(elements)
 
     def test__calculate_power(self):
         elements = {
-            "cpu": list(hardware["cpu"])[0],
-            "motherboard": list(hardware["mainboards"])[0],
+            "cpu": [list(hardware["cpu"])[0]],
+            "mainboard": list(hardware["mainboard"])[0],
             "ram": [list(hardware["ram"])[0]],
-            "gpu": list(hardware["gpu"])[0],
+            "gpu": [list(hardware["gpu"])[0]],
             "disk": [list(hardware["disk"])[0]],
         }
-        cpu = hardware["cpu"][elements["cpu"]]
-        motherboard = hardware["mainboards"][elements["motherboard"]]
+        cpu = hardware["cpu"][elements["cpu"][0]]
+        mainboard = hardware["mainboard"][elements["mainboard"]]
         ram = hardware["ram"][elements["ram"][0]]
-        gpu = hardware["gpu"][elements["gpu"]]
+        gpu = hardware["gpu"][elements["gpu"][0]]
         disk = hardware["disk"][elements["disk"][0]]
 
         expected_performance_cpu = cpu["cores"] * cpu["frequencyMax"]
-        expected_performance_ram = (
-            min(resolve_ram_type[motherboard["ram"]["typ"]], resolve_ram_type[ram["ramTyp"]])
-            * (ram["ramSize"] * ram["frequency"]) ** 0.5
-        )
-        expected_performance_gpu = resolve_ram_type[gpu["ramTyp"]] * math.sqrt(gpu["ramSize"] * gpu["frequency"])
+        expected_performance_ram = ram["ramTyp"][1] * (ram["ramSize"] * ram["frequency"]) ** 0.5
+        expected_performance_gpu = gpu["ramTyp"][1] * math.sqrt(gpu["ramSize"] * gpu["frequency"])
         expected_performance_disk = 100 * math.log10(disk["writingSpeed"] * disk["readingSpeed"])
-        expected_performance_network = motherboard["networkCard"]["speed"]
+        expected_performance_network = mainboard["networkPort"]["speed"]
         actual_result = game_content.calculate_power(elements)
 
         self.assertEqual(expected_performance_cpu, actual_result[0])
@@ -322,24 +803,25 @@ class TestGameContent(TestCase):
     @patch("resources.game_content.Hardware")
     def test__create_hardware(self, hardware_patch):
         elements = {
-            "cpu": "cpu",
-            "gpu": "gpu",
-            "motherboard": "motherboard",
+            "cpu": ["cpu1", "cpu2"],
+            "gpu": ["gpu1", "gpu2"],
+            "mainboard": "mainboard",
             "ram": ["ram1", "ram2"],
-            "disk": ["disk1", "disk2"],
+            "disk": ["disk1", "ssd1"],
+            "powerPack": "powerPack",
+            "case": "case",
+            "processorCooler": ["cooler1"],
         }
 
         def create(device_uuid, element_name, element_type):
             self.assertEqual("my-device", device_uuid)
 
-            if element_type in ("ram", "disk"):
+            if element_type in ("cpu", "gpu", "processorCooler", "ram", "disk"):
                 self.assertIn(element_name, elements[element_type])
                 elements[element_type].remove(element_name)
                 if not elements[element_type]:
                     del elements[element_type]
             else:
-                if element_type == "mainboard":
-                    element_type = "motherboard"
                 self.assertEqual(element_name, elements[element_type])
                 del elements[element_type]
 
