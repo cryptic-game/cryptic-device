@@ -9,7 +9,7 @@ from models.hardware import Hardware
 from models.service import Service
 from models.file import File
 from models.workload import Workload
-from resources.errors import device_exists, can_access_device, device_powered_on
+from resources.errors import device_exists, can_access_device, device_powered_on, is_owner_of_device
 from resources.game_content import (
     check_compatible,
     calculate_power,
@@ -142,7 +142,7 @@ def starter_device(data: dict, user: str) -> dict:
 
 
 @m.user_endpoint(path=["device", "power"], requires=requirement_device)
-@register_errors(device_exists, can_access_device)
+@register_errors(device_exists, is_owner_of_device)
 def power(data: dict, user: str, device: Device) -> dict:
     """
     Turn a device on/off.

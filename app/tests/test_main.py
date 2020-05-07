@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from mock.mock_loader import mock
 from resources import device, file, hardware
-from resources.errors import device_exists, can_access_device, device_powered_on, file_exists
+from resources.errors import device_exists, can_access_device, device_powered_on, file_exists, is_owner_of_device
 from schemes import (
     requirement_device,
     requirement_build,
@@ -70,7 +70,7 @@ class TestApp(TestCase):
             (["device", "all"], {}, device.list_devices),
             (["device", "create"], requirement_build, device.create_device),
             (["device", "starter_device"], {}, device.starter_device),
-            (["device", "power"], requirement_device, device.power, device_exists, can_access_device),
+            (["device", "power"], requirement_device, device.power, device_exists, is_owner_of_device),
             (["device", "change_name"], requirement_change_name, device.change_name, *device_reachable),
             (["device", "delete"], requirement_device, device.delete_device, device_exists),
             (["device", "spot"], {}, device.spot),

@@ -23,6 +23,13 @@ def can_access_device(data: dict, user: str, device: Device) -> Device:
     return device
 
 
+def is_owner_of_device(data: dict, user: str, device: Device) -> Device:
+    if device.owner != user:
+        raise MicroserviceException(permission_denied)
+
+    return device
+
+
 def device_powered_on(data: dict, user: str, device: Device) -> Device:
     if not device.powered_on:
         raise MicroserviceException(device_powered_off)
