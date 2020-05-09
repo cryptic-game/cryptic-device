@@ -1,9 +1,9 @@
 import random
-from typing import Dict, Any, Union
+from typing import Dict, Any, Union, Optional
 from uuid import uuid4
 
 from sqlalchemy import Column, String, Boolean
-from sqlalchemy.sql.expression import func
+from sqlalchemy.sql.expression import func, and_
 
 from app import m, wrapper
 
@@ -86,8 +86,10 @@ class Device(wrapper.Base):
         ]
 
     @staticmethod
-    def random(user: str) -> "Device":
+    def random(user: str) -> Optional["Device"]:
         return (
-            wrapper.session.query(Device).filter(Device.owner != user).order_by(func.random()).first()
-            or wrapper.session.query(Device).order_by(func.random()).first()
+            wrapper.session.query(Device)
+            .filter(and_(Device.owner != user, Device.powered_on))
+            .order_by(func.random())
+            .first()
         )

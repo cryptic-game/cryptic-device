@@ -8,7 +8,7 @@ from models.hardware import Hardware
 from models.service import Service
 from models.workload import Workload
 from resources import device
-from schemes import permission_denied, success, already_own_a_device, maximum_devices_reached
+from schemes import permission_denied, success, already_own_a_device, maximum_devices_reached, device_not_found
 from vars import hardware
 
 
@@ -266,7 +266,16 @@ class TestDevice(TestCase):
         mock.wrapper.session.commit.assert_called_with()
 
     @patch("resources.device.Device")
-    def test__user_endpoint__device_spot(self, device_patch):
+    def test__user_endpoint__device_spot__not_found(self, device_patch):
+        expected_result = device_not_found
+        device_patch.random.return_value = None
+        actual_result = device.spot({}, "user")
+
+        self.assertEqual(expected_result, actual_result)
+        device_patch.random.assert_called_with("user")
+
+    @patch("resources.device.Device")
+    def test__user_endpoint__device_spot__successful(self, device_patch):
         expected_result = device_patch.random().serialize
         actual_result = device.spot({}, "user")
 

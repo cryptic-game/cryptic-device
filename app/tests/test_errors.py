@@ -48,6 +48,21 @@ class TestErrors(TestCase):
         self.assertEqual(mock_device, errors.can_access_device({}, "user", mock_device))
         mock_device.check_access.assert_called_with("user")
 
+    def test__is_owner_of_device__permission_denied(self):
+        mock_device = mock.MagicMock()
+        mock_device.owner = "not you"
+
+        with self.assertRaises(MicroserviceException) as context:
+            errors.is_owner_of_device({}, "user", mock_device)
+
+        self.assertEqual(permission_denied, context.exception.error)
+
+    def test__is_owner_of_device__successful(self):
+        mock_device = mock.MagicMock()
+        mock_device.owner = "user"
+
+        self.assertEqual(mock_device, errors.is_owner_of_device({}, "user", mock_device))
+
     def test__device_powered_on__device_powered_off(self):
         mock_device = mock.MagicMock()
         mock_device.powered_on = False
