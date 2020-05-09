@@ -68,9 +68,11 @@ class TestDeviceModel(TestCase):
             "service", ["check_part_owner"], {"user_uuid": "other-user", "device_uuid": device.uuid}
         )
 
+    @patch("models.device.and_")
+    @patch("models.device.Device.powered_on")
     @patch("models.device.Device.owner")
     @patch("models.device.func.random")
-    def test__model__device__random__multiple_devices(self, random_patch, owner_patch):
+    def test__model__device__random__multiple_devices(self, random_patch, owner_patch, power_patch, and_patch):
         self.query_device.filter().order_by().first.return_value = "random device"
         owner_patch.__ne__.return_value = "owner-ne"
 
@@ -79,18 +81,7 @@ class TestDeviceModel(TestCase):
 
         self.assertEqual(expected_result, actual_result)
         owner_patch.__ne__.assert_called_with("some user")
+        and_patch.assert_called_with("owner-ne", power_patch)
         random_patch.assert_called_with()
-        self.query_device.filter.assert_called_with("owner-ne")
+        self.query_device.filter.assert_called_with(and_patch())
         self.query_device.filter().order_by.assert_called_with(random_patch())
-
-    @patch("models.device.func.random")
-    def test__model__device__random__one_device(self, random_patch):
-        self.query_device.filter().order_by().first.return_value = None
-        self.query_device.order_by().first.return_value = "the device"
-
-        expected_result = "the device"
-        actual_result = Device.random("some user")
-
-        self.assertEqual(expected_result, actual_result)
-        random_patch.assert_called_with()
-        self.query_device.order_by.assert_called_with(random_patch())

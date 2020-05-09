@@ -5,9 +5,9 @@ from sqlalchemy import func
 
 from app import m, wrapper
 from models.device import Device
+from models.file import File
 from models.hardware import Hardware
 from models.service import Service
-from models.file import File
 from models.workload import Workload
 from resources.errors import device_exists, can_access_device, device_powered_on, is_owner_of_device
 from resources.game_content import (
@@ -29,6 +29,7 @@ from schemes import (
     requirement_change_name,
     already_own_a_device,
     maximum_devices_reached,
+    device_not_found,
 )
 from vars import hardware
 
@@ -221,7 +222,9 @@ def delete_device(data: dict, user: str, device: Device) -> dict:
 
 @m.user_endpoint(path=["device", "spot"], requires={})
 def spot(data: dict, user: str) -> dict:
-    device: Device = Device.random(user)
+    device: Optional[Device] = Device.random(user)
+    if device is None:
+        return device_not_found
 
     return device.serialize
 
