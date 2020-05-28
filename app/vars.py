@@ -262,8 +262,8 @@ hardware = {
     },
     # ----- PowerPack -----
     "powerPack": {
-        "Crossfire XSOne 500 Watt": {"id": 700, "totalPower": 500,},
-        "Zeus X10 Pro": {"id": 701, "totalPower": 700,},
+        "Crossfire XSOne 500 Watt": {"id": 700, "totalPower": 500},
+        "Zeus X10 Pro": {"id": 701, "totalPower": 700},
     },
     # ----- Case -----
     "case": {
