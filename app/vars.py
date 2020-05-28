@@ -262,9 +262,13 @@ hardware = {
     },
     # ----- PowerPack -----
     "powerPack": {
-        "Crossfire XSOne 500 Watt": {"id": 700, "totalPower": 500,},
-        "Zeus X10 Pro": {"id": 701, "totalPower": 700,},
+        "Crossfire XSOne 500 Watt": {"id": 700, "totalPower": 500},
+        "Zeus X10 Pro": {"id": 701, "totalPower": 700},
     },
     # ----- Case -----
-    "case": ["Mini-ITX", "Mini-ATX", "ATX"],
+    "case": {
+        "Mini-ITX": {"id": 800, "size": "small"},
+        "Mini-ATX": {"id": 801, "size": "middle"},
+        "ATX": {"id": 802, "size": "big"},
+    },
 }
