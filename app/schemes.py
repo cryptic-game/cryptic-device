@@ -61,7 +61,7 @@ requirement_file_delete: dict = {"device_uuid": UUID(), "file_uuid": UUID()}
 requirement_file_move: dict = {
     "device_uuid": UUID(),
     "file_uuid": UUID(),
-    "new_filename": Text(pattern=r"^[a-zA-Z0-9\-_.]{1,64}$"),
+    "new_filename": Text(pattern=r"^(?!\.+$)[a-zA-Z0-9\-_.]{1,64}$"),
     "new_parent_dir_uuid": UUID(),
 }
 
@@ -69,7 +69,7 @@ requirement_file_update: dict = {"device_uuid": UUID(), "file_uuid": UUID(), "co
 
 requirement_file_create: dict = {
     "device_uuid": UUID(),
-    "filename": Text(pattern=r"^[a-zA-Z0-9\-_.]{1,64}$"),
+    "filename": Text(pattern=r"^(?!\.+$)[a-zA-Z0-9\-_.]{1,64}$"),
     "content": Text(max_length=CONTENT_LENGTH),
     "is_directory": Boolean(),
     "parent_dir_uuid": UUID(),
