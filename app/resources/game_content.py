@@ -10,19 +10,21 @@ from vars import hardware
 
 
 def check_exists(user: str, elements: dict) -> Tuple[bool, dict]:
-    response: dict = m.contact_microservice("inventory", ["inventory", "list"], {"owner": user})
+    inventory: dict = m.contact_microservice("inventory", ["inventory", "summary"], {"owner": user})["elements"]
 
-    names: List[str] = [x["element_name"] for x in response["elements"]]
+    def check(name: str) -> bool:
+        if inventory.get(name, 0) > 0:
+            inventory[name] -= 1
+            return True
+        return False
 
     for element_type in ("mainboard", "powerPack", "case"):
-        if elements[element_type] not in names:
+        if not check(elements[element_type]):
             return False, {"error": f"{element_type}_not_in_inventory"}
     for element_type in ("cpu", "gpu", "processorCooler", "disk", "ram"):
         for element in elements[element_type]:
-            if element not in names:
+            if not check(element):
                 return False, {"error": f"{element_type}_not_in_inventory"}
-            else:
-                names.remove(element)
 
     return True, {}
 
