@@ -55,10 +55,16 @@ class TestGameContent(TestCase):
             {},
         ]
 
+        def build_summary_response(missing):
+            out = {}
+            for element in elements:
+                if element == missing:
+                    continue
+                out[element] = out.get(element, 0) + 1
+            return {"elements": out}
+
         for missing_element, expected_result in zip(elements, expected_results):
-            mock.m.contact_microservice.return_value = {
-                "elements": [{"element_name": e} for e in elements if e != missing_element]
-            }
+            mock.m.contact_microservice.return_value = build_summary_response(missing_element)
 
             actual_result = game_content.check_exists(
                 "super",
@@ -75,7 +81,7 @@ class TestGameContent(TestCase):
             )
 
             self.assertEqual((not expected_result, expected_result), actual_result)
-            mock.m.contact_microservice.assert_called_with("inventory", ["inventory", "list"], {"owner": "super"})
+            mock.m.contact_microservice.assert_called_with("inventory", ["inventory", "summary"], {"owner": "super"})
             mock.reset_mocks()
 
     def test__delete_items(self):
