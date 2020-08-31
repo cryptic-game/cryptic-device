@@ -153,11 +153,10 @@ class TestFile(TestCase):
         mock_file = mock.MagicMock()
         mock_file.is_directory = True
         mock_file.uuid = "3"
-        filesystem = {}
         dir_mock = mock.MagicMock()
         dir_mock.parent_dir_uuid = None
         dir_mock.uuid = "0"
-        filesystem.update({str(0): dir_mock})
+        filesystem = {"0": dir_mock, None: None}
 
         self.query_device.get.return_value = mock_device
 
