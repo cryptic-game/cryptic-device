@@ -8,7 +8,14 @@ from models.hardware import Hardware
 from models.service import Service
 from models.workload import Workload
 from resources import device
-from schemes import permission_denied, success, already_own_a_device, maximum_devices_reached, device_not_found
+from schemes import (
+    permission_denied,
+    success,
+    already_own_a_device,
+    maximum_devices_reached,
+    device_not_found,
+    device_is_starter_device,
+)
 from vars import hardware
 
 
@@ -173,7 +180,7 @@ class TestDevice(TestCase):
         self.sqlalchemy_func.count.assert_called_with(Device.uuid)
         self.query_func_count.filter_by.assert_called_with(owner="user")
         calculate_patch.assert_called_with(hardware["start_pc"])
-        device_create_patch.assert_called_with("user", True)
+        device_create_patch.assert_called_with("user", True, True)
         workload_patch.create.assert_called_with(mock_device.uuid, calculate_patch())
         create_patch.assert_called_with(hardware["start_pc"], mock_device.uuid)
         mock.m.contact_microservice.assert_called_with(
@@ -226,11 +233,22 @@ class TestDevice(TestCase):
 
         self.assertEqual(expected_result, actual_result)
 
+    def test__user_endpoint__device_delete__starter_device(self):
+        mock_device = mock.MagicMock()
+        mock_device.owner = "user"
+        mock_device.starter_device = True
+
+        expected_result = device_is_starter_device
+        actual_result = device.delete_device({"device_uuid": "the-device"}, "user", mock_device)
+
+        self.assertEqual(expected_result, actual_result)
+
     @patch("resources.device.delete_services")
     @patch("resources.device.stop_all_service")
     def test__user_endpoint__device_delete__successful(self, sas_patch, ds_patch):
         mock_device = mock.MagicMock()
         mock_device.owner = "user"
+        mock_device.starter_device = False
         files = []
         for i in range(5):
             files.append([mock.MagicMock() for _ in range(5)])

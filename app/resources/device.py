@@ -30,6 +30,7 @@ from schemes import (
     already_own_a_device,
     maximum_devices_reached,
     device_not_found,
+    device_is_starter_device,
 )
 from vars import hardware
 
@@ -131,7 +132,7 @@ def starter_device(data: dict, user: str) -> dict:
 
     performance: tuple = calculate_power(hardware["start_pc"])
 
-    device: Device = Device.create(user, True)
+    device: Device = Device.create_starter_device(user, True)
 
     Workload.create(device.uuid, performance)
 
@@ -200,6 +201,9 @@ def delete_device(data: dict, user: str, device: Device) -> dict:
 
     if device.owner != user:
         return permission_denied
+
+    if device.starter_device:
+        return device_is_starter_device
 
     stop_all_service(device.uuid, delete=True)
     delete_services(device.uuid)  # Removes all Services in MS_Service
