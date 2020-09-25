@@ -35,6 +35,8 @@ service_already_running: dict = make_error("service_already_running", origin="se
 
 service_not_running: dict = make_error("service_not_running", origin="service")
 
+device_is_starter_device: dict = make_error("device_is_starter_device", origin="service")
+
 success: dict = {"ok": True}
 
 requirement_device: dict = {"device_uuid": UUID()}
