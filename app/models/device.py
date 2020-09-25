@@ -19,6 +19,7 @@ class Device(wrapper.Base):
     name: Union[Column, str] = Column(String(255), nullable=False)
     owner: Union[Column, str] = Column(String(36), nullable=False)
     powered_on: Union[Column, bool] = Column(Boolean, nullable=False, default=False)
+    starter_device: Union[Column, bool] = Column(Boolean, nullable=False, default=False)
 
     @property
     def serialize(self) -> Dict[str, Any]:
@@ -30,7 +31,11 @@ class Device(wrapper.Base):
         return d
 
     @staticmethod
-    def create(user: str, powered_on: bool) -> "Device":
+    def create_starter_device(user: str, powered_on: bool) -> "Device":
+        return Device.create(user, powered_on, True)
+
+    @staticmethod
+    def create(user: str, powered_on: bool, starter_device: Optional[bool] = False) -> "Device":
         """
         Creates a new device.
         :param user: The owner's uuid
@@ -65,7 +70,7 @@ class Device(wrapper.Base):
         )
 
         # Return a new device
-        device: Device = Device(uuid=uuid, name=name, owner=user, powered_on=powered_on)
+        device: Device = Device(uuid=uuid, name=name, owner=user, powered_on=powered_on, starter_device=starter_device)
 
         wrapper.session.add(device)
         wrapper.session.commit()
