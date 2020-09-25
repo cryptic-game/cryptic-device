@@ -8,7 +8,14 @@ from models.hardware import Hardware
 from models.service import Service
 from models.workload import Workload
 from resources import device
-from schemes import permission_denied, success, already_own_a_device, maximum_devices_reached, device_not_found
+from schemes import (
+    permission_denied,
+    success,
+    already_own_a_device,
+    maximum_devices_reached,
+    device_not_found,
+    device_is_starter_device,
+)
 from vars import hardware
 
 
@@ -222,6 +229,16 @@ class TestDevice(TestCase):
         mock_device.owner = "other-user"
 
         expected_result = permission_denied
+        actual_result = device.delete_device({"device_uuid": "the-device"}, "user", mock_device)
+
+        self.assertEqual(expected_result, actual_result)
+
+    def test__user_endpoint__device_delete__starter_device(self):
+        mock_device = mock.MagicMock()
+        mock_device.owner = "user"
+        mock_device.starter_device = True
+
+        expected_result = device_is_starter_device
         actual_result = device.delete_device({"device_uuid": "the-device"}, "user", mock_device)
 
         self.assertEqual(expected_result, actual_result)
