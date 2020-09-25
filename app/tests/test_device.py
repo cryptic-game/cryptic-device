@@ -173,7 +173,7 @@ class TestDevice(TestCase):
         self.sqlalchemy_func.count.assert_called_with(Device.uuid)
         self.query_func_count.filter_by.assert_called_with(owner="user")
         calculate_patch.assert_called_with(hardware["start_pc"])
-        device_create_patch.assert_called_with("user", True)
+        device_create_patch.assert_called_with("user", True, True)
         workload_patch.create.assert_called_with(mock_device.uuid, calculate_patch())
         create_patch.assert_called_with(hardware["start_pc"], mock_device.uuid)
         mock.m.contact_microservice.assert_called_with(
@@ -231,6 +231,7 @@ class TestDevice(TestCase):
     def test__user_endpoint__device_delete__successful(self, sas_patch, ds_patch):
         mock_device = mock.MagicMock()
         mock_device.owner = "user"
+        mock_device.starter_device = False
         files = []
         for i in range(5):
             files.append([mock.MagicMock() for _ in range(5)])
