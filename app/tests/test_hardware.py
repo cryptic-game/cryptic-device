@@ -57,12 +57,11 @@ class TestHardware(TestCase):
         mock_workload = mock.MagicMock()
         self.query_workload.get.return_value = mock_workload
 
-        expected_result = mock_workload.display()
+        expected_result = mock_workload.serialize
         actual_result = hardware.hardware_resources({"device_uuid": "some-device"}, "user")
 
         self.assertEqual(expected_result, actual_result)
         self.query_workload.get.assert_called_with("some-device")
-        mock_workload.display.assert_called()
 
     def test__user_enpoint__hardware_proccess__service_not_found(self):
         self.query_service.get.return_value = None

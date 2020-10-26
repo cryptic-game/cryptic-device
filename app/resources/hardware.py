@@ -48,7 +48,7 @@ def hardware_resources(data: dict, user: str) -> dict:
     if wl is None:
         return device_not_found
 
-    return wl.display()
+    return wl.serialize
 
 
 @m.user_endpoint(path=["hardware", "process"], requires=requirement_service)
