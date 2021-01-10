@@ -1,4 +1,4 @@
-cryptic-device
+cryptic-device [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=cryptic-game_cryptic-device&metric=coverage)](https://sonarcloud.io/dashboard?id=cryptic-game_cryptic-device)
 ============
 
 The official device microservice of Cryptic (https://cryptic-game.net/).
@@ -28,7 +28,7 @@ If you only need a mysql-server you can bring it up with:
 
 ## Docker-Hub
 
-This microservice is online on docker-hub (https://hub.docker.com/r/useto/cryptic-device/).
+This microservice is online on docker-hub (https://hub.docker.com/r/crypticcp/cryptic-device/).
 
 ## API
 [API Documentation](https://github.com/cryptic-game/cryptic-device/wiki)

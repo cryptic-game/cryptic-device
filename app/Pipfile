@@ -6,15 +6,18 @@ name = "pypi"
 [packages]
 SQLAlchemy = "*"
 PyMySQL = "*"
-cryptic-game = "*"
-argparse = "*"
-cryptography = "*"
+cryptic-game = "==0.5.3.dev1"
+pyscheme = "*"
+sentry-sdk = "*"
 
 [dev-packages]
+coverage = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
 
 [scripts]
-dev = "python3 app.py --debug"
-prod = "python3 app.py"
+test = "python3 -m unittest discover -v tests"
+coverage = "sh coverage.sh"
+dev = "python3 main.py --debug"
+prod = "python3 main.py"

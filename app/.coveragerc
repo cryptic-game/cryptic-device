@@ -1,0 +1,5 @@
+[run]
+omit = 
+	*virtualenv*
+	tests/*
+	mock/*

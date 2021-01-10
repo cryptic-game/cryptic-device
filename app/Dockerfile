@@ -1,21 +1,20 @@
-FROM python:3.7-alpine
+FROM python:3.8-alpine
 
 MAINTAINER faq@cryptic-game.net
 
-EXPOSE 80
-
 ENV MYSQL_PORT 3306
-ENV CROSS_ORIGIN True
-ENV DEBUG False
 
 WORKDIR /app
 
+RUN pip install pipenv
+
+ADD ./Pipfile /app/
+ADD ./Pipfile.lock /app/
+
+RUN pipenv sync
+
 ADD . /app/
 
-RUN apk add gcc musl-dev libffi-dev libressl-dev
-
-RUN pip install pipenv
-RUN pipenv run pip install pip==18.0
-RUN pipenv install
+RUN pipenv run test
 
 CMD pipenv run prod
