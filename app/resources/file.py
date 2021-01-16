@@ -6,7 +6,7 @@ from sqlalchemy import func
 from app import m, wrapper
 from models.device import Device
 from models.file import File
-from resources.errors import device_exists, can_access_device, device_powered_on, file_exists
+from resources.errors import device_exists, can_access_device, device_powered_on, file_exists, is_owner_of_device
 from schemes import (
     file_already_exists,
     success,
@@ -65,9 +65,11 @@ def move(data: dict, user: str, device: Device, file: File) -> dict:
     new_filename = data["new_filename"]
     new_parent_dir_uuid = data["new_parent_dir_uuid"]
 
-    target_file: Optional[File] = wrapper.session.query(File).filter_by(
-        device=device.uuid, filename=new_filename, parent_dir_uuid=new_parent_dir_uuid
-    ).first()
+    target_file: Optional[File] = (
+        wrapper.session.query(File)
+        .filter_by(device=device.uuid, filename=new_filename, parent_dir_uuid=new_parent_dir_uuid)
+        .first()
+    )
     if target_file is not None:
         return file_already_exists
 
@@ -78,16 +80,18 @@ def move(data: dict, user: str, device: Device, file: File) -> dict:
         return parent_directory_not_found
 
     if file.is_directory:
-        parent_to_check: Optional[File] = wrapper.session.query(File).filter_by(
-            device=device.uuid, uuid=new_parent_dir_uuid
-        ).first()
+        parent_to_check: Optional[File] = (
+            wrapper.session.query(File).filter_by(device=device.uuid, uuid=new_parent_dir_uuid).first()
+        )
         if parent_to_check is not None:
             while parent_to_check is not None:
                 if parent_to_check.uuid == file.uuid:
                     return can_not_move_dir_into_itself
-                parent_to_check: Optional[File] = wrapper.session.query(File).filter_by(
-                    device=device.uuid, uuid=parent_to_check.parent_dir_uuid
-                ).first()
+                parent_to_check: Optional[File] = (
+                    wrapper.session.query(File)
+                    .filter_by(device=device.uuid, uuid=parent_to_check.parent_dir_uuid)
+                    .first()
+                )
 
     file.filename = new_filename
     file.parent_dir_uuid = new_parent_dir_uuid
@@ -139,7 +143,7 @@ def update(data: dict, user: str, device: Device, file: File) -> dict:
 
 
 @m.user_endpoint(path=["file", "delete"], requires=requirement_file_delete)
-@register_errors(device_exists, can_access_device, device_powered_on, file_exists)
+@register_errors(device_exists, is_owner_of_device, device_powered_on, file_exists)
 def delete_file(data: dict, user: str, device: Device, file: File) -> dict:
     """
     Delete a file.
@@ -156,9 +160,9 @@ def delete_file(data: dict, user: str, device: Device, file: File) -> dict:
         while len(dirs) > 0:
             dir_to_check = dirs.pop()
             stack_to_delete.append(dir_to_check)
-            files_in_dir: list = wrapper.session.query(File).filter_by(
-                device=device.uuid, parent_dir_uuid=dir_to_check.uuid
-            ).all()
+            files_in_dir: list = (
+                wrapper.session.query(File).filter_by(device=device.uuid, parent_dir_uuid=dir_to_check.uuid).all()
+            )
             for child_file in files_in_dir:
                 if child_file.is_directory:
                     dirs.append(child_file)
@@ -204,16 +208,18 @@ def create_file(data: dict, user: str, device: Device) -> dict:
     is_directory: bool = data["is_directory"]
     parent_dir_uuid: str = data["parent_dir_uuid"]
 
-    file_count: int = wrapper.session.query(func.count(File.uuid)).filter_by(
-        device=device.uuid, filename=filename, parent_dir_uuid=parent_dir_uuid
-    ).scalar()
+    file_count: int = (
+        wrapper.session.query(func.count(File.uuid))
+        .filter_by(device=device.uuid, filename=filename, parent_dir_uuid=parent_dir_uuid)
+        .scalar()
+    )
 
     if file_count > 0:
         return file_already_exists
 
-    parent_dir: File = wrapper.session.query(File).filter_by(
-        device=device.uuid, uuid=parent_dir_uuid, is_directory=True
-    ).first()
+    parent_dir: File = (
+        wrapper.session.query(File).filter_by(device=device.uuid, uuid=parent_dir_uuid, is_directory=True).first()
+    )
     if not parent_dir and parent_dir_uuid is not None:
         return parent_directory_not_found
 
